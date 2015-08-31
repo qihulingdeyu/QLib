@@ -83,6 +83,7 @@ public abstract class BaseActivity extends Activity {
 
     public void refreshPage() {
         if (mPage != null) {
+            mPage.onDestroy();
             mPage.onClose();
             mContainer.removeAllViews();
         }
@@ -103,13 +104,13 @@ public abstract class BaseActivity extends Activity {
         return setActivePage(page, PageToStack, false, null);
     }
 
-    public IPage setActivePage(int page, boolean pushToStack,
-            boolean DataToStack, Object[] args) {
+    public IPage setActivePage(int page, boolean pushToStack, boolean DataToStack, Object[] args) {
         mLastPage = mCurrentPage;
         if (page == -1 || page == mCurrentPage) {
             return mPage;
         }
         if (mPage != null) {
+            mPage.onDestroy();
             mPage.onClose();
             mContainer.removeAllViews();
         }
@@ -138,6 +139,8 @@ public abstract class BaseActivity extends Activity {
                     LayoutParams.MATCH_PARENT);
             mContainer.addView(view, params);
             mPage = (IPage) view;
+            mPage.onStart();
+			mPage.onResume();
             if (mPopupPage == null) {
                 mTopPage = mPage;
             }
@@ -321,6 +324,7 @@ public abstract class BaseActivity extends Activity {
         }
         for (int i = 0; i < mPopupPageStack.size(); i++) {
             page = mPopupPageStack.get(i);
+            page.onDestroy();
             page.onClose();
         }
         if (mPopupPageStack.size() > 0 && mTopPage != mPage) {
@@ -366,6 +370,7 @@ public abstract class BaseActivity extends Activity {
                 page.onPause();
                 page.onStop();
             }
+            page.onDestroy();
             page.onClose();
             mPopupPageContainer.removeView(view);
             mPopupPageStack.remove(page);
@@ -396,6 +401,7 @@ public abstract class BaseActivity extends Activity {
             View view = (View) mPopupPage;
             mPopupPage.onPause();
             mPopupPage.onStop();
+            mPopupPage.onDestroy();
             mPopupPage.onClose();
             mPopupPageContainer.removeView(view);
             mPopupPageStack.remove(mPopupPage);
