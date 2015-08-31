@@ -1,4 +1,4 @@
-package com.qing.qlib;
+package com.qing.exception;
 
 import android.app.Application;
 import android.util.Log;

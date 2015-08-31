@@ -1,4 +1,4 @@
-package com.qing.qlib;
+package com.qing.exception;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.os.Environment;
 import android.util.Log;
 
 import com.qing.utils.XmlTag;
