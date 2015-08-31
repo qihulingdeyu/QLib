@@ -17,14 +17,13 @@ public class DownloadUtils {
 
     private static final String TAG = DownloadUtils.class.getName();
 
-    public static boolean download(String url, String path, DownloadCallback callback){
-        return download(url, path, null, callback);
+    public static void download(String url, String path, DownloadCallback callback){
+        download(url, path, null, callback);
     }
 
-    public static boolean download(String url, String path, String fileName, DownloadCallback callback){
+    public static void download(String url, String path, String fileName, DownloadCallback callback){
         if(url == null || path==null){
             if (callback!=null) callback.postResult(DownloadCallback.FAIL, "下载地址或保存目录不能为空");
-            return false;
         }
         boolean isFile = false;
         File file = new File(path);
@@ -34,13 +33,11 @@ public class DownloadUtils {
         }else{
             if (StringUtils.isNullOrEmpty(fileName)) {
                 if (callback!=null) callback.postResult(DownloadCallback.FAIL, "文件名不能为空");
-                return false;
             }
         }
         if(!file.exists()){
             if(!file.mkdirs()){
                 if (callback!=null) callback.postResult(DownloadCallback.FAIL, "目录创建失败");
-                return false;
             }
         }
         if (isFile) {
@@ -51,12 +48,10 @@ public class DownloadUtils {
 
         if(file.exists()) {
             if (callback!=null) callback.postResult(DownloadCallback.SUCCESS);
-            return true;
         }else{
             try {
                 if(!file.createNewFile()){
                     if (callback!=null) callback.postResult(DownloadCallback.FAIL, "文件创建失败");
-                    return false;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -99,7 +94,6 @@ public class DownloadUtils {
                     }
                 }
                 if (callback!=null) callback.postResult(DownloadCallback.SUCCESS);
-                return true;
             }
         } catch (Exception e){
             e.printStackTrace();
@@ -122,7 +116,6 @@ public class DownloadUtils {
             }
         }
         if (callback!=null) callback.postResult(DownloadCallback.FAIL, "下载失败");
-        return false;
     }
 
 }
