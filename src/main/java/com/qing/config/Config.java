@@ -36,7 +36,7 @@ public class Config {
         setSP("");
     }
 
-    private static void setSP(String name){
+    public static void setSP(String name){
         if (StringUtils.isNullOrEmpty(name)){
             name = "config";
         }
