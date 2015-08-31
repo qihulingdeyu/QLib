@@ -3,6 +3,8 @@
  */
 package com.qing.utils;
 
+import com.qing.callback.HttpCallback;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,9 +33,6 @@ import org.apache.http.util.EntityUtils;
  */
 public class HttpUtils {
 
-    public static final int SUCCESS = 1;
-    public static final int FAIL = 0;
-    
     /**
      * 设置HttpClient的参数
      * @return
@@ -49,7 +48,7 @@ public class HttpUtils {
     
     public static void doGet(final String url, final HttpCallback callback){
         if(url==null || !url.startsWith("http")){
-            if(callback!=null) callback.onFail("url is error");
+            if(callback!=null) callback.postResult(HttpCallback.FAIL, "url is error");
             return;
         }
         
@@ -63,16 +62,16 @@ public class HttpUtils {
                     HttpResponse hr = hc.execute(hg);
                     int code = hr.getStatusLine().getStatusCode();
                     if(code==200){
-                        if(callback!=null) callback.onSuccess(code, EntityUtils.toString(hr.getEntity(), HTTP.UTF_8));
+                        if(callback!=null) callback.postResult(HttpCallback.SUCCESS, EntityUtils.toString(hr.getEntity(), HTTP.UTF_8));
                     }else{
-                        if(callback!=null) callback.onFail("request fail");
+                        if(callback!=null) callback.postResult(HttpCallback.FAIL, "request fail");
                     }
                 } catch (ClientProtocolException e) {
                     e.printStackTrace();
-                    if(callback!=null) callback.onFail(e.getMessage());
+                    if(callback!=null) callback.postResult(HttpCallback.FAIL, e.getMessage());
                 } catch (IOException e) {
                     e.printStackTrace();
-                    if(callback!=null) callback.onFail(e.getMessage());
+                    if(callback!=null) callback.postResult(HttpCallback.FAIL, e.getMessage());
                 }
             }
         }).start();
@@ -80,12 +79,12 @@ public class HttpUtils {
     
     public static void doPost(final String url,  HashMap<String, String> parameters, final HttpCallback callback){
         if(url==null || !url.startsWith("http")){
-            if(callback!=null) callback.onFail("url is error");
+            if(callback!=null) callback.postResult(HttpCallback.FAIL, "url is error");
             return;
         }
         
         if(parameters==null){
-            if(callback!=null) callback.onFail("parameters is null");
+            if(callback!=null) callback.postResult(HttpCallback.FAIL, "parameters is null");
             return;
         }
         //封装传递参数的集合  
@@ -112,23 +111,18 @@ public class HttpUtils {
                     HttpResponse hr = hc.execute(hp); //HttpUriRequest的后代对象 //
                     int code = hr.getStatusLine().getStatusCode();
                     if(code==200){
-                        if(callback!=null) callback.onSuccess(code, EntityUtils.toString(hr.getEntity(), HTTP.UTF_8));
+                        if(callback!=null) callback.postResult(HttpCallback.SUCCESS, EntityUtils.toString(hr.getEntity(), HTTP.UTF_8));
                     }else{
-                        if(callback!=null) callback.onFail("request fail");
+                        if(callback!=null) callback.postResult(HttpCallback.FAIL, "request fail");
                     }
                 } catch (ClientProtocolException e) {
                     e.printStackTrace();
-                    if(callback!=null) callback.onFail(e.getMessage());
+                    if(callback!=null) callback.postResult(HttpCallback.FAIL, e.getMessage());
                 } catch (IOException e) {
                     e.printStackTrace();
-                    if(callback!=null) callback.onFail(e.getMessage());
+                    if(callback!=null) callback.postResult(HttpCallback.FAIL, e.getMessage());
                 }
             }
         }).start();
-    }
-    
-    public interface HttpCallback{
-        public void onSuccess(int code, String result);
-        public void onFail(String msg);
     }
 }

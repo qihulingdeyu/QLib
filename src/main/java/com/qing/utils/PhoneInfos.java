@@ -113,23 +113,6 @@ public class PhoneInfos {
     }
 
     /**
-     * String工具, 去掉"-"和空格" ";
-     *
-     * @param strParams
-     * @return
-     */
-    public static String replaceX(String strParams) {
-        if (!TextUtils.isEmpty(strParams)) {
-            // strParams=strParams.trim().replace("-","_").replace(" ", "_");
-            strParams = strParams.trim().replace("-", "_").replace(" ", "_")
-                    .replace("/", "_");
-            return strParams.toLowerCase();
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * 获取手机的IMEI
      *
      * @param context

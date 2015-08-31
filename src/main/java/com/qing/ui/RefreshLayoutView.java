@@ -40,10 +40,7 @@ import android.widget.Scroller;
 import android.widget.TextView;
 
 /**
- * @author zwq
- * Date: 2015-7-14
- * Time: 下午5:42:50
- * 
+ * Created by zwq on 2015/07/14 17:42.<br/><br/>
  * Scroller内嵌套ListView, GridView
  * @param <T>
  */

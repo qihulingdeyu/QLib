@@ -24,11 +24,12 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.qing.utils.StringUtils.isNullOrEmpty;
+
 public class FileUtils {
 
     private static String TAG = "FileUtils";
-    
-    
+
     /** res目录下的文件id */
     public static int getResId(Context context, String resType, String resName) {
         return context.getResources().getIdentifier(resName, resType, context.getPackageName());
@@ -56,14 +57,6 @@ public class FileUtils {
 
     public static int getColorId(Context context, String resName) {
         return getResId(context, "color", resName);
-    }
-    
-    /** 判断str是否为null 或 空值*/
-    public static boolean isNullOrEmpty(String str){
-        if(str==null || str.trim().equals("")){
-            return true;
-        }
-        return false;
     }
     
     /**

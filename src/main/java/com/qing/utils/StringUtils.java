@@ -6,11 +6,20 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class TextUtils {
+public class StringUtils {
 
-    public static String replaceChar(String content) {
-        return content;
-        // return content.replaceAll("\\”", " ").replaceAll("\"", " ");
+    /**
+     * 将"-"、" "、"/"替换成"_"
+     * @param content
+     * @return
+     */
+    public static String replaceX(String content) {
+        if (!isNullOrEmpty(content)) {
+            content = content.trim().replaceAll("-", "_").replaceAll(" ", "_").replaceAll("/", "_");
+            return content.toLowerCase();
+        } else {
+            return null;
+        }
     }
 
     /**
