@@ -82,7 +82,7 @@ public abstract class AbstractTaskCallback {
      * @param size
      * @param data
      */
-    protected void verifyParams(int size, Object... data){
+    protected final void verifyParams(int size, Object... data){
         if (data==null || data.length<size){
             throw new IllegalArgumentException("Number of parameters must be at least "+size);
         }

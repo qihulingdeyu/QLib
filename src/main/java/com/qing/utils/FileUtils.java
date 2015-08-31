@@ -175,7 +175,7 @@ public class FileUtils {
     }
     
     /** SD卡存在并可以使用 */
-    public static boolean SDCanUse(){
+    public static boolean isSDExists(){
         if (Environment.getExternalStorageState().equals(
                 Environment.MEDIA_MOUNTED)) {
             return true;
@@ -184,7 +184,7 @@ public class FileUtils {
     }
     
     public static String getSDPath(){
-        if(SDCanUse()){
+        if(isSDExists()){
             return Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator;
         }
         return null;
@@ -195,7 +195,7 @@ public class FileUtils {
      * @return
      */
     public static long getSDAvailableSize() {
-        if(SDCanUse()){
+        if(isSDExists()){
             File pathFile = Environment.getExternalStorageDirectory();
             // Retrieve overall information about the space on a filesystem.
             // This is a Wrapper for Unix statfs().
@@ -217,7 +217,7 @@ public class FileUtils {
      * @return
      */
     public static long getSDCountSize() {
-        if (SDCanUse()) {
+        if (isSDExists()) {
             File pathFile = Environment.getExternalStorageDirectory();
             StatFs statfs = new StatFs(pathFile.getPath());
             // 获取SDCard上每一个block的SIZE
@@ -570,7 +570,7 @@ public class FileUtils {
     /**
      * 更改文件夹或文件 名
      * @param src
-     * @param dest
+     * @param des
      * @return
      */
     public static boolean renameFile(String src, String des){
@@ -635,7 +635,7 @@ public class FileUtils {
      * @return
      */
     public static String getFileMD5(String filepath) {
-        if(isNullOrEmpty(filepath)){
+        if(StringUtils.isNullOrEmpty(filepath)){
             MLog.i(TAG, "filepath is null or empty");
             return null;
         }
