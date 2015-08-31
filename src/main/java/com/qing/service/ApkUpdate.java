@@ -12,6 +12,7 @@ import android.os.IBinder;
 
 import com.qing.callback.DownloadCallback;
 import com.qing.callback.HttpCallback;
+import com.qing.log.MLog;
 import com.qing.ui.AlertDialog;
 import com.qing.utils.DownloadUtils;
 import com.qing.utils.HttpUtils;
@@ -166,7 +167,7 @@ public class ApkUpdate extends Service {
 
                 @Override
                 public void onDownloading(long progress) {
-
+                    MLog.i(TAG, "progress:"+progress);
                 }
 
                 @Override
