@@ -1,21 +1,37 @@
 package com.qing.callback;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * Created by zwq on 2015/07/21 16:20.<br/><br/>
+ */
 public abstract class HttpCallback extends AbstractTaskCallback {
 
-    public static final int SUCCESS = 0x1;
-    public static final int FAIL = 0x2;
-    
-    public abstract void onSuccess(Object... data);
-    public abstract void onFail(Object... data);
-    
+    public abstract void onSuccess(String content, InputStream is);
+    public abstract void onFail(String msg);
+
     @Override
-    public final void dispatchResult(Object... data) {
-        switch ((Integer)data[0]) {
+    public final void dispatchResult(int state, Object... data) {
+        switch (state) {
             case SUCCESS :
-                onSuccess(data);//Arrays.copyOfRange(data, 1, data.length)
+                verifyParams(2, data);
+
+                String content = (String)data[0];
+                InputStream is = (InputStream)data[1];
+                onSuccess(content, is);
+                if (is!=null){
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    is = null;
+                }
                 break;
             case FAIL :
-                onFail(data);
+                verifyParams(1, data);
+                onFail((String)data[0]);
                 break;
             default :
                 break;

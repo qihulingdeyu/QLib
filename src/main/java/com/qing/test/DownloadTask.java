@@ -3,6 +3,8 @@ package com.qing.test;
 import com.qing.callback.HttpCallback;
 import com.qing.log.MLog;
 
+import java.io.InputStream;
+
 /**
  * Author: zwq <br/>
  * Date: 2015-7-23 <br/>
@@ -23,20 +25,21 @@ public class DownloadTask {
         if(callback==null){
             callback = new HttpCallback() {
                 @Override
-                public void onSuccess(Object... data) {
-                    String d = "onclick->"+data[1].toString();
-                    MLog.i("bbb", taskId + "-onSuccess->" + d);
-                    
-                    itemInfo.setValue(d);
+                public void onSuccess(String content, InputStream is) {
+                    MLog.i("bbb", taskId + "-onSuccess->" + content);
+
+                    itemInfo.setValue(content);
                     if(itemInfo.getChangeListener()!=null)
                         itemInfo.getChangeListener().onChange(itemInfo);
                 }
-                
+
                 @Override
-                public void onFail(Object... data) {
+                public void onFail(String msg) {
+
                 }
             };
         }
+
         return callback;
     }
     
