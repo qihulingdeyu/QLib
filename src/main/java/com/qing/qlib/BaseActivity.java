@@ -38,6 +38,13 @@ public abstract class BaseActivity extends Activity {
 
     protected FrameLayout mMainContainer;
     protected LinearLayout mDebugContainer;
+
+    // 页面页面堆栈
+    protected ArrayList<Integer> mPageStack = new ArrayList<Integer>();
+    protected ArrayList<IPage> mPopupPageStack = new ArrayList<IPage>();
+
+    private HashMap<Integer, Object[]> mMapStackInfo = new HashMap<Integer, Object[]>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,9 +83,13 @@ public abstract class BaseActivity extends Activity {
         debugTip.setTextColor(Color.RED);
         mDebugContainer.addView(debugTip, fParams);
     }
-    
+
+    /**
+     * 设为调试模式可查看调试信息
+     * @param debug
+     */
     public void setDebugMode(boolean debug){
-        mDebugContainer.setVisibility(debug==true?View.VISIBLE:View.GONE);
+        mDebugContainer.setVisibility(debug == true ? View.VISIBLE : View.GONE);
     }
 
     public void refreshPage() {
@@ -151,104 +162,6 @@ public abstract class BaseActivity extends Activity {
         return mPage;
     }
 
-    public void OpenAnimationTransition(int enterAnim, int exitAnim){
-    
-    }
-    
-    public void CloseAnimationTransition(int enterAnim, int exitAnim){
-    
-    }
-
-    public interface OnEnterAnimationEnd{
-        void OnAnimationEnd();
-    }
-    
-    public interface OnBackAnimationEnd{
-        void OnAnimationEnd();
-    }
-    
-    public void startBackAnimation(){
-        startBackAnimation(null);
-    }
-    
-    public void startEnterAnimation(){
-        startEnterAnimation(null);
-    }
-
-    public void startBackAnimation(final OnBackAnimationEnd anim){
-        Animation slide_left_in = new TranslateAnimation(-1.0f, 0.0f, 0, 0);
-        slide_left_in.setDuration(250);
-        Animation slide_right_out = new TranslateAnimation(0.0f, 1.0f, 0, 0);
-        slide_right_out.setDuration(250);
-        
-        slide_left_in.setAnimationListener(new AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-            
-            }
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-            
-            }
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                if(anim != null){
-                    anim.OnAnimationEnd();
-                }
-//                mContainer.removeView(mLastView);
-//                mLastView = null;
-            }
-        });
-//        mLastView.startAnimation(slide_right_out);
-//        mCurrentView.startAnimation(slide_left_in);
-    }
-
-    public void startEnterAnimation(final OnEnterAnimationEnd anim){
-//        if(mLastView != null && mCurrentView != null){
-//            Animation slide_right_in = new TranslateAnimation(1.0f, 0.0f, 0, 0);
-//            slide_right_in.setDuration(250);
-//            Animation slide_left_out = new TranslateAnimation(0.0f, -1.0f, 0, 0);
-//            slide_left_out.setDuration(250);
-//        
-//            slide_right_in.setAnimationListener(new AnimationListener() {
-//                @Override
-//                public void onAnimationStart(Animation animation) {
-//                
-//                }
-//                @Override
-//                public void onAnimationRepeat(Animation animation) {
-//                
-//                }
-//                @Override
-//                public void onAnimationEnd(Animation animation) {
-//                    if(anim != null){
-//                        anim.OnAnimationEnd();
-//                    }
-//                    mContainer.removeView(mLastView);
-//                    mLastView = null;
-//                }
-//            });
-//            mLastView.startAnimation(slide_left_out);
-//            mCurrentView.startAnimation(slide_right_in);
-//        }
-    }
-
-    // 直接跳回到主页
-    public boolean backToHomePage() {
-        if (mPopupPage != null) {
-            popPopupPage();
-            return true;
-        }
-        int page = backToHomePageStack();
-        if (page == -1) {
-            return false;
-        }
-        backHomePage();
-        restorePage(page);
-        clearStackInfo();
-        return true;
-    }
-
     protected void restorePage(int page) {
         MLog.i(TAG, "------restorePage");
         Object[] args = getStackInfo(page);
@@ -285,6 +198,25 @@ public abstract class BaseActivity extends Activity {
         if (page == -1)
             return false;
         restorePage(page);
+        return true;
+    }
+
+    /** 直接跳回到主页
+     *
+     * @return
+     */
+    public boolean backToHomePage() {
+        if (mPopupPage != null) {
+            popPopupPage();
+            return true;
+        }
+        int page = backToHomePageStack();
+        if (page == -1) {
+            return false;
+        }
+        backHomePage();
+        restorePage(page);
+        clearStackInfo();
         return true;
     }
 
@@ -341,26 +273,8 @@ public abstract class BaseActivity extends Activity {
     }
 
     /**
-     * 获取当前页
-     * 
-     * @return
-     */
-    public int getCurrentPage() {
-        return mCurrentPage;
-    }
-
-    /**
-     * 获取最后一页
-     * 
-     * @return
-     */
-    public int getLastPage() {
-        return mLastPage;
-    }
-
-    /**
      * 销毁指定弹出页面
-     * 
+     *
      * @param page
      */
     public void closePopupPage(IPage page) {
@@ -426,6 +340,24 @@ public abstract class BaseActivity extends Activity {
     }
 
     /**
+     * 获取当前页
+     *
+     * @return
+     */
+    public int getCurrentPage() {
+        return mCurrentPage;
+    }
+
+    /**
+     * 获取最后一页
+     *
+     * @return
+     */
+    public int getLastPage() {
+        return mLastPage;
+    }
+
+    /**
      * 存储page页面对应的信息(args)
      * 
      * @param page
@@ -447,10 +379,13 @@ public abstract class BaseActivity extends Activity {
      */
     protected abstract void backHomePage();
 
-    /**
-     * 返回上一个页面
-     */
-    protected abstract void onBack();
+    @Override
+    protected void onStart() {
+        if (mTopPage != null) {
+            mTopPage.onStart();
+        }
+        super.onStart();
+    }
 
     @Override
     protected void onResume() {
@@ -460,20 +395,35 @@ public abstract class BaseActivity extends Activity {
         super.onResume();
     }
 
+    /**
+     * 返回上一个页面
+     */
+    protected abstract void onBack();
+
+    @Override
+    public void onBackPressed() {
+        MLog.i(TAG, "------size:"+mPageStack.size());
+//        for (int i = 0; i < mPageStack.size(); i++) {
+//            MLog.i(TAG, "------i:"+mPageStack.get(i));
+//        }
+        boolean handled = false;
+        if (mTopPage != null) {
+            MLog.i(TAG, "------mTopPage:"+mTopPage);
+            handled = mTopPage.onBack();
+        }
+        if (handled == false) {
+            if(backToLastPage(null) == false) {
+                onBack();
+            }
+        }
+    }
+
     @Override
     protected void onPause() {
         if (mTopPage != null) {
             mTopPage.onPause();
         }
         super.onPause();
-    }
-
-    @Override
-    protected void onStart() {
-        if (mTopPage != null) {
-            mTopPage.onStart();
-        }
-        super.onStart();
     }
 
     @Override
@@ -492,24 +442,6 @@ public abstract class BaseActivity extends Activity {
         clearPageStack();
         clearStackInfo();
         super.onDestroy();
-    }
-
-    @Override
-    public void onBackPressed() {
-        MLog.i(TAG, "------size:"+mPageStack.size());
-//        for (int i = 0; i < mPageStack.size(); i++) {
-//            MLog.i(TAG, "------i:"+mPageStack.get(i));
-//        }
-        boolean handled = false;
-        if (mTopPage != null) {
-            MLog.i(TAG, "------mTopPage:"+mTopPage);
-            handled = mTopPage.onBack();
-        }
-        if (handled == false) {
-            if(backToLastPage(null) == false) {
-                onBack();
-            }
-        }
     }
 
     @Override
@@ -546,12 +478,10 @@ public abstract class BaseActivity extends Activity {
         return super.onKeyUp(keyCode, event);
     }
 
-    // 页面页面堆栈
-    protected ArrayList<Integer> mPageStack = new ArrayList<Integer>();
-    protected ArrayList<IPage> mPopupPageStack = new ArrayList<IPage>();
-    
-    private HashMap<Integer, Object[]> mMapStackInfo = new HashMap<Integer, Object[]>();
-
+    /**
+     * 从页面栈中移除最顶的页面
+     * @return
+     */
     public int popStackTopPage() {
         int len = mPageStack.size();
         if (len >= 1) {
@@ -635,5 +565,87 @@ public abstract class BaseActivity extends Activity {
 
     public void setStackInfo(int page, Object[] infos) {
         mMapStackInfo.put(page, infos);
+    }
+
+    public void OpenAnimationTransition(int enterAnim, int exitAnim){
+
+    }
+
+    public void CloseAnimationTransition(int enterAnim, int exitAnim){
+
+    }
+
+    public interface OnEnterAnimationEnd{
+        void OnAnimationEnd();
+    }
+
+    public interface OnBackAnimationEnd{
+        void OnAnimationEnd();
+    }
+
+    public void startBackAnimation(){
+        startBackAnimation(null);
+    }
+
+    public void startEnterAnimation(){
+        startEnterAnimation(null);
+    }
+
+    public void startBackAnimation(final OnBackAnimationEnd anim){
+        Animation slide_left_in = new TranslateAnimation(-1.0f, 0.0f, 0, 0);
+        slide_left_in.setDuration(250);
+        Animation slide_right_out = new TranslateAnimation(0.0f, 1.0f, 0, 0);
+        slide_right_out.setDuration(250);
+
+        slide_left_in.setAnimationListener(new AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if(anim != null){
+                    anim.OnAnimationEnd();
+                }
+//                mContainer.removeView(mLastView);
+//                mLastView = null;
+            }
+        });
+//        mLastView.startAnimation(slide_right_out);
+//        mCurrentView.startAnimation(slide_left_in);
+    }
+
+    public void startEnterAnimation(final OnEnterAnimationEnd anim){
+//        if(mLastView != null && mCurrentView != null){
+//            Animation slide_right_in = new TranslateAnimation(1.0f, 0.0f, 0, 0);
+//            slide_right_in.setDuration(250);
+//            Animation slide_left_out = new TranslateAnimation(0.0f, -1.0f, 0, 0);
+//            slide_left_out.setDuration(250);
+//
+//            slide_right_in.setAnimationListener(new AnimationListener() {
+//                @Override
+//                public void onAnimationStart(Animation animation) {
+//
+//                }
+//                @Override
+//                public void onAnimationRepeat(Animation animation) {
+//
+//                }
+//                @Override
+//                public void onAnimationEnd(Animation animation) {
+//                    if(anim != null){
+//                        anim.OnAnimationEnd();
+//                    }
+//                    mContainer.removeView(mLastView);
+//                    mLastView = null;
+//                }
+//            });
+//            mLastView.startAnimation(slide_left_out);
+//            mCurrentView.startAnimation(slide_right_in);
+//        }
     }
 }
