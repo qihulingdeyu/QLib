@@ -1,119 +1,168 @@
 package com.qing.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.StateListDrawable;
-import android.util.AttributeSet;
-import android.widget.Button;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ImageView;
+
+import com.qing.utils.DrawableUtils;
 
 /**
- * 有背景选择器的按钮
+ * Created by zwq on 2015/04/13 12:22.<br/><br/>
+ * 可以设置有按压效果的按钮
  */
-public class SelectorButton extends Button{
+public class SelectorButton extends ImageView {
 
-	private Context mContext;
-	private int mNormalResId = -1;
-	private int mPressResId = -1;
-	private Bitmap mNormalBmp = null;
-	private Bitmap mPressBmp = null;
-	private StateListDrawable bgSelector = null;
-	private ColorStateList colorsList = null;
+	private Context mContext = null;
+	private boolean isOrigin;
+	private int mResIdNormal = -1;
+	private int mResIdPress = -1;
+	private Bitmap mBmpNormal = null;
+	private Bitmap mBmpPress = null;
+	private StateListDrawable selector = null;
+	private int mAlpha = 255;
+	private boolean isChecked = false;
 	
-	public SelectorButton(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
-		mContext = context;
-	}
-	public SelectorButton(Context context, AttributeSet attrs) {
-		super(context, attrs);
-		mContext = context;
-	}
 	public SelectorButton(Context context) {
 		super(context);
 		mContext = context;
+		setScaleType(ScaleType.CENTER_INSIDE);
 	}
-	
+	/**
+	 * @param resNormal		正常的图片
+	 * @param resPress		按压时的图片
+	 */
 	public SelectorButton(Context context, int resNormal, int resPress) {
 		super(context);
 		mContext = context;
-		setBgSelector(resNormal, resPress);
+		setButtonImage(resNormal, resPress);
+	}
+	/**
+	 * @param resNormal		正常的图片
+	 * @param resPress		按压时的图片
+	 */
+	public void setButtonImage(int resNormal, int resPress) {
+		setButtonImage(resNormal, resPress, mAlpha);
+	}
+	/**
+	 * @param resNormal		正常的图片
+	 * @param resPress		按压时的图片
+	 * @param replaceOld	替换掉原来的图片
+	 */
+	public void setButtonImage(int resNormal, int resPress, boolean replaceOld) {
+		isOrigin = !replaceOld;
+		setButtonImage(resNormal, resPress, mAlpha);
+	}
+	/**
+	 * @param resNormal		正常的图片
+	 * @param resPress		按压时的图片
+	 * @param alpha			按压时的透明度
+	 */
+	public void setButtonImage(int resNormal, int resPress, int alpha) {
+		if(!isOrigin){
+			mResIdNormal = resNormal;
+			mResIdPress = resPress;
+			mAlpha = alpha;
+			isOrigin = true;
+			isChecked = true;//默认选中
+		}
+		setSelector(resNormal,resPress);
 	}
 	
-	public void setBgSelector(int resNormal, int resPress) {
-		mNormalResId = resNormal;
-		mPressResId = resPress;
-		initBgSelector(1);
+	public void setButtonImage(Bitmap bmpNormal, Bitmap bmpPress) {
+		mBmpNormal = bmpNormal;
+		mBmpPress = bmpPress;
+		setSelector(mBmpNormal, mBmpPress);
+		if(selector==null && mBmpNormal != null){
+			this.setImageBitmap(mBmpNormal);
+		}else{
+			this.setImageDrawable(selector);
+		}
+	}
+
+	private void setSelector(int normal, int pressed) {
+		selector = DrawableUtils.pressedSelector(mContext, normal, pressed);
+		if(selector==null && normal != -1){
+			this.setImageResource(normal);
+		}else{
+			this.setImageDrawable(selector);
+		}
 	}
 	
-	public void setBgSelector(Bitmap bmpNormal, Bitmap bmpPress) {
-		mNormalBmp = bmpNormal;
-		mPressBmp = bmpPress;
-		initBgSelector(2);
+	private void setSelector(Bitmap normal, Bitmap pressed) {
+		selector = DrawableUtils.pressedSelector(mContext, normal, pressed);
+		if(selector==null){
+			this.setImageDrawable(selector);
+		}
+	}
+
+	@Override
+	public void setScaleType(ScaleType scaleType) {
+		this.setScaleType(scaleType);
 	}
 	
-	private void initBgSelector(int type) {
-		Resources res = mContext.getResources();
-		if(type==1){
-			if(mNormalResId==-1 || mPressResId==-1){
-				return;
-			}
-			bgSelector  = new StateListDrawable();
-			bgSelector.addState(new int[]{android.R.attr.state_pressed}, res.getDrawable(mPressResId));
-			bgSelector.addState(new int[]{android.R.attr.state_enabled}, res.getDrawable(mNormalResId));
-		}else if(type==2){
-			if(mNormalBmp==null || mPressBmp==null){
-				return;
-			}
-			bgSelector  = new StateListDrawable();
-			bgSelector.addState(new int[]{android.R.attr.state_pressed}, new BitmapDrawable(res, mPressBmp));
-			bgSelector.addState(new int[]{android.R.attr.state_enabled}, new BitmapDrawable(res, mNormalBmp));
+	/**
+	 * 设置选中状态：选中~true，未选中~false
+	 */
+	public void setChecked(boolean isChecked){
+		setSwitchState(!isChecked);
+		this.isChecked = isChecked;
+		if(checkedListener!=null){
+			checkedListener.onCheckedChanged(this, isChecked);
 		}
-		
-		if(bgSelector!=null){
-			this.setBackgroundDrawable(bgSelector);
+	}
+	/** 
+	 * 设置开关状态：On开~true，Off关~false
+	 */
+	public void setSwitchState(boolean isOn){
+		if(isOn){
+			setButtonImage(mResIdNormal,mResIdPress);
+		}else{
+			setButtonImage(mResIdPress,mResIdNormal);
 		}
-		res = null;
+		this.isChecked = isOn;
+	}
+	public boolean isChecked(){
+		return isChecked;
 	}
 	
-	public void setText(String text, int normalColor, int pressColor){
-		if(text==null || text.trim().equals("")){
-			return;
-		}
-		setTextSelector(text, normalColor, pressColor);
+	public void setOnFocusState(){
+		setButtonImage(mResIdNormal,mResIdPress);
+		isChecked = true;
 	}
 	
-	public void setText(String text, String normalColor, String pressColor){
-		if(text==null || text.trim().equals("")){
-			return;
-		}
-		int color1 = Color.WHITE;
-		if(normalColor!=null && !normalColor.equals("")){
-			color1 = Color.parseColor(normalColor);
-		}
-		
-		int color2 = Color.WHITE;
-		if(pressColor!=null && !pressColor.equals("")){
-			color2 = Color.parseColor(pressColor);
-		}
-		setTextSelector(text, color1, color2);
+	public void setOnReadyState(){
+		setButtonImage(mResIdPress,mResIdNormal);
+		isChecked = false;
 	}
 	
-	private void setTextSelector(String text, int normalColor, int pressColor){
-		this.setText(text);
-		this.setClickable(true);
-		
-		int[][] states = new int[2][];
-		states[0] = new int[]{android.R.attr.state_pressed};
-		states[1] = new int[]{android.R.attr.state_enabled};
-		
-		int[] colors = new int[]{pressColor,normalColor,};
-		
-		colorsList = new ColorStateList(states, colors);
-		this.setTextColor(colorsList);
+	public void setAlpha(int alpha){
+		mAlpha = alpha;
+//		this.setAlpha(mAlpha);
+	}
+	
+	@SuppressLint("ClickableViewAccessibility")
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		if(event.getAction() == MotionEvent.ACTION_DOWN){
+			this.setAlpha(mAlpha);
+		}else if(event.getAction() == MotionEvent.ACTION_UP){
+			this.setAlpha(255);
+		}
+		return super.onTouchEvent(event);
+	}
+	
+	private OnCheckedChangeListener checkedListener;
+	public void setOnCheckedChangeListener(OnCheckedChangeListener listener){
+		checkedListener = listener;
+	}
+	
+	public interface OnCheckedChangeListener{
+		void onCheckedChanged(View view, boolean isChecked);
 	}
 }
-
-

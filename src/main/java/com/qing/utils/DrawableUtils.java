@@ -3,7 +3,9 @@ package com.qing.utils;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -35,6 +37,15 @@ public class DrawableUtils {
         selector.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(pressed));
         selector.addState(new int[]{android.R.attr.state_enabled}, new ColorDrawable(normal));
         return selector;
+    }
+
+    public static ColorStateList colorPressedDrawable2(int normal, int pressed){
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_pressed},
+                new int[]{android.R.attr.state_enabled}};
+        int[] colors = new int[]{pressed,normal};
+        ColorStateList colorsList = new ColorStateList(states, colors);
+        return colorsList;
     }
 
     /**
@@ -72,12 +83,23 @@ public class DrawableUtils {
      * @param pressed
      * @return
      */
-    public static Drawable pressedSelector(Context context, int normal, int pressed){
+    public static StateListDrawable pressedSelector(Context context, int normal, int pressed){
         if(normal!=-1 && pressed!=-1){
             Resources res = context.getResources();
             StateListDrawable selector  = new StateListDrawable();
             selector.addState(new int[]{android.R.attr.state_pressed}, res.getDrawable(pressed));
             selector.addState(new int[]{android.R.attr.state_enabled}, res.getDrawable(normal));
+            return selector;
+        }
+        return null;
+    }
+
+    public static StateListDrawable pressedSelector(Context context, Bitmap normal, Bitmap pressed){
+        if(normal!=null && pressed!=null){
+            Resources res = context.getResources();
+            StateListDrawable selector  = new StateListDrawable();
+            selector.addState(new int[]{android.R.attr.state_pressed}, new BitmapDrawable(res, pressed));
+            selector.addState(new int[]{android.R.attr.state_enabled}, new BitmapDrawable(res, normal));
             return selector;
         }
         return null;
@@ -90,7 +112,7 @@ public class DrawableUtils {
      * @param checked
      * @return
      */
-    public static Drawable checkedDrawable(Context context, int normal, int checked){
+    public static StateListDrawable checkedDrawable(Context context, int normal, int checked){
         if(normal!=-1 && checked!=-1){
             Resources res = context.getResources();
             StateListDrawable selector  = new StateListDrawable();
