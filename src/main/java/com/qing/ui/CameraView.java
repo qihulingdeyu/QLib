@@ -17,7 +17,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -25,6 +24,8 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.qing.log.MLog;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -38,8 +39,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Created by zwq on 2015/03/23 10:11.<br/><br/>
+ * 摄像头预览
+ */
 public class CameraView extends RelativeLayout implements SurfaceHolder.Callback {
 
+    private static final String TAG = CameraView.class.getName();
 	private Context mContext;
 	private String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ca/";
 	private static final String photoFileName = "yyyyMMdd-HHmmss-";
@@ -49,34 +55,37 @@ public class CameraView extends RelativeLayout implements SurfaceHolder.Callback
 	private int photoW = 1280;
 	private int photoH = 768;
 
-	public CameraView(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
-		mContext = context;
-		initView();
-	}
 	public CameraView(Context context) {
-		super(context);
-		mContext = context;
-		initView();
-
-		// 拍照之前设置
-		AudioManager manager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-		// 保存当前的音量
-		int volumn = manager.getStreamVolume(AudioManager.STREAM_SYSTEM);
-
-		if (volumn != 0) {
-			// if("mute".equals(manager.getMode()) && volumn != 0){
-			// 如果需要静音并且当前未静音（muteMode的设置可以放在Preference中）
-			manager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
-		}
-
-		File file = new File(path);
-		if (!file.exists()) {
-			if (!file.mkdirs()) {
-				return;
-			}
-		}
+		this(context, null);
 	}
+    
+    public CameraView(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+    
+    public CameraView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        mContext = context;
+        initView();
+
+        // 拍照之前设置
+        AudioManager manager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        // 保存当前的音量
+        int volumn = manager.getStreamVolume(AudioManager.STREAM_SYSTEM);
+
+        if (volumn != 0) {
+            // if("mute".equals(manager.getMode()) && volumn != 0){
+            // 如果需要静音并且当前未静音（muteMode的设置可以放在Preference中）
+            manager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, AudioManager.FLAG_REMOVE_SOUND_AND_VIBRATE);
+        }
+
+        File file = new File(path);
+        if (!file.exists()) {
+            if (!file.mkdirs()) {
+                return;
+            }
+        }
+    }
 
 	private ControllerBar controllerBar;
 	private int ID_BAR = 1;
@@ -86,7 +95,7 @@ public class CameraView extends RelativeLayout implements SurfaceHolder.Callback
 	private Camera mCamera;
 	private TextView count;
 	private void initView() {
-		Log.i("bbb", "------initView");
+		MLog.i(TAG, "------initView");
 		DisplayMetrics outMetrics = new DisplayMetrics();
 		((Activity) mContext).getWindowManager().getDefaultDisplay().getMetrics(outMetrics);
 		previewW = outMetrics.widthPixels;
@@ -154,7 +163,7 @@ public class CameraView extends RelativeLayout implements SurfaceHolder.Callback
 	}
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		Log.i("bbb", "------surfaceCreated");
+		MLog.i("bbb", "------surfaceCreated");
 		try {
 			/* 打开相机， */
 			mCamera = Camera.open();
@@ -206,7 +215,7 @@ public class CameraView extends RelativeLayout implements SurfaceHolder.Callback
 				photoCount++;
 				count.setText("" + photoCount);
 				photoCount = 0;
-				Log.i("bbb", "----------last");
+				MLog.i("bbb", "----------last");
 				count.setVisibility(View.GONE);
 			}
 			savePic();

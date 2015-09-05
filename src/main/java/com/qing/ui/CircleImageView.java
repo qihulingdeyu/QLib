@@ -19,16 +19,20 @@ import android.net.Uri;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 /**
-/attrs.xml
-<?xml version="1.0" encoding="utf-8"?> 
-<resources> 
-	<declare-styleable name="CircleImageView"> 
-		<attr name="border_width" format="dimension" /> 
-		<attr name="border_color" format="color" /> 
-	</declare-styleable>
-</resources>
+ * Created by zwq on 2015/01/14 17:42.<br/><br/>
+ * 圆形的ImageView
  */
 public class CircleImageView extends ImageView {
+    /**
+     /attrs.xml
+     <?xml version="1.0" encoding="utf-8"?>
+     <resources>
+     <declare-styleable name="CircleImageView">
+     <attr name="border_width" format="dimension" />
+     <attr name="border_color" format="color" />
+     </declare-styleable>
+     </resources>
+     */
 
 	private static final ScaleType SCALE_TYPE = ScaleType.CENTER_CROP;
 

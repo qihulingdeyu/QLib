@@ -3,12 +3,11 @@ package com.qing.qlib;
 import android.content.Intent;
 import android.view.KeyEvent;
 /**
+ * Created by zwq on 2014/12/14 17:42.<br/><br/>
  * 所有的页面需实现此接口
- * @author zwq
- *
  */
 public interface IPage {
-    //    public static final String TAG = BasePage.class.getName();
+    //    public static final String TAG = IPage.class.getName();
     /**
      * 从其它页面返回时调用
      */

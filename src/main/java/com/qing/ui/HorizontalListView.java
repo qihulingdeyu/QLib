@@ -32,19 +32,6 @@ import android.widget.ScrollView;
 import android.widget.Scroller;
 
 /**
-在layout文件中使用时要加上以下代码
-/res/value/attrs.xml代码如下：
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <declare-styleable name="HorizontalListView">
-        <attr name="dividerWidth" format="dimension" />
-        <attr name="android:divider" />
-        <attr name="android:fadingEdgeLength" />
-    </declare-styleable>
-<!--    <attr name="android:requiresFadingEdge" /> -->
-</resources>
-*/
-/**
  * A view that shows items in a horizontally scrolling list. The items
  * come from the {@link ListAdapter} associated with this view. <br>
  * <br>
@@ -66,8 +53,21 @@ import android.widget.Scroller;
  * <li><b>android:fadingEdgeLength</b> - The length of the horizontal fading edges</li>
  * </ul>
  */
-
 public class HorizontalListView extends AdapterView<ListAdapter> {
+    /**
+     在layout文件中使用时要加上以下代码
+     /res/value/attrs.xml代码如下：
+     <?xml version="1.0" encoding="utf-8"?>
+     <resources>
+     <declare-styleable name="HorizontalListView">
+     <attr name="dividerWidth" format="dimension" />
+     <attr name="android:divider" />
+     <attr name="android:fadingEdgeLength" />
+     </declare-styleable>
+     <!--    <attr name="android:requiresFadingEdge" /> -->
+     </resources>
+     */
+
     /** Defines where to insert items into the ViewGroup, as defined in {@code ViewGroup #addViewInLayout(View, int, LayoutParams, boolean)} */
     private static final int INSERT_AT_END_OF_LIST = -1;
     private static final int INSERT_AT_START_OF_LIST = 0;
