@@ -27,10 +27,10 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
 /**
- * @author zwq
- * 2015-4-22
- * 下午11:27:29
+ * Created by zwq on 2015/04/22 11:27.<br/><br/>
+ * http请求工具类
  */
+@SuppressWarnings("ALL")
 public class HttpUtils {
 
     /**

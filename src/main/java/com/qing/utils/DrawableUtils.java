@@ -12,6 +12,10 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 
+/**
+ * Created by zwq on 2015/04/21 16:20.<br/><br/>
+ * 图片、文字背景选择器的Drawable
+ */
 public class DrawableUtils {
 
     /**
@@ -73,8 +77,6 @@ public class DrawableUtils {
         }
         return null;
     }
-    
-
 
     /**
      * 按压切换图片

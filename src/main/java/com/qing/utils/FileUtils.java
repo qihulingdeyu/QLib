@@ -26,9 +26,13 @@ import java.util.List;
 
 import static com.qing.utils.StringUtils.isNullOrEmpty;
 
+/**
+ * Created by zwq on 2015/04/15 16:20.<br/><br/>
+ * 文件操作工具类
+ */
 public class FileUtils {
 
-    private static String TAG = "FileUtils";
+    private static final String TAG = FileUtils.class.getName();
 
     /** res目录下的文件id */
     public static int getResId(Context context, String resType, String resName) {

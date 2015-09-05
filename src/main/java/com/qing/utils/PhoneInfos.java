@@ -23,6 +23,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
+/**
+ * Created by zwq on 2015/07/21 16:20.<br/><br/>
+ * 获取手机的硬件、功能状态信息
+ */
 public class PhoneInfos {
 
     private static final String FILE_MEMORY = "/proc/meminfo";

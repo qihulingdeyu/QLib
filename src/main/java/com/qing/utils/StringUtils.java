@@ -6,6 +6,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * Created by zwq on 2015/04/15 11:28.<br/><br/>
+ * 操作字符工具类
+ */
 public class StringUtils {
 
     /**

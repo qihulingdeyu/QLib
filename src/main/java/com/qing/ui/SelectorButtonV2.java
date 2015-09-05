@@ -13,6 +13,7 @@ import android.widget.Button;
 import com.qing.utils.DrawableUtils;
 
 /**
+ * Created by zwq on 2015/04/13 15:22.<br/><br/>
  * 有背景选择器 并且可设置文字的按钮
  */
 public class SelectorButtonV2 extends Button{
