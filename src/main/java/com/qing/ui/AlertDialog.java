@@ -2,6 +2,7 @@ package com.qing.ui;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -168,54 +169,53 @@ public class AlertDialog extends Dialog {
      * @param listener
      * @return
      */
-    public TextView addButton(String text, View.OnClickListener listener){
-        if(listener==null){
-            listener = new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(dialog!=null) 
-                        dialog.dismiss();
+    public AlertDialog addButton(String text, final DialogInterface.OnClickListener listener){
+        View.OnClickListener clickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(listener!=null){
+                    listener.onClick(dialog, Integer.parseInt(v.getTag().toString()));
                 }
-            };
-        }
-        
+                dialog.dismiss();
+            }
+        };
+
         TextView btn = null;
         int buttonCount = btnLayout.getChildCount();
         if(!flag && buttonCount==1){
             flag = true;
             btn = (TextView) btnLayout.getChildAt(0);
             btn.setText(text);
-            btn.setOnClickListener(listener);
-            return btn;
+            btn.setOnClickListener(clickListener);
+            return dialog;
         }
-        
+
         btn = new TextView(mContext);
+        btn.setTag(buttonCount);
         btn.setGravity(Gravity.CENTER);
         btn.setTextSize(20);
         btn.setTextColor(0xff00a7ff);
         btn.setText(text);
-        btn.setOnClickListener(listener);
-        
-        lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 
+        btn.setOnClickListener(clickListener);
+
+        lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.MATCH_PARENT, 1);
-        
+
         if(buttonCount<1){
             btn.setBackgroundDrawable(DrawableUtils.colorShapePressedDrawableB(true, Color.WHITE, btnPressedColor));
         }else{
             View preBtn = btnLayout.getChildAt(buttonCount-1);
-            if(buttonCount==1){//左边
+            if(buttonCount==1){
                 preBtn.setBackgroundDrawable(DrawableUtils.colorShapePressedDrawableL(true, Color.WHITE, btnPressedColor));
             }else{
-                //不用圆角 //中间
+                //不用圆角
                 preBtn.setBackgroundDrawable(DrawableUtils.colorPressedDrawable(Color.WHITE, btnPressedColor));
             }
             lParams.leftMargin = 1;
-            //右边
             btn.setBackgroundDrawable(DrawableUtils.colorShapePressedDrawableL(false, Color.WHITE, btnPressedColor));
         }
         btnLayout.addView(btn, lParams);
-        
-        return btn;
+        return dialog;
     }
 
 }
