@@ -1,9 +1,11 @@
 package com.qing.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -12,7 +14,45 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 
+import java.util.Random;
+
 public class DrawableUtils {
+//protected Class<? extends DLService> mClazz = this.getClass();
+//    /**
+//     * 停止服务
+//     * @return true:成功,false:失败
+//     */
+//    public boolean stopSelf(){
+//        if(mContext!=null && mClazz!=null){
+//            try {
+//                Intent intent = new Intent();
+//                intent.setAction(DLConstants.STOP_SERVICE_ITEM_ACTION);
+//                intent.putExtra(DLConstants.EXTRA_CLASS, mClazz.getName());
+//                mContext.sendBroadcast(intent);
+//                return true;
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        return false;
+//    }
+    /**
+     * 获取随机颜色
+     * @return
+     */
+    public static int getRandomColor(){
+        String r,g,b;
+        Random random = new Random();
+        r = Integer.toHexString(random.nextInt(256)).toUpperCase();
+        g = Integer.toHexString(random.nextInt(256)).toUpperCase();
+        b = Integer.toHexString(random.nextInt(256)).toUpperCase();
+
+        r = r.length()==1 ? "0" + r : r ;
+        g = g.length()==1 ? "0" + g : g ;
+        b = b.length()==1 ? "0" + b : b ;
+//        return "#"+r+g+b;
+        return Color.parseColor("#" + r + g + b);
+    }
 
     /**
      * 颜色背景
