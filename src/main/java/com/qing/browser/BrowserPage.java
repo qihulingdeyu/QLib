@@ -65,11 +65,11 @@ public class BrowserPage extends RelativeLayout implements IPage {
 	public BrowserPage(Context context) {
 		super(context);
 		mContext = context;
-		Initialize();
+		initView();
 	}
 
 	@SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
-	public void Initialize(){
+	public void initView(){
 		RelativeLayout.LayoutParams rParams;
 
 		//顶部标题布局
