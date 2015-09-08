@@ -1,12 +1,15 @@
 package com.qing.browser;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.text.TextUtils.TruncateAt;
 import android.util.Log;
 import android.view.Gravity;
@@ -15,6 +18,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.webkit.DownloadListener;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.PluginState;
@@ -32,14 +36,19 @@ import com.qing.utils.NetUtils;
 import com.qing.utils.UIUtils;
 
 /**
- * 自定义浏览器页面
+ * Created by zwq on 2015/04/07 14:51.<br/><br/>
+ * 自定义浏览器布局
  */
 public class BrowserPage extends RelativeLayout implements IPage {
-	
+
+	private static final String TAG = BrowserPage.class.getName();
+	private int ID_TITLE_LAYOUT = 1;
 	private RelativeLayout titleLayout;
 	private TextView titleName;
+	private RelativeLayout btnLayout;
 	private ImageView backBtn;
-	private ImageView cancleBtn;
+	private ImageView closeBtn;
+
 	private WebView webView;
 	private LinearLayout tipsLayout;
 	private ImageView mTipIcon;
@@ -47,23 +56,46 @@ public class BrowserPage extends RelativeLayout implements IPage {
 	private TextView mTip2;
 	private String mText1 = "加载失败";
 	private String mText2 = "请检查您的网络";
-	public static final String WEB_CACHE_FILE_NAME = "ie_cache";
+	public static final String WEB_CACHE_FILE_NAME = "web_cache";
 	public static final String GPS_DB_FILE_NAME = "gps_db";
 
 	private Context mContext;
+	private boolean closeBrowser = false;
+
 	public BrowserPage(Context context) {
 		super(context);
 		mContext = context;
 		Initialize();
 	}
 
-	@SuppressLint("SetJavaScriptEnabled")
+	@SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
 	public void Initialize(){
-		LayoutParams rParams;
+		RelativeLayout.LayoutParams rParams;
+
+		//顶部标题布局
+		rParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
+		titleLayout = new RelativeLayout(mContext);
+		titleLayout.setId(ID_TITLE_LAYOUT);
+//		titleLayout.setBackgroundResource(R.drawable.main_topbar_bg_fill);
+		this.addView(titleLayout, rParams);
+
+		rParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+		rParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+		titleName = new TextView(mContext);
+		titleName.setTextColor(Color.WHITE);
+		titleName.setTextSize(17);
+		titleName.setText("Jane/简·拼");
+		titleName.setMaxEms(15);
+		titleName.setSingleLine(true);
+		titleName.setEllipsize(TruncateAt.END);
+		titleLayout.addView(titleName, rParams);
+
 		//浏览器
-		rParams = new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT);
-		rParams.topMargin = UIUtils.getRealPixel720(100);
+		rParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT);
+//		rParams.topMargin = UIUtils.getRealPixel720(100);
+		rParams.addRule(RelativeLayout.BELOW, ID_TITLE_LAYOUT);
 		webView = new WebView(mContext);
+		webView.addJavascriptInterface(new InJavaScriptLocalObj(), "localObj");
 		webView.setWebViewClient(mWebViewClient);
 		webView.setWebChromeClient(mWebChromeClient);
 		webView.setDownloadListener(mDownloadListener);
@@ -88,54 +120,38 @@ public class BrowserPage extends RelativeLayout implements IPage {
 		//settings.setBuiltInZoomControls(true);
 		webView.getSettings().setAppCacheMaxSize(1024 * 1024 * 20);
 		webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
-
-
+		webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
 		this.addView(webView, rParams);
 
-		rParams = new LayoutParams(LayoutParams.MATCH_PARENT,UIUtils.getRealPixel720(100));
-		titleLayout = new RelativeLayout(mContext);
-//		titleLayout.setBackgroundResource(R.drawable.main_topbar_bg_fill);
-		this.addView(titleLayout, rParams);
-
-		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-		rParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-		titleName = new TextView(mContext);
-		titleName.setTextColor(Color.WHITE);
-		titleName.setTextSize(17);
-		titleName.setText("Jane/简·拼");
-		titleName.setMaxEms(15);
-		titleName.setSingleLine(true);
-		titleName.setEllipsize(TruncateAt.END);
-		titleLayout.addView(titleName, rParams);
+		//顶部按钮布局
+		rParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
+		btnLayout = new RelativeLayout(mContext);
+		this.addView(btnLayout, rParams);
 
 		//返回按钮
-		rParams = new LayoutParams(
-//				Utils.getRealPixel3(60),Utils.getRealPixel3(60));
+		rParams = new RelativeLayout.LayoutParams(
 				LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_VERTICAL);
-//		rParams.topMargin = Utils.getRealPixel3(50);
+//		rParams.topMargin = UIUtils.getRealPixel720(50);
 		rParams.leftMargin = UIUtils.getRealPixel720(15);
 		backBtn = new ImageView(mContext);
-//		backBtn.setImageResource(R.drawable.business_back);
 //		backBtn.setImageResource(R.drawable.puzzles_cancel_btn);
 		backBtn.setOnClickListener(mOnClickListener);
-		titleLayout.addView(backBtn, rParams);
+		btnLayout.addView(backBtn, rParams);
 
-		rParams = new LayoutParams(
-//				Utils.getRealPixel3(60),Utils.getRealPixel3(60));
+		rParams = new RelativeLayout.LayoutParams(
 				LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_VERTICAL);
 		rParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-//		rParams.topMargin = Utils.getRealPixel3(50);
+//		rParams.topMargin = UIUtils.getRealPixel720(50);
 		rParams.rightMargin = UIUtils.getRealPixel720(40);
-		cancleBtn = new ImageView(mContext);
-//		backBtn.setImageResource(R.drawable.business_back);
-//		cancleBtn.setImageResource(R.drawable.puzzles_stop_btn);
-		cancleBtn.setOnClickListener(mOnClickListener);
-		titleLayout.addView(cancleBtn, rParams);
+		closeBtn = new ImageView(mContext);
+//		closeBtn.setImageResource(R.drawable.puzzles_stop_btn);
+		closeBtn.setOnClickListener(mOnClickListener);
+		btnLayout.addView(closeBtn, rParams);
 
 		//提示内容布局
-		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+		rParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 		tipsLayout = new LinearLayout(mContext);
 		tipsLayout.setOrientation(LinearLayout.VERTICAL);
@@ -168,6 +184,30 @@ public class BrowserPage extends RelativeLayout implements IPage {
 		tipsLayout.addView(mTip2, lParams);
 	}
 
+	/** 隐藏顶部标题布局 */
+	public void hideTitleLayout(){
+		titleLayout.setVisibility(View.GONE);
+	}
+	/** 隐藏顶部按钮布局 */
+	public void hideBtnLayout(){
+		btnLayout.setVisibility(View.GONE);
+	}
+	/** 隐藏后退按钮 */
+	public void hideBackBtn(){
+		backBtn.setVisibility(View.GONE);
+	}
+	/** 隐藏页面关闭按钮 */
+	public void hideCloseBtn(){
+		closeBtn.setVisibility(View.GONE);
+	}
+
+	/** js调用本地方法对象 */
+	public class InJavaScriptLocalObj {
+		public void showLog(String fromHtml){
+			Log.i(TAG, "html content:\n"+fromHtml);
+		}
+	}
+
 	private WebViewClient mWebViewClient = new WebViewClient(){
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -182,8 +222,11 @@ public class BrowserPage extends RelativeLayout implements IPage {
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
 			dimissLoading();
+//			view.loadUrl("javascript:window.localObj.showLog('<html>\n' + document.getElementsByTagName('html')[0].innerHTML + '\n</html>');");
 		}
 	};
+
+	private int actRequestCode = 1;
 	private WebChromeClient mWebChromeClient = new WebChromeClient(){
 		@Override
 		public void onProgressChanged(WebView view, int newProgress) {
@@ -196,11 +239,33 @@ public class BrowserPage extends RelativeLayout implements IPage {
 				titleName.setText(title);
 			}
 		}
+
+		//网页获取本地图库图片
+		//android < 3.0
+		public void openFileChooser(ValueCallback<Uri> uploadFile){
+			openFileChooser(uploadFile, null);
+		}
+		//android  3.0+
+		public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType){
+			openFileChooser(uploadFile, acceptType, null);
+		}
+		//android > 4.1.1
+		public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType, String capture) {
+			Log.i(TAG, "--选择文件--");
+
+			Intent intent = new Intent();
+			intent.setAction(Intent.ACTION_GET_CONTENT);
+			intent.addCategory(Intent.CATEGORY_DEFAULT);
+			intent.setType("image/*");
+			intent.putExtra("return-data", true);
+			((Activity)mContext).startActivityForResult(intent, actRequestCode);
+		}
 	};
+
 	private DownloadListener mDownloadListener = new DownloadListener() {
 		@Override
 		public void onDownloadStart(final String url, String userAgent,
-				String contentDisposition, String mimetype, long contentLength) {
+									String contentDisposition, String mimetype, long contentLength) {
 			Log.i("bbb", "url:"+url);
 			String fileName = url.substring(url.lastIndexOf("/")+1);
 
@@ -217,8 +282,8 @@ public class BrowserPage extends RelativeLayout implements IPage {
 				public void onClick(DialogInterface dialog, int which) {
 					Uri uri = Uri.parse(url);
 					Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-//					MainActivity.mActivity.startActivity(intent);
-//					MainActivity.mActivity.onBackPressed();
+					MainActivity.mActivity.startActivity(intent);
+					MainActivity.mActivity.onBackPressed();
 				}
 			});
 			dialog.show();
@@ -228,6 +293,8 @@ public class BrowserPage extends RelativeLayout implements IPage {
 	public void setPageData(Bitmap bg, String url){
 		if(bg!=null){
 //			this.setBackgroundDrawable(Utils.largeRblur(bg));
+		}else{
+			this.setBackgroundColor(0xFFF7AFB2);
 		}
 
 		//判断是否有网络
@@ -272,18 +339,32 @@ public class BrowserPage extends RelativeLayout implements IPage {
 		}
 	}
 
-	private OnClickListener mOnClickListener = new OnClickListener() {
+	private View.OnClickListener mOnClickListener = new OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			if(v==backBtn){
-//				MainActivity.mActivity.onBackPressed();
-			}else if(v == cancleBtn){
-				stop = true;
-//				MainActivity.mActivity.onBackPressed();
+				MainActivity.mActivity.onBackPressed();
+
+			}else if(v == closeBtn){
+				closeBrowser = true;
+				MainActivity.mActivity.onBackPressed();
 			}
 		}
 	};
-	private boolean stop = false;
+
+	@Override
+	public boolean onBack() {
+		if(!closeBrowser){
+			boolean back = false;
+			if(webView != null && webView.canGoBack()){
+				webView.goBack();
+				back = true;
+			}
+			return back;
+		}else{
+			return false;
+		}
+	}
 
 	@Override
 	public void onRestore() {
@@ -298,23 +379,6 @@ public class BrowserPage extends RelativeLayout implements IPage {
 	@Override
 	public boolean onResume() {
 		return false;
-	}
-
-	@Override
-	public boolean onBack() {
-		if(!stop){
-			boolean out = false;
-			if(webView != null){
-				if(webView.canGoBack()){
-					webView.goBack();
-					out = true;
-				}
-			}
-			return out;
-		}else{
-			return false;
-		}
-
 	}
 
 	@Override
@@ -334,12 +398,39 @@ public class BrowserPage extends RelativeLayout implements IPage {
 
 	@Override
 	public void onClose() {
-
 	}
 
 	@Override
 	public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.i(TAG, "--onActivityResult--");
+		if (requestCode== actRequestCode && resultCode==Activity.RESULT_OK){
+			if (data!=null){
+				Uri uri = data.getData();
+				Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
+				if (cursor!=null && cursor.moveToFirst()){
+					int index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+					String realPath = cursor.getString(index);
+					Log.i(TAG, realPath);
+					cursor.close();
+					cursor = null;
+//					changeImg("file://"+realPath);
+				}
+			}
+		}
 		return false;
+	}
+
+	private void changeImg(String path){
+		String js = "javascript:(function(){" +
+				"var img = document.getElementById(\"uimg\");" +
+				"img.src = \""+path+"\";" +
+				"img.innerHTML = \""+path+"\";" +
+				"})();";
+
+		Log.i(TAG, js);
+		webView.loadUrl(js);
+//		js = "javascript:changeImg1();";
+//		webView.loadUrl(js);
 	}
 
 	@Override

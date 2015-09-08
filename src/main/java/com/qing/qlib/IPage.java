@@ -10,6 +10,13 @@ import android.view.KeyEvent;
 public interface IPage {
     //    public static final String TAG = BasePage.class.getName();
     /**
+     * 按返回键时调用此接口，如果处理了返回true否则返回false
+     *
+     * @return
+     */
+    public boolean onBack();
+
+    /**
      * 从其它页面返回时调用
      */
     public void onRestore();
@@ -27,13 +34,6 @@ public interface IPage {
      * @return
      */
     public boolean onResume();
-
-    /**
-     * 按返回键时调用此接口，如果处理了返回true否则返回false
-     *
-     * @return
-     */
-    public boolean onBack();
 
     /**
      * 主框架Activity的onPause事件
