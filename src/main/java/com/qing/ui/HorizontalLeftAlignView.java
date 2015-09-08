@@ -141,11 +141,16 @@ public class HorizontalLeftAlignView extends ViewGroup {
 //                            cHeight = childView.getMeasuredHeight();
                             itemWidth = params.leftMargin + cWidth + params.rightMargin;
 
-                            if (wcount + itemWidth <= vWidth){
-//                                Log.i(TAG, "--ellipsisView--"+wcount+","+hcount+","+cWidth+","+cHeight);
-                                childView.layout(wcount + params.leftMargin, hcount + params.topMargin,
-                                        wcount + cWidth + params.rightMargin, hcount + cHeight + params.bottomMargin);
+                            if (wcount + itemWidth > vWidth && i>2){
+                                /** 隐藏上一个 */
+                                View preChildView = getChildAt(i-1);
+                                int preChildLeft = preChildView.getLeft()-params.leftMargin;
+                                preChildView.layout(preChildLeft, hcount + params.topMargin, 0, 0);
+
+                                wcount = preChildLeft;
                             }
+                            childView.layout(wcount + params.leftMargin, hcount + params.topMargin,
+                                    wcount + cWidth + params.rightMargin, hcount + cHeight + params.bottomMargin);
                         }
                         break;
                     }
@@ -154,6 +159,16 @@ public class HorizontalLeftAlignView extends ViewGroup {
                 }
                 childView.layout(wcount + params.leftMargin, hcount + params.topMargin,
                         wcount + cWidth + params.rightMargin, hcount + cHeight + params.bottomMargin);
+                //childView.setTag(i);
+                final int position = i;
+                childView.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mListener != null) {
+                            mListener.onItemClick(v, position);//Integer.parseInt(v.getTag().toString()));
+                        }
+                    }
+                });
 
                 wcount += itemWidth;
                 maxHeight = Math.max(maxHeight, cHeight);
@@ -195,5 +210,14 @@ public class HorizontalLeftAlignView extends ViewGroup {
     @Override
     public int getChildCount() {
         return super.getChildCount()-hasEllipsisView;
+    }
+
+    private OnItemClickListener mListener;
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mListener = listener;
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(View view, int position);
     }
 }
