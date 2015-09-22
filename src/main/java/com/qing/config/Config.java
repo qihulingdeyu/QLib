@@ -33,10 +33,10 @@ public class Config {
 
     private Config(Context context){
         mContext = context;
-        setSP("");
+        setSharedPreferences("");
     }
 
-    public static void setSP(String name){
+    public static void setSharedPreferences(String name){
         if (StringUtils.isNullOrEmpty(name)){
             name = "config";
         }
@@ -76,7 +76,7 @@ public class Config {
         return preferences.contains(key);
     }
 
-    private static SharedPreferences.Editor initEditor() {
+    private static SharedPreferences.Editor getEditor() {
         if (isChange || editor==null){
             editor = preferences.edit();
             isChange = false;
@@ -85,42 +85,42 @@ public class Config {
     }
 
     public static SharedPreferences.Editor putString(String key, String value) {
-        return initEditor().putString(key, value);
+        return getEditor().putString(key, value);
     }
 
     public static SharedPreferences.Editor putStringSet(String key, Set<String> values) {
-        return initEditor().putStringSet(key, values);
+        return getEditor().putStringSet(key, values);
     }
 
     public static SharedPreferences.Editor putInt(String key, int value) {
-        return initEditor().putInt(key, value);
+        return getEditor().putInt(key, value);
     }
 
     public static SharedPreferences.Editor putLong(String key, long value) {
-        return initEditor().putLong(key, value);
+        return getEditor().putLong(key, value);
     }
 
     public static SharedPreferences.Editor putFloat(String key, float value) {
-        return initEditor().putFloat(key, value);
+        return getEditor().putFloat(key, value);
     }
 
     public static SharedPreferences.Editor putBoolean(String key, boolean value) {
-        return initEditor().putBoolean(key, value);
+        return getEditor().putBoolean(key, value);
     }
 
     public static SharedPreferences.Editor remove(String key) {
-        return initEditor().remove(key);
+        return getEditor().remove(key);
     }
 
     public static SharedPreferences.Editor clear() {
-        return initEditor().clear();
+        return getEditor().clear();
     }
 
     public static boolean commit() {
-        return initEditor().commit();
+        return getEditor().commit();
     }
 
     public void apply() {
-        initEditor().apply();
+        getEditor().apply();
     }
 }
