@@ -2,6 +2,8 @@ package com.qing.utils;
 
 import com.qing.callback.DownloadCallback;
 
+import org.apache.http.protocol.HTTP;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,6 +14,7 @@ import java.net.URL;
 
 /**
  * Created by zwq on 2015/08/31 16:56.<br/><br/>
+ * 下载是耗时操作，需要开启新线程执行
  */
 public class DownloadUtils {
 
@@ -89,14 +92,17 @@ public class DownloadUtils {
                         fileOutput.write(buffer, 0, len);
                         if (callback!=null) {
                             size += len;
-                            callback.postResult(DownloadCallback.DOWNLOADING, size/contentSize);
+                            callback.postResult(DownloadCallback.LOADING, size/contentSize);
                         }
                     }
                 }
                 if (callback!=null) callback.postResult(DownloadCallback.SUCCESS);
+            }else{
+                if (callback!=null) callback.postResult(DownloadCallback.FAIL, "下载失败:"+conn.getResponseMessage());
             }
         } catch (Exception e){
             e.printStackTrace();
+            if (callback!=null) callback.postResult(DownloadCallback.FAIL, "下载失败:"+e.getMessage());
         } finally {
             try {
                 if (fileOutput!=null) {
@@ -115,7 +121,7 @@ public class DownloadUtils {
                 e.printStackTrace();
             }
         }
-        if (callback!=null) callback.postResult(DownloadCallback.FAIL, "下载失败");
+        if (callback!=null) callback.postResult(DownloadCallback.FINISH);
     }
 
 }
