@@ -7,13 +7,11 @@ public abstract class DownloadCallback extends AbstractTaskCallback {
 
     private static final String TAG = DownloadCallback.class.getName();
 
-    public static final int START = 0x3;
-    public static final int DOWNLOADING = 0x4;
-
-    public abstract void onStart();
+    public void onStart() {}
     public abstract void onDownloading(long progress);
     public abstract void onSuccess();
     public abstract void onFail(String msg);
+    public void onFinish() {}
 
     @Override
     public void dispatchResult(int state, Object... data) {
@@ -21,7 +19,7 @@ public abstract class DownloadCallback extends AbstractTaskCallback {
             case START:
                 onStart();
                 break;
-            case DOWNLOADING:
+            case LOADING:
                 verifyParams(1, data);
                 onDownloading((Long)data[0]);
                 break;
@@ -31,6 +29,9 @@ public abstract class DownloadCallback extends AbstractTaskCallback {
             case FAIL:
                 verifyParams(1, data);
                 onFail((String)data[0]);
+                break;
+            case FINISH:
+                onFinish();
                 break;
             default:
                 break;
