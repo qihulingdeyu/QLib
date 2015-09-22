@@ -27,11 +27,11 @@ import java.util.Date;
 /**
  * Created by zwq on 2015/08/31 15:54.<br/><br/>
  */
-public class ApkUpdate extends Service {
+public class UpdateApk extends Service {
 
-    private static final String TAG = ApkUpdate.class.getName();
+    private static final String TAG = UpdateApk.class.getName();
     private Context mContext;
-    private ApkUpdateReceiver receiver;
+    private UpdateApkReceiver receiver;
     private boolean isRunning;
     private boolean showDialog;
     private AlertDialog dl;
@@ -53,7 +53,7 @@ public class ApkUpdate extends Service {
         super.onCreate();
         mContext = this;
 
-        receiver = new ApkUpdateReceiver();
+        receiver = new UpdateApkReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(TAG);
         mContext.registerReceiver(receiver, filter);
@@ -191,7 +191,7 @@ public class ApkUpdate extends Service {
             mContext.unregisterReceiver(receiver);
     }
 
-    class ApkUpdateReceiver extends BroadcastReceiver {
+    class UpdateApkReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
 
