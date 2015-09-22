@@ -27,7 +27,7 @@ public class CycleViewPager extends ViewPager {
 
     public CycleViewPager(Context context) {
         super(context);
-
+        setOverScrollMode(View.OVER_SCROLL_NEVER);
     }
 
     public boolean isCycle(){
