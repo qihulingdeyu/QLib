@@ -12,8 +12,12 @@ import android.util.Log;
 public abstract class AbstractTaskCallback {
     protected String TAG = this.getClass().getSimpleName();
 
-    public static final int SUCCESS = 0x1;
-    public static final int FAIL = 0x2;
+    public static final int WAIT = 0x1;
+    public static final int START = 0x2;
+    public static final int LOADING = 0x3;
+    public static final int SUCCESS = 0x4;
+    public static final int FAIL = 0x5;
+    public static final int FINISH = 0x6;
 
     private static final InternalHandler mHandler = new InternalHandler();
 
