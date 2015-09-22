@@ -33,10 +33,10 @@ public class Config {
 
     private Config(Context context){
         mContext = context;
-        setSharedPreferences("");
+        getSharedPreferences("");
     }
 
-    public static void setSharedPreferences(String name){
+    public static void getSharedPreferences(String name){
         if (StringUtils.isNullOrEmpty(name)){
             name = "config";
         }
