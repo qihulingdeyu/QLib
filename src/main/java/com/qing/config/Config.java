@@ -22,7 +22,7 @@ public class Config {
 
     public static Config init(Context context){
         if (config==null){
-            synchronized (config){
+            synchronized (Config.class){
                 if (config==null){
                     config = new Config(context);
                 }
