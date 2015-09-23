@@ -5,19 +5,9 @@ import java.util.List;
 /**
  * Created by zwq on 2015/09/22 15:17.<br/><br/>
  */
-public abstract class AbstractDao<T> implements IDao<T> {
+public abstract class AbstractDao<T> extends DaoSql<T> implements IDao<T> {
 
     private static final String TAG = AbstractDao.class.getName();
-
-    public String createTable(String tableName){
-        StringBuffer sb = new StringBuffer();
-//        sb.append()
-        return "";
-    }
-
-    public String dropTable(String tableName){
-        return "";
-    }
 
     @Override
     public long delete(T entity) {

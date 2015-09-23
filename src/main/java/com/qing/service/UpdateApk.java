@@ -27,7 +27,7 @@ import java.util.Date;
 /**
  * Created by zwq on 2015/08/31 15:54.<br/><br/>
  */
-public class UpdateApk extends Service {
+public class UpdateApk extends BaseService {
 
     private static final String TAG = UpdateApk.class.getName();
     private Context mContext;
@@ -41,12 +41,6 @@ public class UpdateApk extends Service {
     private int verCode;
     private String downloadUrl;
     private String path;
-
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
 
     @Override
     public void onCreate() {
