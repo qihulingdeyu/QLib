@@ -1,8 +1,9 @@
 package com.qing.ui;
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.ProgressBar;
+
+import com.qing.log.MLog;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -12,6 +13,7 @@ import java.lang.reflect.Modifier;
  * 横向/水平进度条
  */
 public class HorizontalProgressBar extends ProgressBar {
+	private static final String TAG = HorizontalLeftAlignView.class.getName();
 
 	public HorizontalProgressBar(Context context) {
 		this(context, true);
@@ -38,7 +40,7 @@ public class HorizontalProgressBar extends ProgressBar {
 			field.set(object, value);  
 		} catch (IllegalAccessException e) {  
 			e.printStackTrace();
-			Log.e("error", "", e);  
+			MLog.e(TAG, e.getMessage());
 		} 
 	}
 	
