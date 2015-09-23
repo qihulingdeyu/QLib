@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
 import android.util.Log;
 import android.view.Gravity;
@@ -63,9 +64,10 @@ public class BrowserPage extends RelativeLayout implements IPage {
 	public static final String WEB_CACHE_FILE_NAME = "ie_cache";
 	public static final String GPS_DB_FILE_NAME = "gps_db";
 
-	private Context mContext;
-	private boolean closeBrowser = false;
-	private static final String charsetName = "utf-8";
+	protected Context mContext;
+	protected boolean closeBrowser = false;
+	protected static final String charsetName = "utf-8";
+	protected RelativeLayout.LayoutParams rParams;
 
 	public BrowserPage(Context context) {
 		super(context);
@@ -73,18 +75,27 @@ public class BrowserPage extends RelativeLayout implements IPage {
 		initView();
 	}
 
-	@SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
 	public void initView() {
-		RelativeLayout.LayoutParams rParams;
+		topTitleLayout();
 
+		webViewLayout();
+
+		topButtonLayout();
+
+		progressBarLayout();
+
+		tipsLayout();
+	}
+
+	protected void topTitleLayout() {
 		// 顶部标题布局
-		rParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
+		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
 		titleLayout = new RelativeLayout(mContext);
 		titleLayout.setId(ID_TITLE_LAYOUT);
 //		titleLayout.setBackgroundResource(R.drawable.main_topbar_bg_fill);
 		this.addView(titleLayout, rParams);
 
-		rParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 		titleName = new TextView(mContext);
 		titleName.setTextColor(Color.WHITE);
@@ -94,9 +105,12 @@ public class BrowserPage extends RelativeLayout implements IPage {
 		titleName.setSingleLine(true);
 		titleName.setEllipsize(TruncateAt.END);
 		titleLayout.addView(titleName, rParams);
+	}
 
+	@SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
+	protected void webViewLayout() {
 		// 浏览器
-		rParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		// rParams.topMargin = Utils.getRealPixel3(100);
 		rParams.addRule(RelativeLayout.BELOW, ID_TITLE_LAYOUT);
 		webView = new WebView(mContext);
@@ -129,14 +143,16 @@ public class BrowserPage extends RelativeLayout implements IPage {
 		webView.getSettings().setUserAgentString("jane");
 		webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
 		this.addView(webView, rParams);
+	}
 
+	protected void topButtonLayout() {
 		// 顶部按钮布局
-		rParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
+		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
 		btnLayout = new RelativeLayout(mContext);
 		this.addView(btnLayout, rParams);
 
 		// 返回按钮
-		rParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_VERTICAL);
 		// rParams.topMargin = Utils.getRealPixel3(50);
 		rParams.leftMargin = UIUtils.getRealPixel720(15);
@@ -145,7 +161,7 @@ public class BrowserPage extends RelativeLayout implements IPage {
 		backBtn.setOnClickListener(mOnClickListener);
 		btnLayout.addView(backBtn, rParams);
 
-		rParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_VERTICAL);
 		rParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 		// rParams.topMargin = Utils.getRealPixel3(50);
@@ -154,16 +170,20 @@ public class BrowserPage extends RelativeLayout implements IPage {
 //		closeBtn.setImageResource(R.drawable.puzzles_stop_btn);
 		closeBtn.setOnClickListener(mOnClickListener);
 		btnLayout.addView(closeBtn, rParams);
+	}
 
+	protected void progressBarLayout() {
 		//进度条
-		rParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(8));
+		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(8));
 		rParams.addRule(RelativeLayout.BELOW, ID_TITLE_LAYOUT);
 		progressBar = new HorizontalProgressBar(mContext);
 		progressBar.setId(ID_PROGRESS_BAR);
 		this.addView(progressBar, rParams);
+	}
 
+	protected void tipsLayout() {
 		// 提示内容布局
-		rParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 		tipsLayout = new LinearLayout(mContext);
 		tipsLayout.setOrientation(LinearLayout.VERTICAL);
