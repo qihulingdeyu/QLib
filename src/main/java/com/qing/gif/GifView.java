@@ -1,4 +1,4 @@
-﻿package com.qing.gif;
+package com.qing.gif;
 
 import java.io.InputStream;
 

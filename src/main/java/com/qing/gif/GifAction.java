@@ -1,4 +1,4 @@
-﻿package com.qing.gif;
+package com.qing.gif;
 
 public interface GifAction {
 	/**

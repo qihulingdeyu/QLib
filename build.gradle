@@ -1,5 +1,10 @@
 apply plugin: 'com.android.library'
 
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:22.2.0'
+}
+
 android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
@@ -9,16 +14,121 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+        // AndroidManifest.xml 里面UMENG_CHANNEL的value为 ${UMENG_CHANNEL_VALUE}
+        // manifestPlaceholders = [UMENG_CHANNEL_VALUE: "channel_name"]
+        //signingConfig signingConfigs.release
     }
     buildTypes {
         release {
+            //混淆
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-}
 
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.2.0'
+//    sourceSets {
+//        main {
+//            manifest.srcFile 'AndroidManifest.xml'
+//            java.srcDirs = ['src']
+//            resources.srcDirs = ['src']
+//            aidl.srcDirs = ['src']
+//            renderscript.srcDirs = ['src']
+//            res.srcDirs = ['res']
+//            assets.srcDirs = ['assets']
+//            jniLibs.srcDirs = ['libs'] //解决加载so文件出现UnsatisfiedLinkError的错误
+//        }
+//
+//        // Move the tests to tests/java, tests/res, etc...
+//        instrumentTest.setRoot('tests')
+//
+//        // Move the build types to build-types/<type>
+//        // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
+//        // This moves them out of them default location under src/<type>/... which would
+//        // conflict with src/ being used by the main source set.
+//        // Adding new build types or product flavors should be accompanied
+//        // by a similar customization.
+//        debug.setRoot('build-types/debug')
+//        release.setRoot('build-types/release')
+//    }
+//
+//    //签名
+//    signingConfigs {
+//        debug {
+//            storeFile file("C:/Users/aa/Desktop/*.keystore")
+//            storePassword "***"
+//            keyAlias "***"
+//            keyPassword "***"
+//        }
+//        release {
+//            storeFile file("C:/Users/aa/Desktop/*.keystore")
+//            storePassword "***"
+//            keyAlias "***"
+//            keyPassword "***"
+//        }
+//    }
+//
+//    packagingOptions { // 打包配置 排除一些文件 防止出现一些错误警告
+//        exclude 'META-INF/license.txt'
+//        exclude 'META-INF/LICENSE.txt'
+//        exclude 'META-INF/LICENSE'
+//        exclude 'META-INF/notice.txt'
+//        exclude 'META-INF/NOTICE.txt'
+//        exclude 'META-INF/NOTICE'
+//        exclude 'META-INF/dependencies.txt'
+//        exclude 'META-INF/DEPENDENCIES.txt'
+//        exclude 'META-INF/DEPENDENCIES'
+//    }
+//
+//    //执行lint检查，有任何的错误或者警告提示，都会终止构建，我们可以将其关掉。
+//    lintOptions {
+//        abortOnError false
+//    }
+//
+//    buildTypes {
+//        debug {
+//            signingConfig signingConfigs.debug
+//            //混淆
+//            minifyEnabled true
+//            //Zipalign优化
+//            zipAlignEnabled true
+//            //移除无用的resource文件
+//            shrinkResources true
+//            //加载默认混淆配置文件
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
+//        }
+//        release {
+//            //签名配置
+//            signingConfig signingConfigs.release
+//            //混淆
+//            minifyEnabled true
+//            //Zipalign优化
+//            zipAlignEnabled true
+//            // 移除无用的resource文件
+//            shrinkResources true
+//            //加载默认混淆配置文件
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-project.txt'
+//            //proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//            debuggable true
+//        }
+//    }
+//
+//    //渠道Flavors，我这里写了一些常用的
+//    productFlavors {
+//        poco {
+//            //packageName="cn.poco"   //这里可以配置不同的包名
+//        }
+//    }
+//
+//    //在生成apk文件时，修改下命名而已
+//    applicationVariants.all { variant ->
+//        variant.outputs.each { output ->
+//            def outputFile = output.outputFile
+//            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+////                def suffix = new Date().format("yyyyMMddHH")
+////                def fileName = "jane-${defaultConfig.versionName}-${suffix}.apk"
+//                def fileName = outputFile.name.replace(".apk", "-${defaultConfig.versionName}.apk")
+//                output.outputFile = new File(outputFile.parent, fileName)
+//            }
+//        }
+//    }
 }
