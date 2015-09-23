@@ -1,6 +1,7 @@
 package com.qing.qlib;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -647,5 +648,16 @@ public abstract class BaseActivity extends Activity {
 //            mLastView.startAnimation(slide_left_out);
 //            mCurrentView.startAnimation(slide_right_in);
 //        }
+    }
+
+    @Override
+    public ComponentName startService(Intent service) {
+        if (service!=null){//从5.0开始服务必须显式调用
+            if (service.getPackage()==null || service.getPackage().trim().isEmpty()){
+                //修复android5.0及以上版本的bug,这里你需要设置你应用的包名
+                service.setPackage(getPackageName());
+            }
+        }
+        return super.startService(service);
     }
 }
