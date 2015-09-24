@@ -36,6 +36,12 @@ public interface IPage {
     public boolean onResume();
 
     /**
+     * 页面状态改变
+     * @param isTop 页面是否在最顶部
+     * @return
+     */
+    public boolean onPageStateChange(boolean isTop);
+    /**
      * 主框架Activity的onPause事件
      *
      * @return

@@ -439,6 +439,11 @@ public class BrowserPage extends RelativeLayout implements IPage {
 	}
 
 	@Override
+	public boolean onPageStateChange(boolean isTop) {
+		return false;
+	}
+
+	@Override
 	public boolean onPause() {
 		return false;
 	}

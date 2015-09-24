@@ -197,6 +197,11 @@ public class MyListView extends RefreshAdaterView<AbsListView> implements IPage 
     }
 
     @Override
+    public boolean onPageStateChange(boolean isTop) {
+        return false;
+    }
+
+    @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         return false;
     }
