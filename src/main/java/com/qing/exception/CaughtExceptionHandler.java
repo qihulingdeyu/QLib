@@ -6,19 +6,16 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.util.Log;
 
+import com.qing.log.MLog;
+import com.qing.utils.FileUtils;
+import com.qing.utils.StringUtils;
 import com.qing.utils.XmlTag;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Created by zwq on 2015/08/24 10:39.<br/>
@@ -29,12 +26,12 @@ public class CaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
     private static final String TAG = CaughtExceptionHandler.class.getName();
     private Context mContext;
     private Thread.UncaughtExceptionHandler defaultHandler;
-    private String savePath = null;
+    private String logPath = null;
 
     public CaughtExceptionHandler(){ }
 
     public void Init(Context context){
-        Log.i(TAG, "--Init--");
+        MLog.i(TAG, "--Init--"+TAG);
         mContext = context;
         //获取程序默认的异常处理
         defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
@@ -42,12 +39,12 @@ public class CaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
         Thread.setDefaultUncaughtExceptionHandler(this);
 
         //sd目录：包名/log
-//        savePath = Environment.getExternalStorageDirectory()+mContext.getPackageName()+"/log";
+        logPath = FileUtils.getAppPath(mContext) + "log";
     }
 
     @Override
     public void uncaughtException(Thread thread, Throwable throwable) {
-        Log.i(TAG, "--uncaughtException--");
+        MLog.i(TAG, "--uncaughtException--"+TAG);
         handleException(throwable);
 
         if (defaultHandler!=null){
@@ -70,10 +67,10 @@ public class CaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
         String errorInfo = CollectErrorInfo(throwable);
         info.addChildTag("error", verifyString(errorInfo));
 
-        Log.i(TAG, info.toString());
+//        MLog.i(TAG, info.toString());
 
-        save2File(info.toTrimString());
-//        save2File(info.toString());
+//        save2File(info.toTrimString(), false);
+        save2File(info.toString(), false);
     }
 
     /**
@@ -81,35 +78,19 @@ public class CaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
      * @param info
      * @return
      */
-    private String save2File(String info) {
-        if (info==null || info.trim().isEmpty()) return info;
+    private String save2File(String info, boolean sortByDate) {
+        if (StringUtils.isNullOrEmpty(info)) return null;
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        String fileName = sdf.format(new Date())+""+this.hashCode()+".xml";
-        try {
-            if(savePath==null || savePath.trim().isEmpty()){
-                savePath = mContext.getDir("log", Context.MODE_PRIVATE).getPath();
-            }else{
-                File dir = new File(savePath);
-                if(!dir.exists()){
-                    dir.mkdirs();
-                }
-                dir = null;
-            }
-            File file = new File(savePath + File.separator + fileName);
+        String fileName = StringUtils.getDateTime("yyyyMMddHHmmss")+"_"+this.hashCode()+".log";
 
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(info.getBytes());
-            fos.flush();
-            fos.close();
-            fos = null;
-            return fileName;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(StringUtils.isNullOrEmpty(logPath)){
+            logPath = mContext.getDir("log", Context.MODE_PRIVATE).getPath();
         }
-        return null;
+        if (sortByDate){
+            logPath += File.separator + StringUtils.getDateTime("yyyyMMdd");
+        }
+        FileUtils.write2SD(info, logPath + File.separator + fileName, true);
+        return fileName;
     }
 
     /**
@@ -124,9 +105,9 @@ public class CaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
         device.addChildTag("brand",verifyString(Build.BRAND));
         device.addChildTag("manufacturer",verifyString(Build.MANUFACTURER));
         device.addChildTag("fingerprint",verifyString(Build.FINGERPRINT));
-        device.addChildTag("model",verifyString(Build.MODEL));
+        device.addChildTag("model", verifyString(Build.MODEL));
         device.addChildTag("cpu",verifyString(Build.CPU_ABI));
-        device.addChildTag("net",verifyString(""+getNetType(context)));
+        device.addChildTag("net", verifyString("" + getNetType(context)));
 
         // 可用内存
         device.addChildTag("memory", verifyString(Runtime.getRuntime().maxMemory()/1048576 +""));
