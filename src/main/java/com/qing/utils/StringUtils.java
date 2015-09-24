@@ -48,14 +48,14 @@ public class StringUtils {
 
     /**
      * 获取md5值
-     * @param s
+     * @param content
      * @return
      */
-    public static String md5(String s) {
-        if(s==null) return null;
+    public static String md5(String content) {
+        if(content==null) return null;
         try {
             MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(s.getBytes());
+            digest.update(content.getBytes());
             byte messageDigest[] = digest.digest();
             return toHexString(messageDigest);
         } catch (NoSuchAlgorithmException e) {
@@ -80,9 +80,9 @@ public class StringUtils {
         if(date==null){
             date = new Date();
         }
-        if(sdf==null){
+//        if(sdf==null){
             sdf = new SimpleDateFormat(template, Locale.CHINA);
-        }
+//        }
         return sdf.format(date);
     }
 
