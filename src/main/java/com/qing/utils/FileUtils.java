@@ -197,7 +197,7 @@ public class FileUtils {
     }
 
     /**
-     * 获取应用在SD卡中的目录
+     * 获取应用在SD卡中的目录，带'/'
      * @param context
      * @return
      */
