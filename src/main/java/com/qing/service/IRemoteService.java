@@ -11,6 +11,8 @@ import android.os.IBinder;
 public abstract class IRemoteService {
 
     private static final String TAG = IRemoteService.class.getName();
+    protected Class<? extends IRemoteService> mClazz = this.getClass();
+
     /**
      START_STICKY_COMPATIBILITY = 0：START_STICKY的兼容版本，但不保证服务被kill后一定能重启。
      */
@@ -51,6 +53,7 @@ public abstract class IRemoteService {
 
     public abstract void onDestroy();
 
+    @Deprecated
     public boolean stopSelf(Context context, Class<?> clazz){
         try {
             Intent intent = new Intent();
@@ -60,6 +63,25 @@ public abstract class IRemoteService {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * 停止服务
+     * @return true:成功,false:失败
+     */
+    public boolean stopSelf(){
+        if(mContext!=null && mClazz!=null){
+            try {
+                Intent intent = new Intent();
+                intent.setAction(ProxyService.STOP_REMOTE_SERVICE_ACTION);
+                intent.putExtra(ProxyService.REMOTE_SERVICE_CLASS, mClazz.getName());
+                mContext.sendBroadcast(intent);
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return false;
     }

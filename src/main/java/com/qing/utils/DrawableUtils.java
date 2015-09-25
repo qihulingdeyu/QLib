@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -12,7 +13,30 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 
+import java.util.Random;
+
+/**
+ * Created by zwq on 2015/04/21 16:20.<br/><br/>
+ * 图片、文字背景选择器的Drawable
+ */
 public class DrawableUtils {
+
+    /**
+     * 获取随机颜色
+     * @return
+     */
+    public static int getRandomColor(){
+        Random random = new Random();
+        String r = Integer.toHexString(random.nextInt(256)).toUpperCase();
+        String g = Integer.toHexString(random.nextInt(256)).toUpperCase();
+        String b = Integer.toHexString(random.nextInt(256)).toUpperCase();
+
+        r = r.length()==1 ? "0" + r : r ;
+        g = g.length()==1 ? "0" + g : g ;
+        b = b.length()==1 ? "0" + b : b ;
+//        return "#"+r+g+b;
+        return Color.parseColor("#" + r + g + b);
+    }
 
     /**
      * 颜色背景
@@ -39,6 +63,12 @@ public class DrawableUtils {
         return selector;
     }
 
+    /**
+     * 按压切换颜色，此方法用于设置文字
+     * @param normal
+     * @param pressed
+     * @return
+     */
     public static ColorStateList colorPressedDrawable2(int normal, int pressed){
         int[][] states = new int[][]{
                 new int[]{android.R.attr.state_pressed},
@@ -54,22 +84,31 @@ public class DrawableUtils {
      * @param checked 选中时的颜色
      * @return
      */
-    public static ColorStateList colorCheckedDrawable(int normal, int checked){
+    public static StateListDrawable colorCheckedDrawable(int normal, int checked){
         if(normal!=-1 && checked!=-1){
-            //style 1:
+            StateListDrawable selector  = new StateListDrawable();
+            selector.addState(new int[]{android.R.attr.state_checked}, new ColorDrawable(checked));
+            selector.addState(new int[]{android.R.attr.state_enabled}, new ColorDrawable(normal));
+            return selector;
+        }
+        return null;
+    }
+
+    /**
+     * 选中状态切换颜色，此方法用于设置文字
+     * @param normal
+     * @param checked 选中时的颜色
+     * @return
+     */
+    public static ColorStateList colorCheckedDrawable2(int normal, int checked){
+        if(normal!=-1 && checked!=-1){
             int[][] states = new int[2][];
             states[0] = new int[]{android.R.attr.state_checked};
             states[1] = new int[]{android.R.attr.state_enabled};
-            
+
             int[] colors = {checked, normal};
             ColorStateList list = new ColorStateList(states, colors);
             return list;
-
-            //style 2:
-//            StateListDrawable selector  = new StateListDrawable();
-//            selector.addState(new int[]{android.R.attr.state_checked}, new ColorDrawable(checked));
-//            selector.addState(new int[]{android.R.attr.state_enabled}, new ColorDrawable(normal));
-//            return selector;
         }
         return null;
     }
@@ -224,6 +263,20 @@ public class DrawableUtils {
         StateListDrawable selector  = new StateListDrawable();
         selector.addState(new int[]{android.R.attr.state_pressed}, shapeDrawable(tl, tr, br, bl, pressed, mRadius));
         selector.addState(new int[]{android.R.attr.state_enabled}, shapeDrawable(tl, tr, br, bl, normal, mRadius));
+        return selector;
+    }
+
+    /**
+     * 四个角为圆角 并有按压效果
+     * @param normal
+     * @param pressed
+     * @param radius
+     * @return
+     */
+    public static StateListDrawable colorShapePressedDrawable(int normal, int pressed, int radius){
+        StateListDrawable selector  = new StateListDrawable();
+        selector.addState(new int[]{android.R.attr.state_pressed}, shapeDrawable(true, true, true, true, pressed, radius));
+        selector.addState(new int[]{android.R.attr.state_enabled}, shapeDrawable(true, true, true, true, normal, radius));
         return selector;
     }
 

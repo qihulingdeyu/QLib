@@ -29,7 +29,6 @@ public class ProxyService extends Service {
 
 
     protected IRemoteService mRemoteService;
-//    private DLPluginManager mPluginManager;
 
     private List<IRemoteService> serviceList;
     private List<String> serviceNameList;
@@ -54,12 +53,6 @@ public class ProxyService extends Service {
         //注册
         mContext.registerReceiver(receiver, filter);
     }
-
-//    @Override
-//    public void attach(IRemoteService remoteService, DLPluginManager pluginManager) {
-//        mRemoteService = remoteService;
-//        mPluginManager = pluginManager;
-//    }
 
     private synchronized IRemoteService onCreate(Intent intent){
         IRemoteService service = null;

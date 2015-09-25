@@ -26,9 +26,15 @@ import java.util.List;
 
 import static com.qing.utils.StringUtils.isNullOrEmpty;
 
+/**
+ * Created by zwq on 2015/04/15 16:20.<br/><br/>
+ * 文件操作工具类
+ */
 public class FileUtils {
 
-    private static String TAG = "FileUtils";
+    private static final String TAG = FileUtils.class.getName();
+    private static String sdPath;
+    private static String appPath;
 
     /** res目录下的文件id */
     public static int getResId(Context context, String resType, String resName) {
@@ -182,19 +188,36 @@ public class FileUtils {
         }
         return false;
     }
-    
+
+    /**
+     * 获取SD卡根目录，带'/'
+     * @return
+     */
     public static String getSDPath(){
-        if(isSDExists()){
-            return Environment.getExternalStorageDirectory().getAbsolutePath()+File.separator;
+        if(sdPath == null && isSDExists()){
+            sdPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator;
         }
-        return null;
+        return sdPath;
     }
-    
+
+    /**
+     * 获取应用在SD卡中的目录，带'/'
+     * @param context
+     * @return
+     */
+    public static String getAppPath(Context context){
+        if (appPath == null){
+            String packageName = context.getPackageName();
+            appPath = getSDPath() + packageName.substring(packageName.lastIndexOf(".")+1) + File.separator;
+        }
+        return appPath;
+    }
+
     /**
      * 获取SD卡的剩余容量，单位是Byte
      * @return
      */
-    public static long getSDAvailableSize() {
+    public static long getSDFreeMemory() {
         if(isSDExists()){
             File pathFile = Environment.getExternalStorageDirectory();
             // Retrieve overall information about the space on a filesystem.
@@ -216,7 +239,7 @@ public class FileUtils {
      * 获取SD卡的总容量，单位是Byte
      * @return
      */
-    public static long getSDCountSize() {
+    public static long getSDMemory() {
         if (isSDExists()) {
             File pathFile = Environment.getExternalStorageDirectory();
             StatFs statfs = new StatFs(pathFile.getPath());
@@ -259,7 +282,13 @@ public class FileUtils {
         }
         return is;
     }
-    
+
+    /**
+     * 读取文件 返回数据流
+     * @param path
+     * @param name
+     * @return
+     */
     public static InputStream getSDStream(String path, String name){
         name = searchSDFile(path, name);
         return getSDStream(name);
@@ -330,7 +359,13 @@ public class FileUtils {
             }
         }
     }
-    
+
+    /**
+     * 遍历指定目录下的文件
+     * @param file
+     * @param suffix 后缀
+     * @return
+     */
     public static List<String> getFileList(File file, String suffix){
         if(file==null){
             MLog.i(TAG, "file is null");
@@ -542,6 +577,65 @@ public class FileUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * 将文本写入SD卡文件
+     * @param content
+     * @param path
+     * @param deleteOld
+     * @return
+     */
+    public static boolean write2SD(String content, String path, boolean deleteOld){
+        if (isNullOrEmpty(content)) {
+            return false;
+        }
+        if (isNullOrEmpty(path)) {
+            return false;
+        }
+        File file = new File(path);
+        if (file.isDirectory()){
+            MLog.i(TAG, "path is directory");
+            return false;
+        }else{
+            if (file.exists()){
+                if (deleteOld){
+                    if (!file.delete()) {
+                        return false;
+                    }
+                }
+            }else{
+                if (!file.getParentFile().exists()){
+                    if (!file.getParentFile().mkdirs()){
+                        return false;
+                    }
+                }
+            }
+        }
+
+        OutputStream os = null;
+        byte[] buf = content.getBytes();
+        try {
+            os = new FileOutputStream(file);
+            os.write(buf);
+            os.flush();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            MLog.i(TAG, "FileNotFoundException");
+        } catch (IOException e) {
+            e.printStackTrace();
+            MLog.i(TAG, "IOException");
+        }finally{
+            if(os!=null){
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                os = null;
+            }
+        }
+        return false;
     }
     
     /**
