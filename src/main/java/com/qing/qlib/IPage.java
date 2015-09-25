@@ -3,9 +3,8 @@ package com.qing.qlib;
 import android.content.Intent;
 import android.view.KeyEvent;
 /**
- * 所有的页面需实现此接口
  * Created by zwq on 2015/03/24 10:36.<br/><br/>
- *
+ * 所有的页面需实现此接口
  */
 public interface IPage {
     //    public static final String TAG = BasePage.class.getName();
