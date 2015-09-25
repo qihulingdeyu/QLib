@@ -10,7 +10,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
 import android.util.Log;
 import android.view.Gravity;
@@ -30,8 +29,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.qing.qlib.IPage;
 import com.qing.qlib.MainActivity;
+import com.qing.qlib.RelativePage;
 import com.qing.ui.AlertDialog;
 import com.qing.ui.HorizontalProgressBar;
 import com.qing.utils.NetUtils;
@@ -41,7 +40,7 @@ import com.qing.utils.UIUtils;
  * Created by zwq on 2015/04/07 14:51.<br/><br/>
  * 自定义浏览器布局
  */
-public class BrowserPage extends RelativeLayout implements IPage {
+public class BrowserPage extends RelativePage {
 
 	private static final String TAG = BrowserPage.class.getName();
 	private int ID_TITLE_LAYOUT = 1;
@@ -64,17 +63,15 @@ public class BrowserPage extends RelativeLayout implements IPage {
 	public static final String WEB_CACHE_FILE_NAME = "ie_cache";
 	public static final String GPS_DB_FILE_NAME = "gps_db";
 
-	protected Context mContext;
 	protected boolean closeBrowser = false;
 	protected static final String charsetName = "utf-8";
 	protected RelativeLayout.LayoutParams rParams;
 
 	public BrowserPage(Context context) {
 		super(context);
-		mContext = context;
-		initView();
 	}
 
+	@Override
 	public void initView() {
 		topTitleLayout();
 
@@ -439,8 +436,13 @@ public class BrowserPage extends RelativeLayout implements IPage {
 	}
 
 	@Override
-	public boolean onPageStateChange(boolean isTop) {
+	public boolean onPageStateChange(boolean isTop, Object[] params) {
 		return false;
+	}
+
+	@Override
+	public Object[] transferPageData() {
+		return null;
 	}
 
 	@Override

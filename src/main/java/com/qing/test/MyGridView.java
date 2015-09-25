@@ -18,9 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author zwq
- * Date: 2015-7-17
- * Time: 下午4:47:59
+ * Created by zwq on 2015/07/17 16:47.<br/><br/>
  */
 public class MyGridView extends RefreshAdaterView<AbsListView> implements IPage {
 
@@ -137,8 +135,13 @@ public class MyGridView extends RefreshAdaterView<AbsListView> implements IPage 
     }
 
     @Override
-    public boolean onPageStateChange(boolean isTop) {
+    public boolean onPageStateChange(boolean isTop, Object[] params) {
         return false;
+    }
+
+    @Override
+    public Object[] transferPageData() {
+        return null;
     }
 
     @Override

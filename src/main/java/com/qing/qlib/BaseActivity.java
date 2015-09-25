@@ -17,22 +17,31 @@ import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.qing.log.MLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Created by zwq on 2015/03/24 10:36.<br/><br/>
+ * Activity的基类，封装了一些方法
+ */
 public abstract class BaseActivity extends Activity {
 
     protected String TAG = this.getClass().getName();
     protected Context mContext;
-    protected Activity mActivity;
+    public static BaseActivity mActivity;
 
     private int mLastPage = -1;
+    /** 当前打开的页面的Id */
     private int mCurrentPage = -1;
+    /** 当前打开的页面，类似activity */
     protected IPage mPage = null;
+    /** 最顶部的页面 */
     protected IPage mTopPage = null;
+    /** 当前弹出的页面，类似Dialog */
     private IPage mPopupPage = null;
     private FrameLayout mPopupPageContainer;
     private FrameLayout mContainer;
@@ -46,13 +55,16 @@ public abstract class BaseActivity extends Activity {
 
     private HashMap<Integer, Object[]> mMapStackInfo = new HashMap<Integer, Object[]>();
 
+    private boolean isFirstRun = false;
+    private long time;
+    private boolean killApp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         mContext = this;
         mActivity = this;
-        
         LayoutParams fParams = new LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.MATCH_PARENT);
         mMainContainer = new FrameLayout(mContext);
@@ -112,6 +124,10 @@ public abstract class BaseActivity extends Activity {
         }
     }
 
+    public IPage setActivePage(int page) {
+        return setActivePage(page, false);
+    }
+
     public IPage setActivePage(int page, boolean PageToStack) {
         return setActivePage(page, PageToStack, false, null);
     }
@@ -122,9 +138,13 @@ public abstract class BaseActivity extends Activity {
             return mPage;
         }
         if (mPage != null) {
+            mPage.onPause();
+            mPage.onStop();
             mPage.onDestroy();
             mPage.onClose();
             mContainer.removeAllViews();
+        }else{
+            isFirstRun = true;
         }
         if (pushToStack == true) {
             pushToPageStack(page);
@@ -164,11 +184,15 @@ public abstract class BaseActivity extends Activity {
     }
 
     protected void restorePage(int page) {
-        MLog.i(TAG, "------restorePage");
+        Object[] lastPageDatas = null;
+        if (mPage != null) {
+            lastPageDatas = mPage.transferPageData();
+        }
         Object[] args = getStackInfo(page);
         IPage pg = restorePage(page, args);
         if (pg != null) {
             pg.onRestore();
+            pg.onPageStateChange(true, lastPageDatas);
         }
     }
 
@@ -179,7 +203,7 @@ public abstract class BaseActivity extends Activity {
      * @return
      */
     public boolean backToLastPage(int[] filter) {
-        MLog.i(TAG, "------backToLastPage");
+//        MLog.i(TAG, "------backToLastPage");
         // 弹出页 不为空
         if (mPopupPage != null) {
             // 弹出被覆盖的页面做为当前页
@@ -196,8 +220,12 @@ public abstract class BaseActivity extends Activity {
             }
         }
         int page = popFromPageStack();
-        if (page == -1)
+        if (page == -1) {
             return false;
+        }
+//        else if (page == mCurrentPage){
+//            return false;
+//        }
         restorePage(page);
         return true;
     }
@@ -222,18 +250,22 @@ public abstract class BaseActivity extends Activity {
     }
 
     /**
-     * 弹出一个页面置于顶部
+     * 弹出一个页面置于顶部，类似Dialog
      * 
      * @param page
      */
     public void popupPage(IPage page) {
         if (page != null && page != mPopupPage) {
             if (mTopPage != null) {
-                mTopPage.onPause();
-                mTopPage.onStop();
+//              //弹出页面之间的数据传递
+                mTopPage.onPageStateChange(false, null);
+//                mTopPage.onPause();
+//                mTopPage.onStop();
             }
             mPopupPage = page;
             mTopPage = mPopupPage;
+            mTopPage.onStart();
+            mTopPage.onResume();
             mPopupPageStack.add(page);
             View view = (View) page;
             LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
@@ -251,19 +283,26 @@ public abstract class BaseActivity extends Activity {
      */
     public void closeAllPopupPage() {
         IPage page = null;
+        Object[] datas = null;
         if (mPopupPage != null) {
+            datas = mPopupPage.transferPageData();
             mPopupPage.onPause();
             mPopupPage.onStop();
+            mPopupPage.onDestroy();
+            mPopupPage.onClose();
         }
         for (int i = 0; i < mPopupPageStack.size(); i++) {
             page = mPopupPageStack.get(i);
+            page.onPause();
+            page.onStop();
             page.onDestroy();
             page.onClose();
         }
         if (mPopupPageStack.size() > 0 && mTopPage != mPage) {
             if (mPage != null) {
-                mPage.onStart();
-                mPage.onResume();
+                mPage.onPageStateChange(true, datas);
+//                mPage.onStart();
+//                mPage.onResume();
             }
         }
         mPopupPageContainer.removeAllViews();
@@ -313,6 +352,7 @@ public abstract class BaseActivity extends Activity {
      */
     public void popPopupPage() {
         if (mPopupPageStack.contains(mPopupPage)) {
+            Object[] datas = mPopupPage.transferPageData();
             View view = (View) mPopupPage;
             mPopupPage.onPause();
             mPopupPage.onStop();
@@ -325,8 +365,9 @@ public abstract class BaseActivity extends Activity {
                 mPopupPage = null;
                 if (mTopPage != mPage) {
                     if (mPage != null) {
-                        mPage.onStart();
-                        mPage.onResume();
+                        mPage.onPageStateChange(true, datas);
+//                        mPage.onStart();
+//                        mPage.onResume();
                     }
                 }
                 mTopPage = mPage;
@@ -334,8 +375,9 @@ public abstract class BaseActivity extends Activity {
             } else {
                 mTopPage = mPopupPageStack.get(mPopupPageStack.size() - 1);
                 mPopupPage = mTopPage;
-                mPopupPage.onStart();
-                mPopupPage.onResume();
+                mPopupPage.onPageStateChange(true, datas);
+//                mPopupPage.onStart();
+//                mPopupPage.onResume();
             }
         }
     }
@@ -382,7 +424,7 @@ public abstract class BaseActivity extends Activity {
 
     @Override
     protected void onStart() {
-        if (mTopPage != null) {
+        if (mTopPage != null && !isFirstRun) {
             mTopPage.onStart();
         }
         super.onStart();
@@ -390,7 +432,7 @@ public abstract class BaseActivity extends Activity {
 
     @Override
     protected void onResume() {
-        if (mTopPage != null) {
+        if (mTopPage != null && !isFirstRun) {
             mTopPage.onResume();
         }
         super.onResume();
@@ -403,19 +445,19 @@ public abstract class BaseActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        MLog.i(TAG, "------size:"+mPageStack.size());
+//        MLog.i(TAG, "------size:"+mPageStack.size());
 //        for (int i = 0; i < mPageStack.size(); i++) {
 //            MLog.i(TAG, "------i:"+mPageStack.get(i));
 //        }
         boolean handled = false;
         if (mTopPage != null) {
-            MLog.i(TAG, "------mTopPage:"+mTopPage);
+//            MLog.i(TAG, "------mTopPage:"+mTopPage.getClass().getName());
             handled = mTopPage.onBack();
         }
         if (handled == false) {
-            if(backToLastPage(null) == false) {
+//            if(backToLastPage(null) == false) {
                 onBack();
-            }
+//            }
         }
     }
 
@@ -435,6 +477,9 @@ public abstract class BaseActivity extends Activity {
         super.onStop();
     }
 
+    /**
+     * 其它操作 要在调用super.onDestroy();之前执行
+     */
     @Override
     protected void onDestroy() {
         if (mTopPage != null) {
@@ -443,6 +488,50 @@ public abstract class BaseActivity extends Activity {
         clearPageStack();
         clearStackInfo();
         super.onDestroy();
+        killApp();
+    }
+
+    /**
+     * 过滤主页，判断是否要退出应用
+     * @param page
+     * @return
+     */
+    protected boolean filterHomePage(int page) {
+        if (backToLastPage(new int[] { page }) == false) {
+            confirmExit();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 确认是否退出应用
+     * @return
+     */
+    protected final boolean confirmExit() {
+        time = System.currentTimeMillis() - time;
+        if(time>3000L){
+            Toast.makeText(mContext, "再按一次退出应用", Toast.LENGTH_SHORT).show();
+            time = System.currentTimeMillis();
+            return false;
+        }else{
+            killApp = true;
+            mActivity.finish();
+            return true;
+        }
+    }
+
+    /**
+     * 强制杀死进程
+     * @return
+     */
+    protected final boolean killApp(){
+        if (killApp){
+            mActivity = null;
+            MLog.i(TAG, "killProcess");
+            android.os.Process.killProcess(android.os.Process.myPid());
+        }
+        return killApp;
     }
 
     @Override
@@ -485,12 +574,11 @@ public abstract class BaseActivity extends Activity {
      */
     public int popStackTopPage() {
         int len = mPageStack.size();
-        if (len >= 1) {
-            int page = mPageStack.get(len - 1);
-            mPageStack.remove(len - 1);
-            return page;
+        if (len < 1) {
+            return -1;
         }
-        return -1;
+        int page = mPageStack.remove(len - 1);
+        return page;
     }
 
     /**
@@ -500,7 +588,7 @@ public abstract class BaseActivity extends Activity {
      */
     public int peekLastPage() {
         int len = mPageStack.size();
-        if (len >= 2) {
+        if (len > 1) {
             return mPageStack.get(len - 2);
         }
         return -1;
@@ -520,11 +608,9 @@ public abstract class BaseActivity extends Activity {
      */
     public int popFromPageStack() {
         int len = mPageStack.size();
-        if (len < 2)
+        if (len < 1)
             return -1;
-        mPageStack.remove(len - 1);
-        len = mPageStack.size();
-        int page = mPageStack.get(len - 1);
+        int page = mPageStack.remove(len - 1);
         return page;
     }
 
@@ -539,8 +625,7 @@ public abstract class BaseActivity extends Activity {
             mPageStack.remove(len - 1);
             len = mPageStack.size();
         }
-        int page = mPageStack.get(len - 1);
-        mPageStack.remove(len - 1);
+        int page = mPageStack.remove(len - 1);
         return page;
     }
 

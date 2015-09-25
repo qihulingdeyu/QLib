@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.view.KeyEvent;
 /**
  * 所有的页面需实现此接口
- * @author zwq
+ * Created by zwq on 2015/03/24 10:36.<br/><br/>
  *
  */
 public interface IPage {
@@ -38,9 +38,17 @@ public interface IPage {
     /**
      * 页面状态改变
      * @param isTop 页面是否在最顶部
+     * @param params 上一个页面回传的数据
      * @return
      */
-    public boolean onPageStateChange(boolean isTop);
+    public boolean onPageStateChange(boolean isTop, Object[] params);
+
+    /**
+     * 页面之间传递数据，当页面关闭时将数据回传给 上一个或即将打开的页面
+     * @return
+     */
+    public Object[] transferPageData();
+
     /**
      * 主框架Activity的onPause事件
      *
@@ -68,16 +76,6 @@ public interface IPage {
     public void onClose();
 
     /**
-     * 主框架Activity的onActivityResult事件
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     * @return
-     */
-    public boolean onActivityResult(int requestCode, int resultCode, Intent data);
-
-    /**
      * 主框架Activity的onKeyDown事件
      *
      * @param keyCode
@@ -94,4 +92,14 @@ public interface IPage {
      * @return
      */
     public boolean onActivityKeyUp(int keyCode, KeyEvent event);
+
+    /**
+     * 主框架Activity的onActivityResult事件
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     * @return
+     */
+    public boolean onActivityResult(int requestCode, int resultCode, Intent data);
 }

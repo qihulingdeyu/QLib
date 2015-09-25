@@ -20,9 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author zwq
- * Date: 2015-7-14
- * Time: 下午5:55:51
+ * Created by zwq on 2015/07/14 17:55.<br/><br/>
  */
 public class MyListView extends RefreshAdaterView<AbsListView> implements IPage {
 
@@ -197,8 +195,13 @@ public class MyListView extends RefreshAdaterView<AbsListView> implements IPage 
     }
 
     @Override
-    public boolean onPageStateChange(boolean isTop) {
+    public boolean onPageStateChange(boolean isTop, Object[] params) {
         return false;
+    }
+
+    @Override
+    public Object[] transferPageData() {
+        return null;
     }
 
     @Override

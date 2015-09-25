@@ -2,8 +2,10 @@ package com.qing.qlib;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.widget.RelativeLayout;
 
 /**
@@ -35,4 +37,24 @@ public abstract class RelativePage extends RelativeLayout implements IPage {
     }
 
     protected abstract void initView();
+
+    @Override
+    public Object[] transferPageData() {
+        return null;
+    }
+
+    @Override
+    public boolean onActivityKeyDown(int keyCode, KeyEvent event) {
+        return false;
+    }
+
+    @Override
+    public boolean onActivityKeyUp(int keyCode, KeyEvent event) {
+        return false;
+    }
+
+    @Override
+    public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+        return false;
+    }
 }
