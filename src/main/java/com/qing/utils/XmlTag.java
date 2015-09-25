@@ -34,7 +34,8 @@ public class XmlTag {
 	private String parentName = null;
 	private String space = "\t";
 	private String nextLine = "\n";
-	
+	private boolean toTrim;
+
 	@SuppressWarnings("unused")
 	private XmlTag(){}
 	/**
@@ -103,9 +104,17 @@ public class XmlTag {
 		}
 		return instance;
 	}
+
+	public void setToTrim(boolean trim){
+		toTrim = trim;
+	}
+
+	public boolean getToTrim(){
+		return toTrim;
+	}
 	
 	public XmlTag addChildTag(XmlTag childTag){
-		sbuff.append(childTag.toString());
+		sbuff.append(childTag.getToTrim()==true?childTag.toTrimString():childTag.toString());
 		sbuff.append(nextLine);
 		return instance;
 	}
@@ -198,10 +207,10 @@ public class XmlTag {
 	private static String doEndTag(String tagName){
 		return str2+tagName+str3;
 	}
-	
+
 	@Override
 	public String toString() {
-		return (isRoot==true?head:"")+getContent();
+		return (isRoot==true?head:"") + getContent();
 	}
 	/**
 	 * 去空格和换行符
@@ -210,7 +219,7 @@ public class XmlTag {
 	public String toTrimString() {
 		return toString().replaceAll(nextLine, "").replaceAll(space, "").trim();
 	}
-	
+
 	private boolean hasAdd = false;
 	private String getContent(){
 		if(isParent && !hasAdd){//子标签顶格空位
