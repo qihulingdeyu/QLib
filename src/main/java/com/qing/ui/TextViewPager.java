@@ -21,75 +21,100 @@ public class TextViewPager extends RelativeLayout {
 
     private static final String TAG = TextViewPager.class.getName();
 
-    private String[] color_nm = new String[]{
+    private String[] textArr = new String[]{
             "Original",  "Jasmine", "Camillia", "Rosa", "Lavender", "Sunflower", "Clover", "Peach", "Dandelion", "Lilac", "Tulip"
     };
+    private int[] itemWidth = new int[textArr.length+2];
+    private int[] itemCenterPoint = new int[textArr.length+2];
+    private TextView[] textViewArr = new TextView[textArr.length];
 
-    private static int screen_w = 720;
+    private MyHorizontalScrollView myHorizontalScrollView;
+    private static int screenW = 720;
     private static int position = 0;
+    private int lastId = -1;
+    private Context mContext;
+    private RelativeLayout textLayout;
 
-    private int[] item_w = new int[color_nm.length+2];
-    private int[] item_c = new int[color_nm.length+2];
-
-    private TextView[] tvs = new TextView[color_nm.length];
-    private MyHorizontalScrollView sc;
+    private final int ID_DOT_VIEW = 1;
 
     public TextViewPager(Context context) {
         super(context);
-        screen_w = UIUtils.getScreenW();
+        mContext = context;
+        screenW = UIUtils.getScreenW();
         initView();
     }
-
-    private RelativeLayout srr;
-    private int lastId = -1;
 
     @SuppressLint("ClickableViewAccessibility")
     public void initView() {
         this.setBackgroundColor(Color.TRANSPARENT);
         this.setPadding(0, UIUtils.getRealPixel720(10), 0, UIUtils.getRealPixel720(10));
 
-        sc = new MyHorizontalScrollView(this.getContext());
-        sc.setHorizontalFadingEdgeEnabled(false);
-        if(Build.VERSION.SDK_INT >= 11){
-            sc.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        }
-
-        ImageView iv = new 	ImageView(this.getContext());
-        iv.setId(10001);
+        // 小圆点
+        RelativeLayout.LayoutParams rParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+        rParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        ImageView dotView = new ImageView(mContext);
+        dotView.setId(ID_DOT_VIEW);
 //        iv.setImageResource(R.drawable.camera_filter_selected);//中间的小圆点
+        this.addView(dotView, rParams);
 
-        LinearLayout ll = new LinearLayout(this.getContext());
+        //文字布局
+        rParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT);
+        rParams.addRule(RelativeLayout.BELOW, ID_DOT_VIEW);
+        rParams.topMargin = UIUtils.getRealPixel720(5);
+        myHorizontalScrollView = new MyHorizontalScrollView(mContext);
+        myHorizontalScrollView.setHorizontalFadingEdgeEnabled(false);
+        myHorizontalScrollView.setHorizontalScrollBarEnabled(false);
+        if(Build.VERSION.SDK_INT >= 11){
+            myHorizontalScrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        }
+        myHorizontalScrollView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    changeSelector = true;
 
-        RelativeLayout srr_first = new RelativeLayout(this.getContext());
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screen_w/2, LayoutParams.WRAP_CONTENT);
-        ll.addView(srr_first, lp);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//					int xx = myHorizontalScrollView.getScrollX();
+//					Log.i("bbb", "--------xx:"+xx);
+////					change(xx);
+                }
+                return false;
+            }
+        });
+        this.addView(myHorizontalScrollView, rParams);
 
-        for(int i=0;i<color_nm.length;i++) {
-            srr = new RelativeLayout(this.getContext());
-            TextView tv = new TextView(this.getContext());
-            tv.setId(i);
-            tv.setText(color_nm[i]);
-            tv.setTextColor(Color.WHITE);
+        LinearLayout contentLayout = new LinearLayout(mContext);
+        myHorizontalScrollView.addView(contentLayout);
 
-            tvs[i] = tv;
-            int w = color_nm[i].length()*UIUtils.getRealPixel720(12) + UIUtils.getRealPixel720(30)*2;
-            item_w[1+i] = w;
+        //第一个空白布局
+        LinearLayout.LayoutParams lParams = new LinearLayout.LayoutParams(screenW /2, LayoutParams.WRAP_CONTENT);
+        RelativeLayout firstEmpty = new RelativeLayout(mContext);
+        contentLayout.addView(firstEmpty, lParams);
 
-            lp = new LinearLayout.LayoutParams(w, LayoutParams.WRAP_CONTENT);
-            ll.addView(srr, lp);
+        for(int i=0; i<textArr.length; i++) {
+            textLayout = new RelativeLayout(mContext);
+            TextView textView = new TextView(mContext);
+            textView.setId(i);
+            textView.setText(textArr[i]);
+            textView.setTextColor(Color.WHITE);
 
-            RelativeLayout.LayoutParams lp2 = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-            lp2.addRule(RelativeLayout.CENTER_HORIZONTAL);
-            srr.addView(tv, lp2);
+            int textWidth = textArr[i].length() * UIUtils.getRealPixel720(12) + UIUtils.getRealPixel720(30)*2;
+            itemWidth[1+i] = textWidth;
+            textViewArr[i] = textView;
 
-            tv.setOnClickListener(new View.OnClickListener() {
+            lParams = new LinearLayout.LayoutParams(textWidth, LayoutParams.WRAP_CONTENT);
+            contentLayout.addView(textLayout, lParams);
+
+            rParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            rParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+            textLayout.addView(textView, rParams);
+
+            textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int id = v.getId();
-
                     position = id;
-                    sc.scrollTo(item_c[id], 0);
-
+                    myHorizontalScrollView.scrollTo(itemCenterPoint[id], 0);
 //                    if(mListener!=null)
 //                        mListener.onClickColor_selector(id-1);
 
@@ -102,57 +127,98 @@ public class TextViewPager extends RelativeLayout {
                 lastId = i;
             }
         }
-        RelativeLayout srr_last = new RelativeLayout(this.getContext());
-        lp = new LinearLayout.LayoutParams(screen_w/2, LayoutParams.WRAP_CONTENT);
-        ll.addView(srr_last, lp);
+        //最后一个空白布局
+        RelativeLayout lastEmpty = new RelativeLayout(mContext);
+        lParams = new LinearLayout.LayoutParams(screenW /2, LayoutParams.WRAP_CONTENT);
+        contentLayout.addView(lastEmpty, lParams);
 
-        item_w[0] = screen_w/2 - item_w[1]/2;
-        item_w[color_nm.length+1] = screen_w/2 - item_w[color_nm.length]/2;
-        int old_ws = 0;
+        itemWidth[0] = screenW /2 - itemWidth[1]/2;
+        itemWidth[textArr.length+1] = screenW /2 - itemWidth[textArr.length]/2;
 
-        for(int i=1;i<item_w.length-1;i++) {
-            int s = old_ws + item_w[i]/2 + item_w[i+1]/2;
-            item_c[i] = s;
-            old_ws = s;
+        //相邻两个的中心距离
+        int oldWidthSpace = 0;
+        for(int i=1; i<itemWidth.length-1; i++) {
+            int space = oldWidthSpace + itemWidth[i]/2 + itemWidth[i+1]/2;
+            itemCenterPoint[i] = space;
+            oldWidthSpace = space;
         }
 
-        LinearLayout.LayoutParams lpt = (android.widget.LinearLayout.LayoutParams) srr_first.getLayoutParams();
-        lpt.width = item_w[0];
-        srr_first.setLayoutParams(lpt);
+        lParams = (LinearLayout.LayoutParams) firstEmpty.getLayoutParams();
+        lParams.width = itemWidth[0];
+        firstEmpty.setLayoutParams(lParams);
 
-        lpt =  (android.widget.LinearLayout.LayoutParams) srr_last.getLayoutParams();
-        lpt.width = item_w[color_nm.length+1];
-        srr_last.setLayoutParams(lpt);
-
-        sc.addView(ll);
-        sc.setHorizontalScrollBarEnabled(false);
-
-        RelativeLayout.LayoutParams lp1 = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
-        lp1.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        this.addView(iv,lp1);
-
-        RelativeLayout.LayoutParams lp2 = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT);
-        lp2.addRule(RelativeLayout.BELOW,10001);
-        lp2.topMargin = UIUtils.getRealPixel720(5);
-        this.addView(sc,lp2);
-
-        sc.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_MOVE){
-                    changeSelector = true;
-
-                }else if(event.getAction() == MotionEvent.ACTION_UP) {
-//					int xx = sc.getScrollX();
-//					Log.i("bbb", "--------xx:"+xx);
-////					change(xx);
-                }
-                return false;
-            }
-        });
+        lParams = (LinearLayout.LayoutParams) lastEmpty.getLayoutParams();
+        lParams.width = itemWidth[textArr.length+1];
+        lastEmpty.setLayoutParams(lParams);
     }
 
-    public int getCurrentColorId(){
+    private boolean changing = false;
+
+    /**
+     * 移动一个
+     * @param dir
+     */
+    public void moveOne(int dir) {
+        if(changing) return;
+        changing = true;
+
+        distanceX = 0;
+        if(dir < 0){
+            position--;
+            if(position<0)position=0;
+        }else{
+            position++;
+            if(position>= textArr.length)position=0;//textArr.length-1;
+        }
+
+        myHorizontalScrollView.scrollTo(itemCenterPoint[position], 0);
+        setSelectedTextColor(lastId, position);
+        lastId = position;
+
+        changing = false;
+    }
+
+    public void initFilterColor(int id){
+        if(id<0 || id>= itemCenterPoint.length){
+            id = 0;
+        }
+        position = id;
+        myHorizontalScrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                myHorizontalScrollView.scrollTo(itemCenterPoint[position], 0);
+            }
+        });
+
+        setSelectedTextColor(lastId, position);
+        lastId = position;
+    }
+
+    private void change(int distance) {
+        if(changing) return;
+        changing = true;
+
+        int id = position;
+        for(int i=0; i<itemCenterPoint.length-1; i++) {
+//			Log.i("bbb", "i:"+i+",it_c:"+itemCenterPoint[i]);
+            if(distance >= (itemCenterPoint[i] - itemWidth[i+1]/2)){
+                id = i;
+            }
+        }
+        position = id;
+        myHorizontalScrollView.scrollTo(itemCenterPoint[id], 0);
+
+//        if(mListener!=null)
+//            mListener.onClickColor_selector(id-1);
+
+        setSelectedTextColor(lastId, id);
+        lastId = id;
+        changeSelector = false;
+
+        changing = false;
+    }
+
+    public int getCurrentPosition(){
         return position;
     }
 
@@ -165,67 +231,6 @@ public class TextViewPager extends RelativeLayout {
         this.lastColorIndex = lastColorIndex;
     }
 
-    private boolean changing = false;
-    public void move_one(int d) {
-        if(changing) return;
-        changing = true;
-
-        dx = 0;
-        if(d<0){
-            position--;
-            if(position<0)position=0;
-        }else{
-            position++;
-            if(position>=color_nm.length)position=0;//color_nm.length-1;
-        }
-
-        sc.scrollTo(item_c[position], 0);
-        setSelectedTextColor(lastId, position);
-        lastId = position;
-
-        changing = false;
-    }
-
-    public void initFilterColor(int id){
-        if(id<0 || id>=item_c.length){
-            id = 0;
-        }
-        position = id;
-        sc.post(new Runnable() {
-            @Override
-            public void run() {
-                sc.scrollTo(item_c[position], 0);
-            }
-        });
-
-        setSelectedTextColor(lastId, position);
-        lastId = position;
-    }
-
-    private void change(int xx) {
-        if(changing) return;
-        changing = true;
-
-        int id = position;
-        for(int i=0;i<item_c.length-1;i++) {
-//			Log.i("bbb", "i:"+i+",it_c:"+item_c[i]);
-            if(xx>=(item_c[i]-item_w[i+1]/2)){
-                id = i;
-            }
-        }
-        position = id;
-        sc.scrollTo(item_c[id], 0);
-
-//        if(mListener!=null)
-//            mListener.onClickColor_selector(id-1);
-
-        setSelectedTextColor(lastId, id);
-        lastId = id;
-        changeSelector = false;
-
-        changing = false;
-    }
-
     private boolean changeSelector = false;
     public boolean isChangeSelector() {
         return changeSelector;
@@ -236,43 +241,43 @@ public class TextViewPager extends RelativeLayout {
 
     /**设置被选中的文字颜色*/
     private void setSelectedTextColor(int lastId, int curId){
-        if(srr==null) return;
-//		Log.i("bbb", "lastId:"+lastId+",curId:"+curId+",count:"+color_nm.length);
-        if(lastId>=0 && lastId<tvs.length){
-            TextView tv = tvs[lastId];
+        if(textLayout == null) return;
+//		Log.i("bbb", "lastId:"+lastId+",curId:"+curId+",count:"+textArr.length);
+        if(lastId>=0 && lastId<textViewArr.length){
+            TextView tv = textViewArr[lastId];
             if(tv!=null)
                 tv.setTextColor(Color.WHITE);
         }
-        if(curId>=0 && curId<tvs.length){
-            TextView tv = tvs[curId];
+        if(curId>=0 && curId<textViewArr.length){
+            TextView tv = textViewArr[curId];
             if(tv!=null)
                 tv.setTextColor(0xff32bea0);
         }
     }
 
-    private int lx,cx;
-    private int dx = 0;
+    private int lastX, currentX;
+    private int distanceX = 0;
     private int move;
     public boolean setScrollEvent(MotionEvent event){
         if(event.getAction() == MotionEvent.ACTION_DOWN){
             move = 0;
-            lx = (int) event.getX();
+            lastX = (int) event.getX();
         }else if(event.getAction() == MotionEvent.ACTION_MOVE){
-            cx = (int) event.getX();
-            if(Math.abs(lx-cx)<UIUtils.getScreenW()/4){
-                dx += (lx-cx);
+            currentX = (int) event.getX();
+            if(Math.abs(lastX - currentX)<UIUtils.getScreenW()/4){
+                distanceX += (lastX - currentX);
             }else{
-                dx = 0;
+                distanceX = 0;
             }
-            sc.scrollBy((lx-cx)/3, 0);
-            lx = cx;
+            myHorizontalScrollView.scrollBy((lastX - currentX) / 3, 0);
+            lastX = currentX;
         }else if(event.getAction() == MotionEvent.ACTION_UP){
-            lx = 0;
-            if(Math.abs(dx)>=UIUtils.getScreenW()/5){
-//				Log.i("bbb", "dx:"+dx);
-                move = dx;
-                move_one(move>0?1:-1);
-                dx = 0;
+            lastX = 0;
+            if(Math.abs(distanceX)>=UIUtils.getScreenW()/5){
+//				Log.i("bbb", "distanceX:"+distanceX);
+                move = distanceX;
+                moveOne(move > 0 ? 1 : -1);
+                distanceX = 0;
             }
         }
         return move!=0?true:false;
