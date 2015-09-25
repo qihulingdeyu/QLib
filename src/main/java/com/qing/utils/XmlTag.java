@@ -34,7 +34,7 @@ public class XmlTag {
 	private String parentName = null;
 	private String space = "\t";
 	private String nextLine = "\n";
-	private boolean toTrim;
+	private boolean tagValueToTrim;
 
 	@SuppressWarnings("unused")
 	private XmlTag(){}
@@ -55,7 +55,7 @@ public class XmlTag {
 		this(tagName, tagValue==true?"1":"0");
 	}
 	public XmlTag(String tagName, int tagValue){
-		this(tagName, ""+tagValue);
+		this(tagName, "" + tagValue);
 	}
 	public XmlTag(String tagName, String tagValue){
 		this(0, tagName, tagValue, false);
@@ -105,16 +105,8 @@ public class XmlTag {
 		return instance;
 	}
 
-	public void setToTrim(boolean trim){
-		toTrim = trim;
-	}
-
-	public boolean getToTrim(){
-		return toTrim;
-	}
-	
 	public XmlTag addChildTag(XmlTag childTag){
-		sbuff.append(childTag.getToTrim()==true?childTag.toTrimString():childTag.toString());
+		sbuff.append(childTag.toString());
 		sbuff.append(nextLine);
 		return instance;
 	}
@@ -217,7 +209,19 @@ public class XmlTag {
 	 * @return
 	 */
 	public String toTrimString() {
-		return toString().replaceAll(nextLine, "").replaceAll(space, "").trim();
+		return trimAll(toString());
+	}
+
+	public String trimAll(String content){
+		return content==null?null:content.replaceAll(nextLine, "").replaceAll(space, "").trim();
+	}
+
+	/**
+	 * 去掉便签内的所有空格，必须在添加标签内容之前调用，否则无效
+	 * @param trim
+	 */
+	public void setTagValueToTrim(boolean trim){
+		tagValueToTrim = trim;
 	}
 
 	private boolean hasAdd = false;
@@ -227,6 +231,14 @@ public class XmlTag {
 				sbuff.append(space);
 			}
 			sbuff.append(doEndTag(parentName));
+			if (tagValueToTrim && level > 0){
+				StringBuffer temp = new StringBuffer();
+				for (int i = 0; i < level; i++) {
+					temp.append(space);
+				}
+				temp.append(trimAll(sbuff.toString()));
+				sbuff = temp;
+			}
 			hasAdd = true;
 		}
 		return sbuff.toString();

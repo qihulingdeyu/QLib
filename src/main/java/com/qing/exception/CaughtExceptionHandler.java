@@ -44,7 +44,7 @@ public class CaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
     @Override
     public void uncaughtException(Thread thread, Throwable throwable) {
-        MLog.i(TAG, "--uncaughtException--"+TAG);
+        MLog.i(TAG, "--uncaughtException--" + TAG);
         handleException(throwable);
 
         if (defaultHandler!=null){
@@ -61,21 +61,20 @@ public class CaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
         XmlTag info = new XmlTag(-1, "info");
 
         XmlTag device = new XmlTag(info.level, "device_info");
+        device.setTagValueToTrim(true);
         String deviceInfo = CollectDeviceInfo(device, mContext);
         info.addChildTag(device);
 
         String errorInfo = CollectErrorInfo(throwable);
         info.addChildTag("error", verifyString(errorInfo));
 
-//        MLog.i(TAG, info.toString());
-
-//        save2File(info.toTrimString(), false);
         save2File(info.toString(), false);
     }
 
     /**
      * 将文本信息保存到文件
      * @param info
+     * @param sortByDate
      * @return
      */
     private String save2File(String info, boolean sortByDate) {
