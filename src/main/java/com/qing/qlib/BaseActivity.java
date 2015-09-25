@@ -255,12 +255,27 @@ public abstract class BaseActivity extends Activity {
      * @param page
      */
     public void popupPage(IPage page) {
+        popupPage(page, false);
+    }
+
+    /**
+     * 弹出一个页面置于顶部，类似Dialog
+     * @param page 要弹出的页面
+     * @param closeCurrentPage 是否关闭当前弹出的页面
+     */
+    public void popupPage(IPage page, boolean closeCurrentPage) {
         if (page != null && page != mPopupPage) {
             if (mTopPage != null) {
 //              //弹出页面之间的数据传递
                 mTopPage.onPageStateChange(false, null);
-//                mTopPage.onPause();
-//                mTopPage.onStop();
+                if (closeCurrentPage && mPopupPage != null) {
+                    mTopPage.onPause();
+                    mTopPage.onStop();
+                    mTopPage.onDestroy();
+                    mTopPage.onClose();
+                    mPopupPageContainer.removeView((View) mTopPage);
+                    mPopupPageStack.remove(mTopPage);
+                }
             }
             mPopupPage = page;
             mTopPage = mPopupPage;
@@ -353,12 +368,11 @@ public abstract class BaseActivity extends Activity {
     public void popPopupPage() {
         if (mPopupPageStack.contains(mPopupPage)) {
             Object[] datas = mPopupPage.transferPageData();
-            View view = (View) mPopupPage;
             mPopupPage.onPause();
             mPopupPage.onStop();
             mPopupPage.onDestroy();
             mPopupPage.onClose();
-            mPopupPageContainer.removeView(view);
+            mPopupPageContainer.removeView((View) mPopupPage);
             mPopupPageStack.remove(mPopupPage);
 
             if (mPopupPageStack.size() == 0) {
