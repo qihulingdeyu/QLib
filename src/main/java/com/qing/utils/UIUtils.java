@@ -4,9 +4,14 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Rect;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.ViewConfiguration;
 import android.widget.Toast;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Created by zwq on 2015/04/15 11:28.<br/><br/>
@@ -122,5 +127,30 @@ public class UIUtils {
             }
         }
         return statusHeight;
+    }
+
+    /**
+     * 是否有实体Home键，返回true则有，否则为false
+     */
+    public static boolean hasPhysicalMenuKey(Context context) {
+        boolean hasPermanentMenuKey = false;
+        if(Build.VERSION.SDK_INT >= 14){
+            ViewConfiguration vc = ViewConfiguration.get(context);
+            try {
+                Method m = ViewConfiguration.get(context).getClass().getMethod("hasPermanentMenuKey", new Class<?>[]{});
+                try {
+                    hasPermanentMenuKey = (Boolean) m.invoke(vc,new Object[]{});
+                } catch (IllegalArgumentException e) {
+                    hasPermanentMenuKey = false;
+                } catch (IllegalAccessException e) {
+                    hasPermanentMenuKey = false;
+                } catch (InvocationTargetException e) {
+                    hasPermanentMenuKey = false;
+                }
+            } catch (NoSuchMethodException e) {
+                hasPermanentMenuKey = false;
+            }
+        }
+        return hasPermanentMenuKey;
     }
 }
