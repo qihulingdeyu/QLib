@@ -6,12 +6,25 @@ package com.qing.utils;
 public abstract class ThreadUtils implements Runnable {
 
     private static final String TAG = ThreadUtils.class.getName();
-    protected boolean isRunning;
+    private Thread mThread;
+    private boolean isRunning;
+
+    public ThreadUtils(){
+        if (mThread == null){
+            mThread = new Thread(this);
+        }
+    }
 
     public abstract void execute();
 
-    public void finish() {
-        isRunning = false;
+    public final boolean isRunning() {
+        return isRunning;
+    }
+
+    public final synchronized void start(){
+        if (mThread != null){
+            mThread.start();
+        }
     }
 
     @Override
@@ -21,12 +34,7 @@ public abstract class ThreadUtils implements Runnable {
         finish();
     }
 
-    public final void start(){
-        run();
+    public void finish() {
+        isRunning = false;
     }
-
-    public final boolean isRunning() {
-        return isRunning;
-    }
-
 }
