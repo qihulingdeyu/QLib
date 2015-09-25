@@ -3,7 +3,7 @@ package com.qing.utils;
 import static com.qing.utils.StringUtils.isNullOrEmpty;
 
 /**
- * Created by zwq on 2015-4-15 上午11:28:21 <br/><br/>
+ * Created by zwq on 2015/04/15 11:28.<br/><br/>
  * 将字符拼接成xml格式文本
  */
 public class XmlTag {

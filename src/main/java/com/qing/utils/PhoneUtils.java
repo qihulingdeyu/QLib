@@ -23,7 +23,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class PhoneUtils {
+public class PhoneInfos {
 
     private static final String FILE_MEMORY = "/proc/meminfo";
     private static final String FILE_CPU = "/proc/cpuinfo";
@@ -79,11 +79,11 @@ public class PhoneUtils {
     /**
      * 手机剩余内存
      */
-    public long mFreeMemory;
+    public long mFreeMem;
     /**
      * 手机总内存
      */
-    public long mTotalMemory;
+    public long mTotalMem;
     /**
      * 手机CPU型号
      */
@@ -109,24 +109,8 @@ public class PhoneUtils {
      */
     public String mFingerprint;
 
-    private static PhoneUtils phoneUtils;
-    private PhoneUtils(Context context) {
-        phoneUtils = this;
-        getAllInfo(context);
+    public PhoneInfos() {
     }
-    
-    public static PhoneUtils init(Context context) {
-        if (phoneUtils==null){
-            synchronized (PhoneUtils.class){
-                if(phoneUtils==null){
-                    new PhoneUtils(context);
-//                    phoneUtils = new PhoneUtils(context);
-                }
-            }
-        }
-        return phoneUtils;
-    }
-    
 
     /**
      * 获取手机的IMEI
@@ -273,7 +257,7 @@ public class PhoneUtils {
      * @param context
      * @return
      */
-    public long getFreeMemory(Context context) {
+    public long getFreeMem(Context context) {
         ActivityManager manager = (ActivityManager) context
                 .getSystemService(Activity.ACTIVITY_SERVICE);
         MemoryInfo info = new MemoryInfo();
@@ -288,7 +272,7 @@ public class PhoneUtils {
      * @param context
      * @return
      */
-    public long getTotalMemory(Context context) {
+    public long getTotalMem(Context context) {
         try {
             FileReader fr = new FileReader(FILE_MEMORY);
             BufferedReader br = new BufferedReader(fr);
@@ -415,31 +399,32 @@ public class PhoneUtils {
      * @param context
      * @return
      */
-    public PhoneUtils getAllInfo(Context context) {
-        phoneUtils.mIMEI = getIMEI(context);
-        phoneUtils.mPhoneType = getPhoneType(context);
-        phoneUtils.mSdkVersion = getSdkVersion();
-        phoneUtils.mOsVersion = getOsVersion();
-        phoneUtils.mAppName = getAppName(context);
+    public PhoneInfos getPhoneInfo(Context context) {
+        PhoneInfos result = new PhoneInfos();
+        result.mIMEI = getIMEI(context);
+        result.mPhoneType = getPhoneType(context);
+        result.mSdkVersion = getSdkVersion();
+        result.mOsVersion = getOsVersion();
+        result.mAppName = getAppName(context);
 
-        phoneUtils.mAppVersion = getAppVersion(context);
-        phoneUtils.mNetWorkCountryIso = getNetWorkCountryIso(context);
-        phoneUtils.mNetWorkOperator = getNetWorkOperator(context);
-        phoneUtils.mNetWorkOperatorName = getNetWorkOperatorName(context);
-        phoneUtils.mNetWorkType = getNetworkType(context);
+        result.mAppVersion = getAppVersion(context);
+        result.mNetWorkCountryIso = getNetWorkCountryIso(context);
+        result.mNetWorkOperator = getNetWorkOperator(context);
+        result.mNetWorkOperatorName = getNetWorkOperatorName(context);
+        result.mNetWorkType = getNetworkType(context);
 
-        phoneUtils.mIsOnLine = isOnline(context);
-        phoneUtils.mConnectTypeName = getConnectTypeName(context);
-        phoneUtils.mFreeMemory = getFreeMemory(context);
-        phoneUtils.mTotalMemory = getTotalMemory(context);
-        phoneUtils.mCupInfo = getCpuInfo();
+        result.mIsOnLine = isOnline(context);
+        result.mConnectTypeName = getConnectTypeName(context);
+        result.mFreeMem = getFreeMem(context);
+        result.mTotalMem = getTotalMem(context);
+        result.mCupInfo = getCpuInfo();
 
-        phoneUtils.mProductName = getProductName();
-        phoneUtils.mModelName = getModelName();
-        phoneUtils.mManufacturerName = getManufacturerName();
-        phoneUtils.mBasebandVersion = getBasebandVersion();
-        phoneUtils.mFingerprint = getFingerprint();
-        return phoneUtils;
+        result.mProductName = getProductName();
+        result.mModelName = getModelName();
+        result.mManufacturerName = getManufacturerName();
+        result.mBasebandVersion = getBasebandVersion();
+        result.mFingerprint = getFingerprint();
+        return result;
     }
 
     @Override
@@ -455,9 +440,9 @@ public class PhoneUtils {
         builder.append("mSysVersion : " + mSdkVersion + "\n");
         builder.append("mOsVersion : " + mOsVersion + "\n");
         builder.append("mCupInfo : " + mCupInfo + "\n");
-        builder.append("mFreeMemory : " + mFreeMemory + "M\n");
+        builder.append("mFreeMem : " + mFreeMem + "M\n");
 
-        builder.append("mTotalMemory : " + mTotalMemory + "M\n");
+        builder.append("mTotalMem : " + mTotalMem + "M\n");
         builder.append("mPhoneType : " + mPhoneType + "\n");
         builder.append("mNetWorkCountryIso : " + mNetWorkCountryIso + "\n");
         builder.append("mNetWorkOperator : " + mNetWorkOperator + "\n");
@@ -483,9 +468,9 @@ public class PhoneUtils {
         mAllMap.put("mSdkVersion", String.valueOf(mSdkVersion));
         mAllMap.put("mOsVersion", mOsVersion);
         mAllMap.put("mCupInfo", mCupInfo);
-        mAllMap.put("mFreeMemory", mFreeMemory + "M");
+        mAllMap.put("mFreeMem", mFreeMem + "M");
 
-        mAllMap.put("mTotalMemory", mTotalMemory + "M");
+        mAllMap.put("mTotalMem", mTotalMem + "M");
         mAllMap.put("mPhoneType", String.valueOf(mPhoneType));
         mAllMap.put("mNetWorkCountryIso", mNetWorkCountryIso);
         mAllMap.put("mNetWorkOperator", mNetWorkOperator);

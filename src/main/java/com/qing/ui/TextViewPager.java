@@ -37,13 +37,14 @@ public class TextViewPager extends RelativeLayout {
     public TextViewPager(Context context) {
         super(context);
         screen_w = UIUtils.getScreenW();
-        init();
+        initView();
     }
 
     private RelativeLayout srr;
     private int lastId = -1;
+
     @SuppressLint("ClickableViewAccessibility")
-    void init() {
+    public void initView() {
         this.setBackgroundColor(Color.TRANSPARENT);
         this.setPadding(0, UIUtils.getRealPixel720(10), 0, UIUtils.getRealPixel720(10));
 
@@ -150,11 +151,6 @@ public class TextViewPager extends RelativeLayout {
             }
         });
     }
-
-//    private CameraLayout.CameraControlClickListener mListener;
-//    public void setClickListener(CameraLayout.CameraControlClickListener listener) {
-//        mListener = listener;
-//    }
 
     public int getCurrentColorId(){
         return position;

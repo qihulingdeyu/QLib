@@ -5,6 +5,7 @@ import java.io.InputStream;
 
 /**
  * Created by zwq on 2015/07/21 16:20.<br/><br/>
+ * 发送http请求的回调
  */
 public abstract class HttpCallback extends AbstractTaskCallback {
 
