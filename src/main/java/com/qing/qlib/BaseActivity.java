@@ -622,9 +622,22 @@ public abstract class BaseActivity extends Activity {
      */
     public int popFromPageStack() {
         int len = mPageStack.size();
-        if (len < 1)
-            return -1;
-        int page = mPageStack.remove(len - 1);
+        if (len < 2){// 0 1
+            if(!(len == 1 && mCurrentPage != mPageStack.get(0))){
+                return -1;
+            }
+        }
+
+        //如果当前的页面不是在页面栈顶，则表示当前页面是没有压到页面栈里面
+        if(mCurrentPage != -1 && mCurrentPage == mPageStack.get(len - 1)){
+            // len == 1 时 待处理
+            mPageStack.remove(len - 1);
+        }
+        len = mPageStack.size();
+        int page = -1;
+        if (len > 0) {
+            page = mPageStack.get(len - 1);
+        }
         return page;
     }
 

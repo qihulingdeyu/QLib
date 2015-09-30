@@ -26,14 +26,20 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.qing.ie.AllMethodListener;
+import com.qing.ie.XWebView;
 import com.qing.qlib.MainActivity;
+import com.qing.qlib.R;
 import com.qing.qlib.RelativePage;
 import com.qing.ui.AlertDialog;
 import com.qing.ui.HorizontalProgressBar;
+import com.qing.utils.DrawableUtils;
 import com.qing.utils.NetUtils;
+import com.qing.utils.StringUtils;
 import com.qing.utils.UIUtils;
 
 /**
@@ -43,8 +49,9 @@ import com.qing.utils.UIUtils;
 public class BrowserPage extends RelativePage {
 
 	private static final String TAG = BrowserPage.class.getName();
-	private int ID_TITLE_LAYOUT = 1;
-	private int ID_PROGRESS_BAR = 2;
+	private int ID_TITLE_LAYOUT = 0x1;
+	private int ID_WEBVIEW = 0x2;
+	private int ID_PROGRESS_BAR = 0x3;
 	private RelativeLayout titleLayout;
 	private TextView titleName;
 	private RelativeLayout btnLayout;
@@ -53,19 +60,19 @@ public class BrowserPage extends RelativePage {
 
 	private HorizontalProgressBar progressBar;
 
-	private WebView webView;
+	private XWebView webView;
 	private LinearLayout tipsLayout;
 	private ImageView mTipIcon;
 	private TextView mTip1;
 	private TextView mTip2;
 	private String mText1 = "加载失败";
 	private String mText2 = "请检查您的网络";
-	public static final String WEB_CACHE_FILE_NAME = "ie_cache";
-	public static final String GPS_DB_FILE_NAME = "gps_db";
 
 	protected boolean closeBrowser = false;
-	protected static final String charsetName = "utf-8";
 	protected RelativeLayout.LayoutParams rParams;
+
+	private ValueCallback<Uri> uploadFileCallback;
+	private int actRequestCode = 1;
 
 	public BrowserPage(Context context) {
 		super(context);
@@ -89,7 +96,6 @@ public class BrowserPage extends RelativePage {
 		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
 		titleLayout = new RelativeLayout(mContext);
 		titleLayout.setId(ID_TITLE_LAYOUT);
-//		titleLayout.setBackgroundResource(R.drawable.main_topbar_bg_fill);
 		this.addView(titleLayout, rParams);
 
 		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -97,7 +103,7 @@ public class BrowserPage extends RelativePage {
 		titleName = new TextView(mContext);
 		titleName.setTextColor(Color.WHITE);
 		titleName.setTextSize(17);
-		titleName.setText("Jane/简·拼");
+		titleName.setText(R.string.app_name);
 		titleName.setMaxEms(15);
 		titleName.setSingleLine(true);
 		titleName.setEllipsize(TruncateAt.END);
@@ -108,37 +114,11 @@ public class BrowserPage extends RelativePage {
 	protected void webViewLayout() {
 		// 浏览器
 		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		// rParams.topMargin = Utils.getRealPixel3(100);
+		rParams.topMargin = UIUtils.getRealPixel720(100);
 		rParams.addRule(RelativeLayout.BELOW, ID_TITLE_LAYOUT);
-		webView = new WebView(mContext);
-		webView.addJavascriptInterface(new JavaScriptInvokeLocalObject(), "localObj");
-		webView.setWebViewClient(mWebViewClient);
-		webView.setWebChromeClient(mWebChromeClient);
-		webView.setDownloadListener(mDownloadListener);
-		webView.getSettings().setDefaultTextEncodingName(charsetName);
-		// webView.getSettings().setLayoutAlgorithm(LayoutAlgorithm.SINGLE_COLUMN);
-		webView.setVerticalScrollBarEnabled(false);
-//		webView.getSettings().setPluginsEnabled(true);
-		webView.getSettings().setPluginState(PluginState.ON);
-
-		webView.getSettings().setAppCachePath(getContext().getDir(WEB_CACHE_FILE_NAME, Context.MODE_PRIVATE).getPath());
-		webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
-		webView.getSettings().setAppCacheEnabled(true);
-		webView.getSettings().setAllowFileAccess(true);
-		webView.getSettings().setJavaScriptEnabled(true);
-		webView.getSettings().setDomStorageEnabled(true);
-		webView.getSettings().setGeolocationDatabasePath(getContext().getDir(GPS_DB_FILE_NAME, Context.MODE_PRIVATE).getPath());
-		webView.getSettings().setGeolocationEnabled(true);
-		// settings.setUseWideViewPort(true);
-		// settings.setLoadWithOverviewMode(true);
-		webView.getSettings().setDatabaseEnabled(true);
-		webView.getSettings().setSaveFormData(true);
-		// settings.setSupportZoom(true);
-		// settings.setBuiltInZoomControls(true);
-		webView.getSettings().setAppCacheMaxSize(1024 * 1024 * 20);
-		webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
-		webView.getSettings().setUserAgentString("jane");
-		webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+		webView = new XWebView(mContext);
+		webView.setId(ID_WEBVIEW);
+		webView.setAllMethodListener(mAllMethodListener);
 		this.addView(webView, rParams);
 	}
 
@@ -151,20 +131,18 @@ public class BrowserPage extends RelativePage {
 		// 返回按钮
 		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_VERTICAL);
-		// rParams.topMargin = Utils.getRealPixel3(50);
-		rParams.leftMargin = UIUtils.getRealPixel720(15);
+//		rParams.leftMargin = UIUtils.getRealPixel720(15);
 		backBtn = new ImageView(mContext);
-//		backBtn.setImageResource(R.drawable.puzzles_cancel_btn);
+		backBtn.setImageDrawable(DrawableUtils.pressedSelector(mContext, R.mipmap.back_btn_normal, R.mipmap.back_btn_press));
 		backBtn.setOnClickListener(mOnClickListener);
 		btnLayout.addView(backBtn, rParams);
 
 		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_VERTICAL);
 		rParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-		// rParams.topMargin = Utils.getRealPixel3(50);
 		rParams.rightMargin = UIUtils.getRealPixel720(40);
 		closeBtn = new ImageView(mContext);
-//		closeBtn.setImageResource(R.drawable.puzzles_stop_btn);
+		closeBtn.setImageDrawable(DrawableUtils.pressedSelector(mContext, R.mipmap.close_btn_normal, R.mipmap.close_btn_press));
 		closeBtn.setOnClickListener(mOnClickListener);
 		btnLayout.addView(closeBtn, rParams);
 	}
@@ -172,7 +150,8 @@ public class BrowserPage extends RelativePage {
 	protected void progressBarLayout() {
 		//进度条
 		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(8));
-		rParams.addRule(RelativeLayout.BELOW, ID_TITLE_LAYOUT);
+		rParams.addRule(RelativeLayout.ALIGN_TOP, ID_WEBVIEW);
+		rParams.topMargin = UIUtils.getRealPixel720(100);
 		progressBar = new HorizontalProgressBar(mContext);
 		progressBar.setId(ID_PROGRESS_BAR);
 		this.addView(progressBar, rParams);
@@ -224,6 +203,15 @@ public class BrowserPage extends RelativePage {
 	/** 隐藏顶部标题布局 */
 	public void hideTitleLayout() {
 		titleLayout.setVisibility(View.GONE);
+
+		rParams = (LayoutParams) webView.getLayoutParams();
+		rParams.topMargin = 0;
+		webView.setLayoutParams(rParams);
+
+		rParams = (LayoutParams) progressBar.getLayoutParams();
+		rParams.topMargin = 0;
+		progressBar.setLayoutParams(rParams);
+
 	}
 
 	/** 隐藏顶部按钮布局 */
@@ -241,7 +229,8 @@ public class BrowserPage extends RelativePage {
 		closeBtn.setVisibility(View.GONE);
 	}
 
-	private WebViewClient mWebViewClient = new WebViewClient() {
+	private AllMethodListener mAllMethodListener = new AllMethodListener(){
+
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 //			if (dealAction(url, view)) {
@@ -257,22 +246,27 @@ public class BrowserPage extends RelativePage {
 			super.onPageStarted(view, url, favicon);
 		}
 
+		private String injectJs = "" +
+				"'<html>\\n' + document.getElementsByTagName('html')[0].innerHTML + '\\n</html>'";
+
 		@Override
 		public void onPageFinished(WebView view, String url) {
 			super.onPageFinished(view, url);
-			dimissLoading();
-//			view.loadUrl("javascript:window.localObj.showLog(" + injectJs + ");");
+//			dimissLoading();
+			view.loadUrl(conbineJS("showLog", injectJs));
 		}
-	};
 
-	private String injectJs = "" +
-			"'<html>\\n' + document.getElementsByTagName('html')[0].innerHTML + '\\n</html>'";
+		/** 拼接js */
+		private String conbineJS(String methodName, String jsContent) {
+			if (StringUtils.isNullOrEmpty(methodName)) return null;
+			if (StringUtils.isNullOrEmpty(jsContent)) return null;
+			return "javascript:window."+webView.JS_INVOKE_LOCAL_OBJECT+"."+methodName+"("+jsContent+");";
+		}
 
-	private int actRequestCode = 1;
-	private WebChromeClient mWebChromeClient = new WebChromeClient() {
 		@Override
 		public void onProgressChanged(WebView view, int newProgress) {
 			super.onProgressChanged(view, newProgress);
+			Log.i("bbb", "newProgress:"+newProgress);
 			if (progressBar != null) {
 				if (progressBar.getVisibility() != View.VISIBLE) {
 					progressBar.setVisibility(View.VISIBLE);
@@ -292,21 +286,11 @@ public class BrowserPage extends RelativePage {
 			}
 		}
 
-		// 网页获取本地图库图片
-		// android < 3.0
-		public void openFileChooser(ValueCallback<Uri> uploadFile) {
-			openFileChooser(uploadFile, null);
-		}
-
-		// android 3.0+
-		public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType) {
-			openFileChooser(uploadFile, acceptType, null);
-		}
-
-		// android > 4.1.1
+		@Override
 		public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType, String capture) {
+			super.openFileChooser(uploadFile, acceptType, capture);
 			Log.i(TAG, "--选择文件--");
-
+			uploadFileCallback = uploadFile;
 			Intent intent = new Intent();
 			intent.setAction(Intent.ACTION_GET_CONTENT);
 			intent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -314,9 +298,7 @@ public class BrowserPage extends RelativePage {
 			intent.putExtra("return-data", true);
 			((Activity) mContext).startActivityForResult(intent, actRequestCode);
 		}
-	};
 
-	private DownloadListener mDownloadListener = new DownloadListener() {
 		@Override
 		public void onDownloadStart(final String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
 			Log.i("bbb", "url:" + url);
@@ -343,6 +325,7 @@ public class BrowserPage extends RelativePage {
 		}
 	};
 
+
 	public void setPageData(Bitmap bg, String url) {
 		if (bg != null) {
 //			this.setBackgroundDrawable(Utils.largeRblur(bg));
@@ -352,7 +335,8 @@ public class BrowserPage extends RelativePage {
 
 		// 判断是否有网络
 		if (NetUtils.isNetworkConnected(mContext)) {
-			showLoading();
+//			showLoading();
+			webView.setAllMethodListener(mAllMethodListener);
 			webView.loadUrl(url.trim());
 		} else {
 			webView.setVisibility(View.GONE);
