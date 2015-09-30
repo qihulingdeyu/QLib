@@ -16,7 +16,8 @@ public class HorizontalProgressBar extends ProgressBar {
 	private static final String TAG = HorizontalLeftAlignView.class.getName();
 
 	public HorizontalProgressBar(Context context) {
-		this(context, true);
+		super(context, null, android.R.attr.progressBarStyleHorizontal);
+//		this(context, true);
 	}
 	
 	public HorizontalProgressBar(Context context, boolean isHorizontal) {
