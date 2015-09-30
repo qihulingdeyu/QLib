@@ -161,6 +161,12 @@ public class FileUtils {
         }
         return is;
     }
+
+    /** 获取Assets目录下文件对应的Uri，已带‘/’ */
+    public static String getAssetsFileUri(String fileName) {
+        if (isNullOrEmpty(fileName)) return null;
+        return "file:///android_asset/" + fileName;
+    }
     
     /** 获取Assets中的图片资源 */
     public static Bitmap getAssetsBitmap(Context context, String resName){
