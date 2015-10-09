@@ -192,14 +192,6 @@ public class BrowserPage extends RelativePage {
 		tipsLayout.addView(mTip2, lParams);
 	}
 
-	/** js调用本地方法对象 */
-	public class JavaScriptInvokeLocalObject {
-
-		public void showLog(String fromHtml){
-			Log.i(TAG, "html content:\n"+fromHtml);
-		}
-	}
-
 	/** 隐藏顶部标题布局 */
 	public void hideTitleLayout() {
 		titleLayout.setVisibility(View.GONE);
@@ -211,7 +203,6 @@ public class BrowserPage extends RelativePage {
 		rParams = (LayoutParams) progressBar.getLayoutParams();
 		rParams.topMargin = 0;
 		progressBar.setLayoutParams(rParams);
-
 	}
 
 	/** 隐藏顶部按钮布局 */
@@ -294,7 +285,7 @@ public class BrowserPage extends RelativePage {
 			Intent intent = new Intent();
 			intent.setAction(Intent.ACTION_GET_CONTENT);
 			intent.addCategory(Intent.CATEGORY_DEFAULT);
-			intent.setType("image/*");
+			intent.setType(acceptType);
 			intent.putExtra("return-data", true);
 			((Activity) mContext).startActivityForResult(intent, actRequestCode);
 		}
@@ -451,19 +442,25 @@ public class BrowserPage extends RelativePage {
 	@Override
 	public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
 		Log.i(TAG, "--onActivityResult--");
-		if (requestCode == actRequestCode && resultCode == Activity.RESULT_OK) {
-			if (data != null) {
-				Uri uri = data.getData();
-				Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
-				if (cursor != null && cursor.moveToFirst()) {
-					int index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-					String realPath = cursor.getString(index);
-					Log.i(TAG, realPath);
-					cursor.close();
-					cursor = null;
-					// changeImg("file://"+realPath);
-				}
-			}
+//		if (requestCode == actRequestCode && resultCode == Activity.RESULT_OK) {
+//			if (data != null) {
+//				Uri uri = data.getData();
+//				Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
+//				if (cursor != null && cursor.moveToFirst()) {
+//					int index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+//					String realPath = cursor.getString(index);
+//					Log.i(TAG, realPath);
+//					cursor.close();
+//					cursor = null;
+//					// changeImg("file://"+realPath);
+//				}
+//			}
+//		}
+		if (requestCode == actRequestCode && uploadFileCallback != null) {
+			Uri result = (data == null || resultCode != Activity.RESULT_OK ? null : data.getData());
+			uploadFileCallback.onReceiveValue(result);
+			uploadFileCallback = null;
+			return true;
 		}
 		return false;
 	}
