@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -99,6 +100,11 @@ public class AlertDialog extends Dialog {
         content = new TextView(mContext);
         content.setTextSize(18);
         content.setMinLines(1);
+        content.setMaxLines(18);
+        content.setVerticalScrollBarEnabled(true);
+        content.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
+        //必须添加一个滚动实例 TextView才能滚动
+        content.setMovementMethod(ScrollingMovementMethod.getInstance());
 //        content.setMinHeight(mHeight);
         contentLayout.addView(content, lParams);
         

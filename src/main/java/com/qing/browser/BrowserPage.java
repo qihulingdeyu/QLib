@@ -42,6 +42,8 @@ import com.qing.utils.NetUtils;
 import com.qing.utils.StringUtils;
 import com.qing.utils.UIUtils;
 
+import java.io.IOException;
+
 /**
  * Created by zwq on 2015/04/07 14:51.<br/><br/>
  * 自定义浏览器布局
@@ -445,6 +447,15 @@ public class BrowserPage extends RelativePage {
 //		if (requestCode == actRequestCode && resultCode == Activity.RESULT_OK) {
 //			if (data != null) {
 //				Uri uri = data.getData();
+//				Uri thumb = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, uri.getLastPathSegment());
+//				try {
+//					//缩略图
+////					Bitmap bitmap = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), thumb);
+//					//原图
+//					Bitmap bitmap = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), uri);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
 //				Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
 //				if (cursor != null && cursor.moveToFirst()) {
 //					int index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);

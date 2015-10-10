@@ -2,6 +2,7 @@ package com.qing.utils;
 
 /**
  * Created by zwq on 2015/09/22 13:59.<br/><br/>
+ * 启动线程时调用start方法
  */
 public abstract class ThreadUtils implements Runnable {
 
