@@ -12,6 +12,7 @@ public class ImageInfo {
     private String title;
     private String name;
     private String path;
+    private long date_taken;
     private long date_added;
     private long date_modified;
     private int width;
@@ -55,6 +56,14 @@ public class ImageInfo {
         this.date_modified = date_modified;
     }
 
+    public long getDate_taken() {
+        return date_taken;
+    }
+
+    public void setDate_taken(long date_taken) {
+        this.date_taken = date_taken;
+    }
+
     public int getFolder_id() {
         return folder_id;
     }
@@ -85,14 +94,6 @@ public class ImageInfo {
 
     public void setImage_id(int image_id) {
         this.image_id = image_id;
-    }
-
-    public int getThumb_kind() {
-        return thumb_kind;
-    }
-
-    public void setThumb_kind(int thumb_kind) {
-        this.thumb_kind = thumb_kind;
     }
 
     public String getName() {
@@ -143,6 +144,14 @@ public class ImageInfo {
         this.thumb_id = thumb_id;
     }
 
+    public int getThumb_kind() {
+        return thumb_kind;
+    }
+
+    public void setThumb_kind(int thumb_kind) {
+        this.thumb_kind = thumb_kind;
+    }
+
     public String getThumb_path() {
         return thumb_path;
     }
@@ -183,6 +192,7 @@ public class ImageInfo {
                 ", title='" + title + '\'' +
                 ", name='" + name + '\'' +
                 ", path='" + path + '\'' +
+                ", date_taken=" + date_taken +
                 ", date_added=" + date_added +
                 ", date_modified=" + date_modified +
                 ", width=" + width +
@@ -205,6 +215,7 @@ public class ImageInfo {
                 ",\n title='" + title + '\'' +
                 ",\n name='" + name + '\'' +
                 ",\n path='" + path + '\'' +
+                ",\n date_taken=" + date_taken +
                 ",\n date_added=" + date_added +
                 ",\n date_modified=" + date_modified +
                 ",\n width=" + width +

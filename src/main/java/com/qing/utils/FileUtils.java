@@ -671,9 +671,11 @@ public class FileUtils {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             MLog.i(TAG, "FileNotFoundException");
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
             MLog.i(TAG, "IOException");
+            return false;
         }finally{
             if(os!=null){
                 try {
@@ -684,7 +686,7 @@ public class FileUtils {
                 os = null;
             }
         }
-        return false;
+        return true;
     }
 
     

@@ -1,14 +1,22 @@
 package com.qing.image;
 
+import android.annotation.TargetApi;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.provider.MediaStore.Images.Media;
 import android.provider.MediaStore.Images.Thumbnails;
+import android.util.Log;
 
 import com.qing.log.MLog;
 import com.qing.utils.FileUtils;
@@ -155,6 +163,7 @@ public class ImageStore {
                     imageInfo.setName(cursor.getString(cursor.getColumnIndex(Media.DISPLAY_NAME)));
                     imageInfo.setPath(cursor.getString(cursor.getColumnIndex(Media.DATA)));
 
+                    imageInfo.setDate_taken(cursor.getLong(cursor.getColumnIndex(Media.DATE_TAKEN)));
                     imageInfo.setDate_added(cursor.getLong(cursor.getColumnIndex(Media.DATE_ADDED)));
                     imageInfo.setDate_modified(cursor.getLong(cursor.getColumnIndex(Media.DATE_MODIFIED)));
                     imageInfo.setWidth(cursor.getInt(cursor.getColumnIndex(Media.WIDTH)));
@@ -189,7 +198,7 @@ public class ImageStore {
                 for (ImageInfo imageInfo : imageInfos) {
                     if (imageInfo != null && StringUtils.isNullOrEmpty(imageInfo.getThumb_path())){
                         if (cacheThumbPath == null){
-                            MLog.i(TAG, "--Thumb_path-use system thumb-");
+//                            MLog.i(TAG, "--Thumb_path-use system thumb-");
                             getImageThumbInfo(imageInfo);
 
                         }else{
@@ -215,7 +224,7 @@ public class ImageStore {
                                 }
                                 MLog.i(TAG, "--create--Thumb_path:"+file.getAbsolutePath());
                             }else{
-                                MLog.i(TAG, "Thumb_path:"+file.getAbsolutePath());
+//                                MLog.i(TAG, "Thumb_path:"+file.getAbsolutePath());
 
                                 BitmapFactory.Options options = new BitmapFactory.Options();
                                 options.inJustDecodeBounds = true;
@@ -503,4 +512,132 @@ public class ImageStore {
         cursor = null;
     }
 
+    /**
+     * 保存图片
+     * @param bitmap
+     * @param path 目录必须以‘/’结尾，不包括图片名
+     * @param name 图片名
+     * @return
+     */
+    @TargetApi(12)
+    public static boolean saveImage(Bitmap bitmap, String path, String name){
+        ImageInfo imageInfo = new ImageInfo();
+        imageInfo.setName(name);
+        imageInfo.setPath(path + name);
+        imageInfo.setWidth(bitmap.getWidth());
+        imageInfo.setHeight(bitmap.getHeight());
+        imageInfo.setSize(bitmap.getByteCount());
+        boolean success = FileUtils.write2SD(bitmap, imageInfo.getPath(), false);
+        if (success){
+            success = insertToContentProvider(imageInfo);
+        }
+        return success;
+    }
+
+    /**
+     * ImageInfo要包含名称、路径、大小
+     * @param imageInfo
+     * @return
+     */
+    public static boolean insertToContentProvider(ImageInfo imageInfo){
+        if (imageInfo == null) {
+            return false;
+        }
+        long dateTaken = System.currentTimeMillis();
+        imageInfo.setDate_taken(dateTaken);
+        imageInfo.setDate_added(dateTaken / 1000);
+        imageInfo.setDate_modified(dateTaken / 1000);
+        imageInfo.setOrientation(getImageRotation(imageInfo.getPath()));
+
+        ContentValues values = new ContentValues();
+        values.put(Media.DISPLAY_NAME, imageInfo.getName());//文件名;
+        values.put(Media.DATA, imageInfo.getPath());//路径;
+        values.put(Media.DATE_TAKEN, imageInfo.getDate_taken());//时间;
+        values.put(Media.DATE_ADDED, imageInfo.getDate_added());//时间;
+        values.put(Media.DATE_MODIFIED, imageInfo.getDate_modified());//时间;
+
+        values.put(Media.WIDTH, imageInfo.getWidth());
+        values.put(Media.HEIGHT, imageInfo.getHeight());
+        values.put(Media.ORIENTATION, imageInfo.getOrientation());//角度;
+        values.put(Media.SIZE, imageInfo.getSize());//图片的大小;
+
+        Uri data = null;
+        ContentResolver resolver = mContext.getContentResolver();
+        try {
+            if (resolver != null) {
+                data = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+//                MLog.i(TAG,"insert into content provider");
+            }
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
+        if (mContext != null) {
+            mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, data));
+        }
+        return true;
+    }
+
+    /**
+     * 插入到数据库
+     * @param imagePath
+     * @return
+     */
+    public static Uri insertToSystemDB(Context context, String imagePath) {
+        File file = new File(imagePath);
+        if (!file.exists()) {
+            return null;
+        }
+        long dateTaken = System.currentTimeMillis();
+        int degree = getImageRotation(imagePath);
+        long size = file.length();
+        String fileName = file.getName();
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DATE_TAKEN, dateTaken);//时间;
+        values.put(MediaStore.Images.Media.DATE_MODIFIED, dateTaken / 1000);//时间;
+        values.put(MediaStore.Images.Media.DATE_ADDED, dateTaken / 1000);//时间;
+        values.put(MediaStore.Images.ImageColumns.DATA, imagePath);//路径;
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);//文件名;
+        values.put(MediaStore.Images.Media.ORIENTATION, degree);//角度;
+        values.put(MediaStore.Images.Media.SIZE, size);//图片的大小;
+
+        Uri uri = null;
+        ContentResolver resolver = context.getContentResolver();
+        try {
+            if (resolver != null) {
+                uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                MLog.i(TAG,"insert into content provider");
+            }
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
+        return uri;
+    }
+
+    /**
+     * 获取图片旋转角度
+     * @param image
+     * @return
+     */
+    public static int getImageRotation(String image) {
+        if (image == null)
+            return 0;
+        try {
+            ExifInterface exif = new ExifInterface(image);
+            String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+            if (orientation != null && orientation.length() > 0) {
+                int ori = Integer.parseInt(orientation);
+                switch (ori) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    return 90;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    return 180;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    return 270;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }
