@@ -27,7 +27,7 @@ public class ImageFolderItem extends RelativeLayout {
     private int margin = UIUtils.getRealPixel720(15);
     private void initView() {
         LayoutParams rParams = new LayoutParams(
-                UIUtils.getRealPixel720(158), UIUtils.getRealPixel720(158));
+                UIUtils.getRealPixel720(188), UIUtils.getRealPixel720(188));
 //            rParams.setMargins(margin, margin, margin, margin);
         RelativeLayout preivewLayout = new RelativeLayout(getContext());
         preivewLayout.setId(ID_PREVIEW);
