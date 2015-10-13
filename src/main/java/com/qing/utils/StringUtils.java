@@ -1,16 +1,21 @@
 package com.qing.utils;
 
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Random;
 
 /**
  * Created by zwq on 2015/04/15 11:28.<br/><br/>
  * 操作字符工具类
  */
 public class StringUtils {
+
+    private static SimpleDateFormat sdf;
+    private static String mTemplate = "yyyy-MM-dd HH:mm:ss";
 
     /**
      * 将"-"、" "、"/"替换成"_"
@@ -38,6 +43,25 @@ public class StringUtils {
         return false;
     }
 
+    /**
+     * 获取md5值
+     * @param content
+     * @return
+     */
+    public static String getMD5(String content) {
+        if(content==null) return null;
+        byte[] md5 = null;
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.update(content.getBytes());
+            md5 = digest.digest();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        BigInteger bi = new BigInteger(md5).abs();
+        return bi.toString(26);
+    }
+
     private static final char HEX_DIGITS[] = { '0', '1', '2', '3', '4', '5',
             '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
@@ -55,7 +79,7 @@ public class StringUtils {
      * @param content
      * @return
      */
-    public static String md5(String content) {
+    public static String getMD5_V2(String content) {
         if(content==null) return null;
         try {
             MessageDigest digest = MessageDigest.getInstance("MD5");
@@ -67,9 +91,6 @@ public class StringUtils {
         }
         return "";
     }
-
-    private static SimpleDateFormat sdf;
-    private static String mTemplate = "yyyy-MM-dd HH:mm:ss";
 
     /**
      * 获取指定格式时间
@@ -100,5 +121,39 @@ public class StringUtils {
      */
     public static String getDateTime(){
         return getDateTime("MM-dd HH:mm");
+    }
+
+    public static String getRandom(int length){
+        if (length < 3) {
+            length = 3;
+        }
+        /*
+        %n$ms：代表输出的是字符串，n代表是第几个参数，设置m的值可以在输出之前放置空格
+        %n$md：代表输出的是整数，n代表是第几个参数，设置m的值可以在输出之前放置空格，也可以设为0m,在输出之前放置m个0
+        %n$mf：代表输出的是浮点数，n代表是第几个参数，设置m的值可以控制小数位数，如m=2.2时，输出格式为00.00
+        String.format("%1$06d", 25)--->000025(6:长度，不足用0补齐)
+        */
+        return String.format("%1$0" + length + "d", getRandomUnderMax((int) Math.pow(10, length)));
+    }
+
+    /**
+     * 获取不大于maxNum的随机数
+     * @param maxNum
+     * @return
+     */
+    public static int getRandomUnderMax(int maxNum){
+        if (maxNum <= 0){
+            maxNum = 10;
+        }
+        Random random = new Random();
+        return random.nextInt(maxNum);
+    }
+
+    /**
+     * 获取6位的随机数
+     * @return
+     */
+    public static String getRandom(){
+        return getRandom(6);
     }
 }

@@ -7,8 +7,9 @@ package com.qing.utils;
 public abstract class ThreadUtils implements Runnable {
 
     private static final String TAG = ThreadUtils.class.getName();
-    private Thread mThread;
+    private volatile Thread mThread;
     private boolean isRunning;
+    private long sleepTime;
 
     public ThreadUtils(){
         if (mThread == null){
@@ -17,6 +18,30 @@ public abstract class ThreadUtils implements Runnable {
     }
 
     public abstract void execute();
+
+    public Thread getThread() {
+        return mThread;
+    }
+
+    public boolean isAlive() {
+        if (mThread != null){
+            return mThread.isAlive();
+        }
+        return false;
+    }
+
+    public boolean isInterrupted() {
+        if (mThread != null){
+            return mThread.isInterrupted();
+        }
+        return false;
+    }
+
+    public void interrupt() {
+        if (mThread != null){
+            mThread.interrupt();
+        }
+    }
 
     public final boolean isRunning() {
         return isRunning;
@@ -31,11 +56,25 @@ public abstract class ThreadUtils implements Runnable {
     @Override
     public final void run() {
         isRunning = true;
-        execute();
-        finish();
+        if (isRunning())
+            execute();
+        if (isRunning())
+            finish();
+    }
+
+    public void stop() {
+        isRunning = false;
     }
 
     public void finish() {
+        isRunning = false;
+    }
+
+    public void clearAll() {
+        if (isAlive()){
+            mThread.interrupt();
+        }
+        mThread = null;
         isRunning = false;
     }
 }

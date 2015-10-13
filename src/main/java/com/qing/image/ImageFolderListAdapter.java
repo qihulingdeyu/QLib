@@ -65,7 +65,7 @@ public class ImageFolderListAdapter extends BaseAdapter {
                 ImageInfo imageInfo = imageInfoList.get(0);
                 if (imageInfo != null){
                     if (StringUtils.isNullOrEmpty(imageInfo.getThumb_path())){
-                        folderItem.image.setImageBitmap(ImageStore.getThumb(imageInfo.getImage_id()));
+                        folderItem.image.setImageBitmap(ImageStore.getImageThumbnail(imageInfo.getImage_id()));
                     }else{
                         folderItem.image.setImageBitmap(FileUtils.getSDBitmap(imageInfo.getThumb_path()));
                     }

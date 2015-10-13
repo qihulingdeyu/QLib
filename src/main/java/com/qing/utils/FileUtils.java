@@ -5,6 +5,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
@@ -12,6 +13,7 @@ import android.os.StatFs;
 
 import com.qing.log.MLog;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -97,7 +99,7 @@ public class FileUtils {
     }
     
     public static String stream2String(InputStream is){
-        return stream2String(is,"UTF-8");
+        return stream2String(is, "UTF-8");
     }
     /**
      * 流转换成文本
@@ -217,6 +219,14 @@ public class FileUtils {
             appPath = getSDPath() + packageName.substring(packageName.lastIndexOf(".")+1) + File.separator;
         }
         return appPath;
+    }
+
+    /**
+     * 获取系统相册目录
+     * @return
+     */
+    public static String getCameraPath(){
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/Camera/";
     }
 
     /**
@@ -502,6 +512,7 @@ public class FileUtils {
         }else{
             flag = file.delete();
         }
+        file = null;
         return flag;
     }
     
@@ -596,6 +607,39 @@ public class FileUtils {
         if (isNullOrEmpty(content)) {
             return false;
         }
+        return write2SD(content.getBytes(), path, deleteOld);
+    }
+
+    public static boolean write2SD(Bitmap bitmap, String path, boolean deleteOld){
+        if (bitmap == null || bitmap.isRecycled()){
+            return false;
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        Bitmap temp = null;
+//        Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+//        Canvas canvas = new Canvas(temp);
+//        canvas.drawBitmap(bitmap, 0, 0, null);
+//        temp.compress(Bitmap.CompressFormat.PNG, 100, baos);
+//        canvas = null;
+
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] data = baos.toByteArray();
+        if (bitmap != null){
+            bitmap.recycle();
+            bitmap = null;
+        }
+        if (temp != null){
+            temp.recycle();
+            temp = null;
+        }
+        return write2SD(data, path, deleteOld);
+    }
+
+    public static boolean write2SD(byte[] data, String path, boolean deleteOld){
+        if (data == null) {
+            return false;
+        }
         if (isNullOrEmpty(path)) {
             return false;
         }
@@ -620,10 +664,9 @@ public class FileUtils {
         }
 
         OutputStream os = null;
-        byte[] buf = content.getBytes();
         try {
             os = new FileOutputStream(file);
-            os.write(buf);
+            os.write(data, 0, data.length);
             os.flush();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -643,6 +686,7 @@ public class FileUtils {
         }
         return false;
     }
+
     
     /**
      * 从assets目录拷贝到手机存储目录

@@ -1,6 +1,7 @@
 package com.qing.image;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -58,16 +59,18 @@ public class ImageListAdapter extends BaseAdapter {
             imageItem = (ImageItem) convertView.getTag();
         }
 
-        if (mImageInfos != null){
+        Bitmap bitmap = null;
+        if (mImageInfos != null && position < mImageInfos.size()){
             ImageInfo imageInfo = mImageInfos.get(position);
             if (imageInfo != null){
                 if (StringUtils.isNullOrEmpty(imageInfo.getThumb_path())){
-                    imageItem.image.setImageBitmap(ImageStore.getThumb(imageInfo.getImage_id()));
+                    bitmap = ImageStore.getImageThumbnail(imageInfo);
                 }else{
-                    imageItem.image.setImageBitmap(FileUtils.getSDBitmap(imageInfo.getThumb_path()));
+                    bitmap = FileUtils.getSDBitmap(imageInfo.getThumb_path());
                 }
             }
         }
+        imageItem.image.setImageBitmap(bitmap);
         return convertView;
     }
 }
