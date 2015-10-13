@@ -19,7 +19,8 @@ class ImageItem extends RelativeLayout {
     public ImageView image;
     private void initView() {
         LayoutParams rParams = new LayoutParams(
-                UIUtils.getScreenW()/4, UIUtils.getScreenW()/4);
+                RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+//                UIUtils.getScreenW()/4, UIUtils.getScreenW()/4);
         image = new ImageView(getContext());
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         addView(image, rParams);

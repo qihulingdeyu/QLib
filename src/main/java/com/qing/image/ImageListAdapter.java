@@ -4,10 +4,12 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 
 import com.qing.utils.FileUtils;
 import com.qing.utils.StringUtils;
+import com.qing.utils.UIUtils;
 
 import java.util.List;
 
@@ -20,8 +22,11 @@ public class ImageListAdapter extends BaseAdapter {
 
     private Context mContext;
     private List<ImageInfo> mImageInfos;
+    private int mItemWidth;
+
     public ImageListAdapter(Context context){
         mContext = context;
+        setItemWidth(4, 3);
     }
 
     public List<ImageInfo> getImageInfos() {
@@ -31,6 +36,10 @@ public class ImageListAdapter extends BaseAdapter {
     public void setImageInfos(List<ImageInfo> mImageInfos) {
         this.mImageInfos = mImageInfos;
         notifyDataSetChanged();
+    }
+
+    public void setItemWidth(int numColumns, int spacing) {
+        mItemWidth = (UIUtils.getScreenW()-(numColumns+1)*UIUtils.getRealPixel720(spacing))/numColumns;
     }
 
     @Override
@@ -53,6 +62,7 @@ public class ImageListAdapter extends BaseAdapter {
         ImageItem imageItem = null;
         if (convertView == null){
             imageItem = new ImageItem(mContext);
+            imageItem.setLayoutParams(new AbsListView.LayoutParams(mItemWidth, mItemWidth));
             convertView = imageItem;
             convertView.setTag(imageItem);
         }else{
