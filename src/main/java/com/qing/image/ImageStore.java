@@ -8,6 +8,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PaintFlagsDrawFilter;
+import android.graphics.Rect;
 import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -16,7 +20,6 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.Media;
 import android.provider.MediaStore.Images.Thumbnails;
-import android.util.Log;
 
 import com.qing.log.MLog;
 import com.qing.utils.FileUtils;
@@ -90,15 +93,17 @@ public class ImageStore {
             mHandler = new Handler(new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message msg) {
-                    MLog.i(TAG, "--loadImage-finish-");
-                    hasLoad = true;
-
-                    if (threadUtils != null){
-                        threadUtils.clearAll();
-                        threadUtils = null;
-                    }
-                    if (mListener != null) {
-                        mListener.onChange();
+                    if (msg.what == 1){
+                        MLog.i(TAG, "--loadImage-finish-");
+                        hasLoad = true;
+                        if (mListener != null) {
+                            mListener.onChange();
+                        }
+                    }else if (msg.what == 2){
+                        if (threadUtils != null){
+                            threadUtils.clearAll();
+                            threadUtils = null;
+                        }
                     }
                     return false;
                 }
@@ -141,6 +146,8 @@ public class ImageStore {
                     deleteInvalidThumb = false;
                     deleteInvalidThumb();
                 }
+                if (mHandler != null)
+                    mHandler.sendEmptyMessage(2);
             }
         };
         threadUtils.start();
@@ -191,8 +198,9 @@ public class ImageStore {
         if (imageInfos!=null && !imageInfos.isEmpty()){
             synchronized (imageInfos){
                 if (deleteInvalidThumb){
-                    if (tempThumbPathList == null)
+                    if (tempThumbPathList == null) {
                         tempThumbPathList = new ArrayList<>();
+                    }
                     tempThumbPathList.clear();
                 }
                 for (ImageInfo imageInfo : imageInfos) {
@@ -236,7 +244,8 @@ public class ImageStore {
                             }
                             imageInfo.setThumb_path(file.getAbsolutePath());
                             if (deleteInvalidThumb){
-                                tempThumbPathList.add(file.getAbsolutePath());
+//                                MLog.i(TAG, "file name:"+file.getName());
+                                tempThumbPathList.add(file.getName());
                             }
                             file = null;
                         }
@@ -271,12 +280,19 @@ public class ImageStore {
      * @return
      */
     public static Bitmap getImageThumbnail(String imagePath, int kind) {
+        //64 48
+        //128 96
+        //192 144
+        //256 192 压缩到一半
+        //512 384 压缩到四分之一
+        //768 576 八分之一
+        //1024 768 十六分之一
         if (kind == Thumbnails.MINI_KIND){//1
             //512 x 384
-            return getImageThumbnail(imagePath, 512 / 2, 384 / 2);
+            return getImageThumbnail(imagePath, 192, 144, true);//512/4, 384/4);
         }else if (kind == Thumbnails.MICRO_KIND){//3
             //96 x 96
-            return getImageThumbnail(imagePath, 96, 96);
+            return getImageThumbnail(imagePath, 96, 96, false);
         }
         return null;
     }
@@ -291,9 +307,10 @@ public class ImageStore {
      * @param imagePath 图像的路径
      * @param width 指定输出图像的宽度
      * @param height 指定输出图像的高度
+     * @param changeSize 是否改变输出大小
      * @return 生成的缩略图
      */
-    public static Bitmap getImageThumbnail(String imagePath, int width, int height) {
+    public static Bitmap getImageThumbnail(String imagePath, int width, int height, boolean changeSize) {
         Bitmap bitmap = null;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -305,38 +322,49 @@ public class ImageStore {
         int h = options.outHeight;
 
         int ratio = 1;
-        //图片宽高都比原图宽高小时，使用原图的大小
-        if ((w > 0 && w <= width) && (h > 0 && h <= height)) {
-            width = w;
-            height = h;
-        }else{
-            int ratioWidth = w / width;
+        if (w > 0 && h > 0){
+            int scaleWidth = w / width;
             int ramainW = w % width;
-            int ratioHeight = h / height;
+            int scaleHeight = h / height;
             int ramainH = h % height;
-            if (ratioWidth < ratioHeight) {
-                ratio = ratioWidth + (ramainW > 0 ? 1 : 0);
+
+//            MLog.i(TAG, "scaleWidth:"+scaleWidth+", ramainW:"+ramainW+", scaleHeight:"+scaleHeight+", ramainH:"+ramainH);
+            if (scaleWidth < scaleHeight) {
+                ratio = scaleWidth;// + (ramainW > 0 ? 1 : 0);
             } else {
-                ratio = ratioHeight + (ramainH > 0 ? 1 : 0);
+                ratio = scaleHeight;// + (ramainH > 0 ? 1 : 0);
             }
-//            if (ratio <= 0) {
-//                ratio = 1;//1 2 4 8
-//            }
-            if (ratio < 2) {
-                ratio = 2;
-            }
-            if (ratio > 1 && ratio < 6){  //1 2 3 4 5 6
-                int tempRatio = ratio / 2;//0 1 1 2 4 4
+            if (ratio < 1) {
+                ratio = 1;
+            }                       //0 1 2 4 8
+            if (ratio > 1){         //1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+                int exp = ratio / 2;//0 1 2 2 3 3 3 3 4 4  4  4
                 if (ratio % 2 > 0){
-                    tempRatio += 1;
+                    exp += 1;
                 }
-                ratio = (int) Math.pow(2, tempRatio);
+                if (exp > 4){//最小十六分之一
+                    exp = 4;
+                }
+                int ratio1 = (int) Math.pow(2, exp-1);
+                int ratio2 = (int) Math.pow(2, exp);
+                if (ratio > ratio1 && ratio <= ratio2){
+                    ratio = ratio2;
+                }else{
+                    ratio = ratio1;
+                }
             }
-            width = w / ratio;
-            height = h / ratio;
+            if (changeSize){
+                width = w / ratio;
+                height = h / ratio;
+            }else{
+                if (ratio > 4){
+                    ratio = 4;
+                }
+            }
+//            MLog.i(TAG, "w:"+w+", h:"+h+", ratio:"+ratio+", width:"+width+", height:"+height);
         }
         options.inSampleSize = ratio;
-//        options.inPreferredConfig = Bitmap.Config.ARGB_4444;
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
         // 重新读入图片，读取缩放后的bitmap，注意这次要把options.inJustDecodeBounds 设为 false
         bitmap = BitmapFactory.decodeFile(imagePath, options);
         // 利用ThumbnailUtils来创建缩略图，这里要指定要缩放哪个Bitmap对象
@@ -345,7 +373,6 @@ public class ImageStore {
         bitmap = ThumbnailUtils.extractThumbnail(bitmap, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
         return bitmap;
     }
-
 
     private static synchronized void sortByFolder() {
         if (imageInfos!=null && !imageInfos.isEmpty()){
@@ -371,7 +398,9 @@ public class ImageStore {
                 }
             }
             //按文件夹名称升序排序
-            folderInfos = sortMapByKey(folderInfos);
+            synchronized (folderInfos){
+                folderInfos = sortMapByKey(folderInfos);
+            }
 
             folderItem = null;
             folderName = null;
@@ -396,14 +425,20 @@ public class ImageStore {
      * 删除无效的缩略图
      */
     private static void deleteInvalidThumb() {
+//        MLog.i(TAG, "delete 111");
         if (tempThumbPathList != null && !tempThumbPathList.isEmpty()){
-            String[] files =  new File(cacheThumbPath).list();
+//            MLog.i(TAG, "delete 222 size:"+tempThumbPathList.size());
+            File directory = new File(cacheThumbPath);
+            String[] files =  directory.list();
+
             if (files != null && files.length > 0){
-                List<String> filesList = Arrays.asList(files);
+                List<String> filesList = new ArrayList<>( Arrays.asList(files) );
+//                MLog.i(TAG, "delete 333 filesList size:"+filesList.size());
 
                 if (filesList != null && !filesList.isEmpty() && filesList.removeAll(tempThumbPathList)){
-                    for (String filepath : filesList) {
-                        FileUtils.deleteSDFile(filepath);
+//                    MLog.i(TAG, "delete 444 filesList size:"+filesList.size());
+                    for (String fileName : filesList) {
+                        FileUtils.deleteSDFile(directory.getAbsolutePath() +"/"+ fileName);
                     }
                     filesList.clear();
                 }
@@ -504,7 +539,6 @@ public class ImageStore {
                 imageInfo.setFolder_id(cursor.getInt(cursor.getColumnIndex(Media.BUCKET_ID)));
                 imageInfo.setFolder_name(cursor.getString(cursor.getColumnIndex(Media.BUCKET_DISPLAY_NAME)));
 
-
                 MLog.i(TAG, imageInfo.toString());
             }
             cursor.close();
@@ -530,6 +564,30 @@ public class ImageStore {
         boolean success = FileUtils.write2SD(bitmap, imageInfo.getPath(), false);
         if (success){
             success = insertToContentProvider(imageInfo);
+        }
+        return success;
+    }
+
+    /**
+     * 删除图片并刷新数据库
+     * @param imageInfo
+     * @return
+     */
+    public static boolean deleteImage(ImageInfo imageInfo){
+        boolean success = false;
+        if (imageInfo == null){
+            return success;
+        }
+        success = FileUtils.deleteSDFile(imageInfo.getPath());
+        if (success){
+            if (mContext != null){
+                ContentResolver resolver = mContext.getContentResolver();
+                int result = resolver.delete(Media.EXTERNAL_CONTENT_URI, Media._ID+"=?", new String[]{""+imageInfo.getImage_id()});
+//                MLog.i(TAG, "delete image-->result:"+result);
+                if (result == 1){
+                    success = true;
+                }
+            }
         }
         return success;
     }
@@ -565,7 +623,7 @@ public class ImageStore {
         ContentResolver resolver = mContext.getContentResolver();
         try {
             if (resolver != null) {
-                data = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                data = resolver.insert(Media.EXTERNAL_CONTENT_URI, values);
 //                MLog.i(TAG,"insert into content provider");
             }
         } catch (Throwable th) {
