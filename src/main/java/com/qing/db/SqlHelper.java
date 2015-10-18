@@ -12,9 +12,9 @@ import java.util.Date;
 /**
  * Created by zwq on 2015/09/23 16:02.<br/><br/>
  */
-public abstract class DaoSql<T> {
+public abstract class SqlHelper<T> {
 
-    private static final String TAG = DaoSql.class.getName();
+    private static final String TAG = SqlHelper.class.getName();
 
     protected String tableName;
 
@@ -45,7 +45,7 @@ public abstract class DaoSql<T> {
      * 创建表格的SQL语句
      * @return
      */
-    public String createTableSql() {
+    public String createTable() {
         StringBuffer sb = new StringBuffer();
         sb.append("create table if not exists "+getTableName()+" (");
         Field[] fields = getTable().getFields();
@@ -69,7 +69,7 @@ public abstract class DaoSql<T> {
      * 删除表格的SQL语句
      * @return
      */
-    public String dropTableSql(){
+    public String dropTable(){
         StringBuffer sb = new StringBuffer();
         sb.append("drop table if exists "+getTableName()+";");
         return sb.toString();
