@@ -99,30 +99,36 @@ public class FileUtils {
     }
     
     public static String stream2String(InputStream is){
-        return stream2String(is, "UTF-8");
+        return stream2String(is, "UTF-8", true);
     }
+
+    public static String stream2String(InputStream is, boolean close){
+        return stream2String(is, "UTF-8", close);
+    }
+
     /**
      * 流转换成文本
      * @param is
-     * @return string
+     * @param charset
+     * @param close 使用完后是否关闭流
+     * @return
      */
-    public static String stream2String(InputStream is, String charset){
+    public static String stream2String(InputStream is, String charset, boolean close){
         StringBuffer sb = null;
         try {
             if(is!=null){
+                if(charset == null || charset.trim().equals("")){
+                    charset = "UTF-8";
+                }
                 sb = new StringBuffer();
                 byte[] buf = new byte[4096];
                 int len = 0;
                 String str = null;
-                while((len=is.read(buf,0,buf.length))!=-1){
-                    if(charset==null || charset.trim().equals("")){
-                        str = new String(buf, 0, len);
-                    }else{
-                        str = new String(buf, 0, len,charset);
-                    }
+                while((len = is.read(buf, 0, buf.length)) != -1){
+                    str = new String(buf, 0, len, charset);
                     sb.append(str);
-                    str = null;
                 }
+                str = null;
                 buf = null;
             }else{
                 MLog.i(TAG, "InputStream is null");
@@ -131,7 +137,7 @@ public class FileUtils {
             e.printStackTrace();
             MLog.i(TAG, "IOException");
         } finally {
-            if(is!=null){
+            if(close && is!=null){
                 try {
                     is.close();
                 } catch (IOException e) {
