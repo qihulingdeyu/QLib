@@ -222,7 +222,7 @@ public class FileUtils {
     }
 
     /**
-     * 获取系统相册目录
+     * 获取系统相册目录，‘/’
      * @return
      */
     public static String getCameraPath(){
