@@ -5,33 +5,25 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.text.TextUtils.TruncateAt;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
-import android.webkit.DownloadListener;
 import android.webkit.ValueCallback;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
-import android.webkit.WebSettings.PluginState;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.qing.ie.AllMethodListener;
 import com.qing.ie.XWebView;
+import com.qing.log.MLog;
 import com.qing.qlib.MainActivity;
 import com.qing.qlib.R;
 import com.qing.qlib.RelativePage;
@@ -41,8 +33,6 @@ import com.qing.utils.DrawableUtils;
 import com.qing.utils.NetUtils;
 import com.qing.utils.StringUtils;
 import com.qing.utils.UIUtils;
-
-import java.io.IOException;
 
 /**
  * Created by zwq on 2015/04/07 14:51.<br/><br/>
@@ -259,7 +249,7 @@ public class BrowserPage extends RelativePage {
 		@Override
 		public void onProgressChanged(WebView view, int newProgress) {
 			super.onProgressChanged(view, newProgress);
-			Log.i("bbb", "newProgress:"+newProgress);
+//			MLog.i("bbb", "newProgress:" + newProgress);
 			if (progressBar != null) {
 				if (progressBar.getVisibility() != View.VISIBLE) {
 					progressBar.setVisibility(View.VISIBLE);
@@ -282,7 +272,7 @@ public class BrowserPage extends RelativePage {
 		@Override
 		public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType, String capture) {
 			super.openFileChooser(uploadFile, acceptType, capture);
-			Log.i(TAG, "--选择文件--");
+			MLog.i(TAG, "--选择文件--");
 			uploadFileCallback = uploadFile;
 			Intent intent = new Intent();
 			intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -294,7 +284,7 @@ public class BrowserPage extends RelativePage {
 
 		@Override
 		public void onDownloadStart(final String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
-			Log.i("bbb", "url:" + url);
+			MLog.i("bbb", "url:" + url);
 			String fileName = url.substring(url.lastIndexOf("/") + 1);
 
 			AlertDialog dialog = new AlertDialog(mContext);
@@ -443,7 +433,7 @@ public class BrowserPage extends RelativePage {
 
 	@Override
 	public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-		Log.i(TAG, "--onActivityResult--");
+		MLog.i(TAG, "--onActivityResult--");
 //		if (requestCode == actRequestCode && resultCode == Activity.RESULT_OK) {
 //			if (data != null) {
 //				Uri uri = data.getData();
@@ -460,7 +450,7 @@ public class BrowserPage extends RelativePage {
 //				if (cursor != null && cursor.moveToFirst()) {
 //					int index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
 //					String realPath = cursor.getString(index);
-//					Log.i(TAG, realPath);
+//					MLog.i(TAG, realPath);
 //					cursor.close();
 //					cursor = null;
 //					// changeImg("file://"+realPath);
@@ -479,7 +469,7 @@ public class BrowserPage extends RelativePage {
 	private void changeImg(String path) {
 		String js = "javascript:(function(){" + "var img = document.getElementById(\"uimg\");" + "img.src = \"" + path + "\";" + "img.innerHTML = \"" + path + "\";" + "})();";
 
-		Log.i(TAG, js);
+		MLog.i(TAG, js);
 		webView.loadUrl(js);
 	}
 
