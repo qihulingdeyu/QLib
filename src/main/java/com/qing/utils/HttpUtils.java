@@ -1,13 +1,9 @@
 package com.qing.utils;
 
-import com.qing.callback.HttpCallback;
+import android.util.Log;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
+import com.qing.callback.HttpCallback;
+import com.qing.log.MLog;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -24,12 +20,29 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.zip.GZIPInputStream;
+
 /**
  * Created by zwq on 2015/04/22 11:27.<br/><br/>
  * http请求工具类
  */
 @SuppressWarnings("ALL")
 public class HttpUtils {
+
+    private static final String TAG = HttpUtils.class.getName();
 
     private static List<Runnable> threadList = new ArrayList<>();
     private static List<Runnable> waitThreadList = new ArrayList<>();
@@ -47,15 +60,44 @@ public class HttpUtils {
         HttpConnectionParams.setSoTimeout(params, 30 * 1000);
         return params;
     }
+
+    private static HttpURLConnection setHttpParams(HttpURLConnection conn){
+        if (conn == null) return null;
+        //设置连接超时
+        conn.setConnectTimeout(30 * 1000);
+        conn.setReadTimeout(30 * 1000);
+        conn.setDoInput(true);
+        //设置容许输出
+         conn.setDoOutput(true);
+        //设置不使用缓存
+         conn.setUseCaches(false);
+        //设置使用POST的方式发送
+        // conn.setRequestMethod("POST");
+        //设置维持长连接
+        // conn.setRequestProperty("Connection", "Keep-Alive");
+        //设置文件字符集
+         conn.setRequestProperty("Charset", "UTF-8");
+        //设置文件长度
+        // conn.setRequestProperty("Content-Length", String.valueOf(data.length));
+        //设置文件类型
+        // conn.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+        return conn;
+    }
     
     public static void doGet(String url, final HttpCallback callback){
         doGet(url, null, callback);
     }
 
     public static void doGet(String url, HashMap<String, String> parameters, final HttpCallback callback){
+        url = appendUrlParams(url, parameters);
+//        MLog.i("bbb", url);
+        doGetThread(url, callback);
+    }
+
+    public static String appendUrlParams(String url, HashMap<String, String> parameters){
         if(url==null || !url.startsWith("http")){
-            if(callback!=null) callback.postResult(HttpCallback.FAIL, "url is error");
-            return;
+            MLog.i(TAG, "url is null or error");
+            return url;
         }
 
         if (parameters!=null){
@@ -79,7 +121,7 @@ public class HttpUtils {
                 }
             }
         }
-        doGetThread(url, callback);
+        return url;
     }
 
 
@@ -134,18 +176,32 @@ public class HttpUtils {
             public void execute() {
                 if(callback!=null)
                     callback.postResult(HttpCallback.START);
+                HttpURLConnection conn = null;
                 try {
-                    HttpClient hc = new DefaultHttpClient();
-                    HttpGet hg = new HttpGet(url);
-                    hg.setParams(getHttpParams());
-                    HttpResponse hr = hc.execute(hg);
-                    int code = hr.getStatusLine().getStatusCode();
-                    if(code==200){
-                        if(callback!=null)
-                            callback.postResult(HttpCallback.SUCCESS, EntityUtils.toString(hr.getEntity(), HTTP.UTF_8), null);
+                    URL real_url = new URL(url);
+                    conn = (HttpURLConnection) real_url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn = setHttpParams(conn);
+                    conn.connect();
+
+//                    HttpClient hc = new DefaultHttpClient();
+//                    HttpGet hg = new HttpGet(url);
+//                    hg.setParams(getHttpParams());
+//                    HttpResponse hr = hc.execute(hg);
+                    int code = conn.getResponseCode();
+                    if(code == HttpURLConnection.HTTP_OK) {
+                        if(callback!=null) {
+                            InputStream is = conn.getInputStream();
+//                            is = hr.getEntity().getContent();//getContent()只能被使用一次，否则报异常
+//                            MLog.i("bbb", "len:" + is.available() + ", cl:" + conn.getContentLength());
+//                            String encode = conn.getContentEncoding();
+//                            MLog.i("bbb", "encode:" + encode);
+
+                            callback.postResult(HttpCallback.SUCCESS, FileUtils.stream2String(is, false), is);
+                        }
                     }else{
                         if(callback!=null)
-                            callback.postResult(HttpCallback.FAIL, "request fail");
+                            callback.postResult(HttpCallback.FAIL, "request fail, code:"+code+", msg:"+conn.getResponseMessage());
                     }
                 } catch (ClientProtocolException e) {
                     e.printStackTrace();
@@ -155,6 +211,11 @@ public class HttpUtils {
                     e.printStackTrace();
                     if(callback!=null)
                         callback.postResult(HttpCallback.FAIL, e.getMessage());
+                }finally {
+                    if (conn != null){
+                        conn.disconnect();
+                        conn = null;
+                    }
                 }
             }
 
@@ -178,6 +239,75 @@ public class HttpUtils {
             public void execute() {
                 if(callback!=null)
                     callback.postResult(HttpCallback.START);
+                HttpURLConnection conn = null;
+                try {
+                    URL real_url = new URL(url);
+                    conn = (HttpURLConnection) real_url.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn = setHttpParams(conn);
+
+                    String data = "";
+                    for (int i = 0; i < params.size(); i++) {
+                        NameValuePair nameValue = params.get(i);
+                        if (i > 0){
+                            data += "&";
+                        }
+                        data += nameValue.getName()+"="+URLEncoder.encode(nameValue.getValue(), "UTF-8");
+                    }
+                    // 设置请求的头
+                    conn.setRequestProperty("Content-Length", String.valueOf(data.getBytes().length));
+//                    conn.connect();
+                    //获取输出流
+                    OutputStream os = conn.getOutputStream();
+                    os.write(data.getBytes());
+                    os.flush();
+                    os.close();
+                    os = null;
+
+                    int code = conn.getResponseCode();
+                    if(code == HttpURLConnection.HTTP_OK){
+                        if(callback!=null) {
+                            InputStream is = conn.getInputStream();
+//                          MLog.i("bbb", "len:"+is.available());
+                            callback.postResult(HttpCallback.SUCCESS, FileUtils.stream2String(is, false), is);
+                        }
+                    }else{
+                        if(callback!=null) callback.postResult(HttpCallback.FAIL, "request fail, code:"+code+", msg:"+conn.getResponseMessage());
+                    }
+                } catch (ClientProtocolException e) {
+                    e.printStackTrace();
+                    if(callback!=null) callback.postResult(HttpCallback.FAIL, e.getMessage());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    if(callback!=null) callback.postResult(HttpCallback.FAIL, e.getMessage());
+                }finally {
+                    if (conn != null){
+                        conn.disconnect();
+                        conn = null;
+                    }
+                }
+            }
+
+            @Override
+            public void finish() {
+                super.finish();
+                if(callback!=null)
+                    callback.postResult(HttpCallback.FINISH);
+                removeThread(this);
+            }
+        };
+        if(callback!=null)
+            callback.postResult(HttpCallback.WAIT);
+        waitThreadList.add(mThread);
+        notifyThreadManager();
+    }
+
+    private static void doPostThread1(final String url, final List<NameValuePair> params, final HttpCallback callback){
+        ThreadUtils mThread = new ThreadUtils() {
+            @Override
+            public void execute() {
+                if(callback!=null)
+                    callback.postResult(HttpCallback.START);
                 try {
                     HttpClient hc = new DefaultHttpClient();
                     HttpPost hp = new HttpPost(url);
@@ -189,10 +319,14 @@ public class HttpUtils {
                     //3. 调用第一步中创建好的实例的 execute 方法来执行第二步中创建好的 method 实例
                     HttpResponse hr = hc.execute(hp); //HttpUriRequest的后代对象 //
                     int code = hr.getStatusLine().getStatusCode();
-                    if(code==200){
-                        if(callback!=null) callback.postResult(HttpCallback.SUCCESS, EntityUtils.toString(hr.getEntity(), HTTP.UTF_8), null);
+                    if(code == 200){
+                        if(callback!=null) {
+                            InputStream is = hr.getEntity().getContent();
+//                          MLog.i("bbb", "isS:" + httpEntity.isStreaming()+", len:"+is.available());
+                            callback.postResult(HttpCallback.SUCCESS, FileUtils.stream2String(is, false), is);
+                        }
                     }else{
-                        if(callback!=null) callback.postResult(HttpCallback.FAIL, "request fail");
+                        if(callback!=null) callback.postResult(HttpCallback.FAIL, "request fail, code:"+code);
                     }
                 } catch (ClientProtocolException e) {
                     e.printStackTrace();

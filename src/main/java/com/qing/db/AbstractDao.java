@@ -1,5 +1,6 @@
 package com.qing.db;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -16,14 +17,38 @@ public abstract class AbstractDao<T> extends SqlHelper<T> implements IDao<T> {
     protected SQLiteDatabase db;
     protected Cursor cursor;
 
+    public final String FIND_ALL = "select * from "+getTableName();
+    public final String FIND_BY_ID = FIND_ALL +" where _id=?";
+    public final String COUNT_ROWS = "select count(*) as row_count from "+getTableName();
+
+    public AbstractDao(Context context) {
+
+    }
+
     @Override
-    public long delete(T entity) {
+    public int deleteById(long key) {
+        db = helper.getWritableDatabase();
+        int r = db.delete(getTableName(), "_id=?", new String[]{""+key});
+        closeAll(null, db, null);
+        return r;
+    }
+
+    @Override
+    public int delete(T entity) {
         return 0;
     }
 
     @Override
-    public long delete(List<T> list) {
+    public int delete(List<T> list) {
         return 0;
+    }
+
+    @Override
+    public int deleteAll() {
+        db = helper.getWritableDatabase();
+        int r = db.delete(getTableName(), null, null);
+        closeAll(null, db, null);
+        return r;
     }
 
     @Override
@@ -43,6 +68,29 @@ public abstract class AbstractDao<T> extends SqlHelper<T> implements IDao<T> {
 
     @Override
     public long getCounts() {
-        return 0;
+        db = helper.getReadableDatabase();
+        cursor = db.rawQuery(COUNT_ROWS, null);
+        long row_count = 0;
+        if (cursor != null){
+            cursor.moveToFirst();
+            row_count = cursor.getLong(cursor.getColumnIndex("row_count"));
+        }
+        closeAll(null, db, cursor);
+        return row_count;
+    }
+
+    public void closeAll(SQLiteOpenHelper helper, SQLiteDatabase db, Cursor cursor){
+        if (cursor != null){
+            cursor.close();
+            cursor = null;
+        }
+        if (db != null){
+            db.close();
+            db = null;
+        }
+        if (helper != null){
+            helper.close();
+            helper = null;
+        }
     }
 }

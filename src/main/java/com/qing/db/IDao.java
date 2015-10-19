@@ -11,13 +11,13 @@ public interface IDao<T> {
 
     public long insert(List<T> list);
 
-    public long deleteById(long key);
+    public int deleteById(long key);
 
-    public long delete(T entity);
+    public int delete(T entity);
 
-    public long delete(List<T> list);
+    public int delete(List<T> list);
 
-    public void deleteAll();
+    public int deleteAll();
 
     public long update(T entity);
 

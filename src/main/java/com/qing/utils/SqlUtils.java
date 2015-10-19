@@ -102,6 +102,13 @@ public class SqlUtils {
         return length;
     }
 
+    private String getLengthText(int length){
+        if (length > 0){
+            return "("+length+")";
+        }
+        return "";
+    }
+
     /**
      * 添加列
      * @param columnName 列名
@@ -121,7 +128,7 @@ public class SqlUtils {
             stringBuffer.append("\n");
         }
         currentColumnType = type.typeName;
-        stringBuffer.append(columnName+" "+currentColumnType + (length < 1?"":"("+length+")"));
+        stringBuffer.append(columnName+" "+currentColumnType + getLengthText(length));
         columnCount ++;
         return sqlUtils;
     }
@@ -170,7 +177,7 @@ public class SqlUtils {
     }
     private void alterAdd(String tableName, String columnName, ColumnType type, int length){
         // alter table tableName add column columnName type.typeName
-        stringBuffer.append("alter table "+tableName+" add column "+columnName+" "+type.typeName+(length < 1?"":"("+length+")")+";");
+        stringBuffer.append("alter table "+tableName+" add column "+columnName+" "+type.typeName+getLengthText(length)+";");
     }
 
     public String build(){
