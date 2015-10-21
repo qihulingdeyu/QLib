@@ -132,3 +132,16 @@ android {
 //        }
 //    }
 }
+
+// jar文件默认是：build/intermediates/bundles/release(debug)/目录下的classes.jar
+//task makeJar(type: Copy) {
+//    delete 'build/outputs/mylibs.jar'
+//    from('build/intermediates/bundles/release/')
+//    into('build/outputs/')
+//    include('classes.jar')
+//    rename ('classes.jar', 'mylibs.jar')
+//}
+//
+//makeJar.dependsOn(build)
+//在终端执行生成JAR包
+// gradlew makeJar
