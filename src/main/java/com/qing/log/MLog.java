@@ -2,10 +2,16 @@ package com.qing.log;
 
 import android.util.Log;
 
+import com.qing.qlib.BuildConfig;
+
 public class MLog {
 
     private static final String TAG = MLog.class.getName();
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = BuildConfig.DEBUG;
+
+    public static void setMode(boolean debug) {
+        DEBUG = debug;
+    }
 
     public static void i(String log) {
         i(TAG, log);

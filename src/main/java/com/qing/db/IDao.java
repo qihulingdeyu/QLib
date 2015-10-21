@@ -19,9 +19,9 @@ public interface IDao<T> {
 
     public int deleteAll();
 
-    public long update(T entity);
+    public int update(T entity);
 
-    public long update(List<T> list);
+    public int update(List<T> list);
 
     public T findById(long key);
 

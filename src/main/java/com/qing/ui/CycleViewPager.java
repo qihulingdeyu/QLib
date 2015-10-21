@@ -5,11 +5,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 
 /**
@@ -19,19 +18,19 @@ import java.util.TimerTask;
 public class CycleViewPager extends ViewPager {
 
     private static final String TAG = CycleViewPager.class.getName();
-    private boolean cycle;
     private CyclePagerAdapter mCyclePagerAdapter;
-    private OnPageChangeListener mOnPageChangeListener;
-    private Timer mTimer;
-    private long period = 2000;
+    private boolean isAutoScroll;//是否自动滚动
+    private boolean cycle;//是否循环
+    private final int SCROLL_WHAT = 1;
+    private long interval = 3000;//自动滚动默认时间间隔
+
+    private boolean stopScrollWhenTouch = true;
+    private boolean stopByTouch;
+    private boolean canChangeDirection;
+    private int direction = 1;
 
     public CycleViewPager(Context context) {
         super(context);
-        setOverScrollMode(View.OVER_SCROLL_NEVER);
-    }
-
-    public boolean isCycle(){
-        return cycle;
     }
 
     @Override
@@ -46,104 +45,137 @@ public class CycleViewPager extends ViewPager {
             cycle = true;
             mCyclePagerAdapter = adapter;
             adapter.setCycle(cycle);
-            setOnPageChangeListener(null);
         }
         super.setAdapter(adapter);
         if (cycle){
-            setCurrentItem(1);
+            setCurrentItem(1, false);
         }
     }
 
-    @Override
-    public void setOnPageChangeListener(final OnPageChangeListener listener) {
-        mOnPageChangeListener = listener;
-        if (cycle){
-            mOnPageChangeListener = new OnPageChangeListener() {
-                @Override
-                public void onPageScrolled(int i, float v, int i1) {
-                    if (listener != null)
-                        listener.onPageScrolled(i, v, i1);
-                }
-
-                @Override
-                public void onPageSelected(int position) {
-                    if (listener != null) {
-                        listener.onPageSelected(position);
-                    }
-                    if (position == 0){
-                        setCurrentItem(mCyclePagerAdapter.getRealCount(), false);
-                    }else if(position == mCyclePagerAdapter.getRealCount()+1){
-                        setCurrentItem(1, false);
-                    }
-                }
-
-                @Override
-                public void onPageScrollStateChanged(int position) {
-                    if (listener != null)
-                        listener.onPageScrollStateChanged(position);
-                }
-            };
-        }
-        super.setOnPageChangeListener(mOnPageChangeListener);
+    public boolean isCycle(){
+        return cycle;
     }
 
+    public void setStopScrollWhenTouch(boolean stop){
+        stopScrollWhenTouch = stop;
+    }
+
+    public void setCanChangeDirection(boolean change){
+        canChangeDirection = change;
+    }
+
+    private float p1x1;
     @Override
-    public void addOnPageChangeListener(final OnPageChangeListener listener) {
-        super.addOnPageChangeListener(listener);
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (stopScrollWhenTouch) {
+            if (isAutoScroll && ev.getAction() == MotionEvent.ACTION_DOWN) {
+                stopByTouch = true;
+                stopAutoScroll();
+                p1x1 = ev.getX();
+            }else if (stopByTouch && ev.getAction() == MotionEvent.ACTION_UP) {
+                checkCycle(getCurrentItem());
+                stopByTouch = false;
+                startAutoScroll();
+                if (canChangeDirection){
+                    float dx = ev.getX() - p1x1;
+                    if (dx > 0){
+                        direction = -1;
+                    }else{
+                        direction = 1;
+                    }
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     private Handler mHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if (msg.what == 1) {
-                setCurrentItem(getCurrentItem() + 1, true);
+            if (msg.what == SCROLL_WHAT) {
+                scrollOnce();
+                sendScrollMessage(interval);
             }
         }
     };
 
+    private void scrollOnce() {
+        int item = getCurrentItem() + direction;
+        setCurrentItem(item, true);
+    }
+
+    /** remove messages before, keeps one message is running at most **/
+    private void sendScrollMessage(long delayTimeInMills) {
+        mHandler.removeMessages(SCROLL_WHAT);
+        mHandler.sendEmptyMessageDelayed(SCROLL_WHAT, delayTimeInMills);
+    }
+
+    @Override
+    public void setCurrentItem(int item) {
+        super.setCurrentItem(item);
+        checkCycle(getCurrentItem());
+    }
+
+    @Override
+    public void setCurrentItem(int item, boolean smoothScroll) {
+        super.setCurrentItem(item, smoothScroll);
+        checkCycle(getCurrentItem());
+    }
+
+    /**
+     * 检查是否达到循环点
+     * @param item
+     * @return
+     */
+    private final boolean checkCycle(int item){
+        if (cycle){
+            if (item <= 0){
+                setCurrentItem(mCyclePagerAdapter.getRealCount(), false);
+                return true;
+            }else if(item >= mCyclePagerAdapter.getRealCount() + 1){
+                setCurrentItem(1, false);
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * 开始自动滚动
      */
-    public void startAutoScroll(){
-        if (cycle) {
-            if (mTimer == null){
-                mTimer = new Timer();
-            }
-            mTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    if (cycle) {
-                        mHandler.sendEmptyMessage(1);
-                    }
-                }
-            }, 1000, period);
-        }
+    public final void startAutoScroll(){
+        isAutoScroll = true;
+        sendScrollMessage(interval);
     }
 
     /**
      * 停止自动滚动
      */
-    public void stopAutoScroll(){
-        if (mTimer != null){
-            mTimer.cancel();
-//            mTimer = null;
-        }
+    public final void stopAutoScroll(){
+        isAutoScroll = false;
+        mHandler.removeMessages(SCROLL_WHAT);
     }
 
     /**
-     * 自动滚动时间间隔，默认 2s
-     * @param period
+     * 自动滚动时间间隔，默认 3s
+     * @param interval
      */
-    public void setAutoScrollPeriodTime(long period){
-        if (period != this.period){
-            if (period <= 0){
-                period = 1000;
+    public void setInterval(long interval){
+        if (interval != this.interval){
+            if (interval <= 0){
+                interval = 1000;
             }
-            this.period = period;
+            this.interval = interval;
             stopAutoScroll();
             startAutoScroll();
         }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        stopAutoScroll();
     }
 
     /**

@@ -52,7 +52,7 @@ public abstract class AbstractDao<T> extends SqlHelper<T> implements IDao<T> {
     }
 
     @Override
-    public long update(List<T> list) {
+    public int update(List<T> list) {
         return 0;
     }
 
@@ -70,10 +70,10 @@ public abstract class AbstractDao<T> extends SqlHelper<T> implements IDao<T> {
     public long getCounts() {
         db = helper.getReadableDatabase();
         cursor = db.rawQuery(COUNT_ROWS, null);
-        long row_count = 0;
+        int row_count = 0;
         if (cursor != null){
             cursor.moveToFirst();
-            row_count = cursor.getLong(cursor.getColumnIndex("row_count"));
+            row_count = cursor.getInt(cursor.getColumnIndex("row_count"));
         }
         closeAll(null, db, cursor);
         return row_count;
