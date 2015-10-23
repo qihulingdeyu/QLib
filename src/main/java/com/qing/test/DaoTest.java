@@ -1,5 +1,7 @@
 package com.qing.test;
 
+import android.content.Context;
+
 import com.qing.db.AbstractDao;
 
 import java.util.List;
@@ -10,6 +12,10 @@ import java.util.List;
 public class DaoTest extends AbstractDao<Student> {
 
     private static final String TAG = DaoTest.class.getName();
+
+    public DaoTest(Context context) {
+        super(context);
+    }
 
     @Override
     public Class<Student> getTable() {
@@ -30,17 +36,18 @@ public class DaoTest extends AbstractDao<Student> {
     }
 
     @Override
-    public long deleteById(long key) {
+    public int deleteById(long key) {
         return 0;
     }
 
     @Override
-    public void deleteAll() {
+    public int deleteAll() {
 
+        return 0;
     }
 
     @Override
-    public long update(Student entity) {
+    public int update(Student entity) {
         return 0;
     }
 
