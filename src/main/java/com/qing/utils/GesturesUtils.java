@@ -7,15 +7,13 @@ import com.qing.log.MLog;
 
 /**
  * Created by zwq on 2015/10/22 10:54.<br/><br/>
+ * 缩放、旋转
  */
 public class GesturesUtils {
 
     private static final String TAG = GesturesUtils.class.getName();
     private static GesturesUtils instance;
     private GesturesListener mGesturesListener;
-
-    private float p1x1, p1y1, p1x2, p1y2;//第一点
-    private float p2x1, p2y1, p2x2, p2y2;//第二点
 
     private boolean twoPoint;
 
