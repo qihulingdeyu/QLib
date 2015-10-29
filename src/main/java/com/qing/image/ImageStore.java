@@ -37,6 +37,8 @@ import java.util.TreeMap;
 
 /**
  * Created by zwq on 2015/10/10 10:54.<br/><br/>
+ * 图库、相册扫描，将图片插入到图库<br/>
+ * 或从图库删除图片
  */
 public class ImageStore {
 

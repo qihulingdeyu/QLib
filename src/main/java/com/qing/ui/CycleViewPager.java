@@ -21,6 +21,8 @@ public class CycleViewPager extends ViewPager {
     private CyclePagerAdapter mCyclePagerAdapter;
     private boolean isAutoScroll;//是否自动滚动
     private boolean cycle;//是否循环
+
+    private Handler mHandler;
     private final int SCROLL_WHAT = 1;
     private long interval = 3000;//自动滚动默认时间间隔
 
@@ -48,6 +50,7 @@ public class CycleViewPager extends ViewPager {
         }
         super.setAdapter(adapter);
         if (cycle){
+            mHandler = new TimerHandler();
             setCurrentItem(1, false);
         }
     }
@@ -89,7 +92,18 @@ public class CycleViewPager extends ViewPager {
         return super.dispatchTouchEvent(ev);
     }
 
-    private Handler mHandler = new Handler(){
+//    private Handler mHandler = new Handler(){
+//        @Override
+//        public void handleMessage(Message msg) {
+//            super.handleMessage(msg);
+//            if (msg.what == SCROLL_WHAT) {
+//                scrollOnce();
+//                sendScrollMessage(interval);
+//            }
+//        }
+//    };
+//
+    class TimerHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -98,7 +112,7 @@ public class CycleViewPager extends ViewPager {
                 sendScrollMessage(interval);
             }
         }
-    };
+    }
 
     private void scrollOnce() {
         int item = getCurrentItem() + direction;

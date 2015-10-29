@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.RelativeLayout;
 
+import com.qing.log.MLog;
+
 /**
  * Created by zwq on 2015/09/24 10:53.<br/><br/>
  */
@@ -39,8 +41,59 @@ public abstract class RelativePage extends RelativeLayout implements IPage {
     protected abstract void initView();
 
     @Override
+    public boolean onBack() {
+//        MLog.i(TAG, "onBack");
+        return false;
+    }
+
+    @Override
+    public void onRestore() {
+//        MLog.i(TAG, "onRestore");
+    }
+
+    @Override
+    public boolean onStart() {
+//        MLog.i(TAG, "onStart");
+        return false;
+    }
+
+    @Override
+    public boolean onResume() {
+//        MLog.i(TAG, "onResume");
+        return false;
+    }
+
+    @Override
+    public boolean onPageStateChange(boolean isTop, Object[] params) {
+        return false;
+    }
+
+    @Override
     public Object[] transferPageData() {
         return null;
+    }
+
+    @Override
+    public boolean onPause() {
+//        MLog.i(TAG, "onPause");
+        return false;
+    }
+
+    @Override
+    public boolean onStop() {
+//        MLog.i(TAG, "onStop");
+        return false;
+    }
+
+    @Override
+    public boolean onDestroy() {
+//        MLog.i(TAG, "onDestroy");
+        return false;
+    }
+
+    @Override
+    public void onClose() {
+//        MLog.i(TAG, "onClose");
     }
 
     @Override

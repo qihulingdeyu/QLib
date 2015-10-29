@@ -203,6 +203,14 @@ public class FileUtils {
         return false;
     }
 
+    /** 文件是否存在 */
+    public static boolean isFileExists(String path){
+        if (StringUtils.isNullOrEmpty(path) || !new File(path).exists()) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * 获取SD卡根目录，带'/'
      * @return
