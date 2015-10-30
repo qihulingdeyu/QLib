@@ -5,5 +5,18 @@
     <uses-sdk
         android:minSdkVersion="11"
         android:targetSdkVersion="22" />
+    <!--<application-->
+        <!--android:name="com.qing.exception.CaughtApplication"-->
+        <!--android:icon="@mipmap/ic_launcher">-->
+
+        <!--<activity android:name=".MainActivity"-->
+            <!--android:launchMode="singleInstance">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        <!--</activity>-->
+    <!--</application>-->
 
 </manifest>

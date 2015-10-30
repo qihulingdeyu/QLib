@@ -114,6 +114,10 @@ public class BrowserPage extends RelativePage {
 		this.addView(webView, rParams);
 	}
 
+    public XWebView getWebView() {
+        return webView;
+    }
+
 	protected void topButtonLayout() {
 		// 顶部按钮布局
 		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
