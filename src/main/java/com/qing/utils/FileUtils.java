@@ -5,7 +5,6 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
-import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
@@ -625,13 +624,17 @@ public class FileUtils {
     }
 
     public static boolean write2SD(Bitmap bitmap, String path, boolean deleteOld){
+        return write2SD(bitmap, path, deleteOld, true);
+    }
+
+    public static boolean write2SD(Bitmap bitmap, String path, boolean deleteOld, boolean needRecycle){
         if (bitmap == null || bitmap.isRecycled()){
             return false;
         }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         Bitmap temp = null;
-//        Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+//        Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Configure.ARGB_8888);
 //        Canvas canvas = new Canvas(temp);
 //        canvas.drawBitmap(bitmap, 0, 0, null);
 //        temp.compress(Bitmap.CompressFormat.PNG, 100, baos);
@@ -639,7 +642,7 @@ public class FileUtils {
 
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         byte[] data = baos.toByteArray();
-        if (bitmap != null){
+        if (needRecycle && bitmap != null){
             bitmap.recycle();
             bitmap = null;
         }

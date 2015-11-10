@@ -3,8 +3,6 @@ package com.qing.utils;
 import android.graphics.PointF;
 import android.view.MotionEvent;
 
-import com.qing.log.MLog;
-
 /**
  * Created by zwq on 2015/10/22 10:54.<br/><br/>
  * 缩放、旋转

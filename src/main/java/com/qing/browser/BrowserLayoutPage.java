@@ -26,7 +26,7 @@ import com.qing.ie.XWebView;
 import com.qing.log.MLog;
 import com.qing.qlib.MainActivity;
 import com.qing.qlib.R;
-import com.qing.qlib.RelativePage;
+import com.qing.qlib.RelativeLayoutPage;
 import com.qing.ui.AlertDialog;
 import com.qing.ui.HorizontalProgressBar;
 import com.qing.utils.DrawableUtils;
@@ -38,9 +38,9 @@ import com.qing.utils.UIUtils;
  * Created by zwq on 2015/04/07 14:51.<br/><br/>
  * 自定义浏览器布局
  */
-public class BrowserPage extends RelativePage {
+public class BrowserLayoutPage extends RelativeLayoutPage {
 
-	private static final String TAG = BrowserPage.class.getName();
+	private static final String TAG = BrowserLayoutPage.class.getName();
 	private int ID_TITLE_LAYOUT = 0x1;
 	private int ID_WEBVIEW = 0x2;
 	private int ID_PROGRESS_BAR = 0x3;
@@ -66,7 +66,7 @@ public class BrowserPage extends RelativePage {
 	private ValueCallback<Uri> uploadFileCallback;
 	private int actRequestCode = 1;
 
-	public BrowserPage(Context context) {
+	public BrowserLayoutPage(Context context) {
 		super(context);
 	}
 

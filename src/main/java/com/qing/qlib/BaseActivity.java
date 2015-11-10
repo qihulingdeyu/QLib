@@ -549,6 +549,15 @@ public abstract class BaseActivity extends Activity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        if (mTopPage != null) {
+            mTopPage.onNewIntent(intent);
+        }else{
+            super.onNewIntent(intent);
+        }
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         boolean handled = false;
         if (mTopPage != null) {

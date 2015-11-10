@@ -4,8 +4,6 @@ import android.content.Context;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.qing.utils.UIUtils;
-
 /**
  * Created by zwq on 2015/10/10 17:52.<br/><br/>
  */

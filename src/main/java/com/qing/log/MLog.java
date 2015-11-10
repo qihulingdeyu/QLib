@@ -9,7 +9,11 @@ public class MLog {
     private static final String TAG = MLog.class.getName();
     public static boolean DEBUG = BuildConfig.DEBUG;
 
-    public static void setMode(boolean debug) {
+    /**
+     * 是否设置为调试模式
+     * @param debug
+     */
+    public static void setDebugMode(boolean debug) {
         DEBUG = debug;
     }
 

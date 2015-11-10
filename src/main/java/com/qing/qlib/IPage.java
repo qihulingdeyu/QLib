@@ -75,6 +75,8 @@ public interface IPage {
      */
     public void onClose();
 
+    public void onNewIntent(Intent intent);
+
     /**
      * 主框架Activity的onKeyDown事件
      *

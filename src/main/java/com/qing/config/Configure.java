@@ -10,28 +10,29 @@ import java.util.Set;
 
 /**
  * Created by zwq on 2015/08/31 14:38.<br/><br/>
+ * 配置
  */
-public class Config {
+public class Configure {
 
-    private static final String TAG = Config.class.getName();
-    private static Config config;
+    private static final String TAG = Configure.class.getName();
+    private static Configure config;
     private static Context mContext;
     private static SharedPreferences preferences;
     private static SharedPreferences.Editor editor;
     private static boolean isChange;
 
-    public static Config init(Context context){
+    public static Configure init(Context context){
         if (config==null){
-            synchronized (Config.class){
+            synchronized (Configure.class){
                 if (config==null){
-                    config = new Config(context);
+                    config = new Configure(context);
                 }
             }
         }
         return config;
     }
 
-    private Config(Context context){
+    private Configure(Context context){
         mContext = context;
         getSharedPreferences("");
     }

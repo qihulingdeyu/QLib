@@ -145,6 +145,11 @@ public class MyGridView extends RefreshAdaterView<AbsListView> implements IPage 
     }
 
     @Override
+    public void onNewIntent(Intent intent) {
+
+    }
+
+    @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
         return false;
     }

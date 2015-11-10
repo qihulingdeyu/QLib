@@ -1,7 +1,5 @@
 package com.qing.utils;
 
-import com.qing.log.MLog;
-
 /**
  * Created by zwq on 2015/10/18 17:55.<br/><br/>
  */

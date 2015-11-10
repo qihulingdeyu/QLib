@@ -20,8 +20,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.qing.utils.StringUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -288,7 +288,7 @@ public class GifDecoder extends Thread{
 				}
 			}
 		}
-		image = Bitmap.createBitmap(dest, width, height, Config.ARGB_8888);//Config.ARGB_4444
+		image = Bitmap.createBitmap(dest, width, height, Config.ARGB_8888);//Configure.ARGB_4444
 	}
 
 	/**
@@ -688,7 +688,7 @@ public class GifDecoder extends Thread{
 		}
 		frameCount++;
 		// create new image to receive frame data
-		image = Bitmap.createBitmap(width, height, Config.ARGB_8888);//Config.ARGB_4444
+		image = Bitmap.createBitmap(width, height, Config.ARGB_8888);//Configure.ARGB_4444
 		// createImage(width, height);
 		setPixels(); // transfer pixel data to image
 		if (gifFrame == null) {

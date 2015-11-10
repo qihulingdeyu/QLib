@@ -8,32 +8,30 @@ import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.RelativeLayout;
 
-import com.qing.log.MLog;
-
 /**
  * Created by zwq on 2015/09/24 10:53.<br/><br/>
  */
-public abstract class RelativePage extends RelativeLayout implements IPage {
+public abstract class RelativeLayoutPage extends RelativeLayout implements IPage {
 
-    protected static final String TAG = RelativePage.class.getName();
+    protected static final String TAG = RelativeLayoutPage.class.getName();
     protected Context mContext;
 
-    public RelativePage(Context context) {
+    public RelativeLayoutPage(Context context) {
         this(context, null);
     }
 
-    public RelativePage(Context context, AttributeSet attrs) {
+    public RelativeLayoutPage(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RelativePage(Context context, AttributeSet attrs, int defStyleAttr) {
+    public RelativeLayoutPage(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
         initView();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public RelativePage(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public RelativeLayoutPage(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         mContext = context;
     }
@@ -94,6 +92,11 @@ public abstract class RelativePage extends RelativeLayout implements IPage {
     @Override
     public void onClose() {
 //        MLog.i(TAG, "onClose");
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+
     }
 
     @Override

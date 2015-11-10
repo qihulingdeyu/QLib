@@ -2,8 +2,6 @@ package com.qing.utils;
 
 import com.qing.callback.DownloadCallback;
 
-import org.apache.http.protocol.HTTP;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
