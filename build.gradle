@@ -17,6 +17,10 @@ android {
         // AndroidManifest.xml 里面UMENG_CHANNEL的value为 ${UMENG_CHANNEL_VALUE}
         // manifestPlaceholders = [UMENG_CHANNEL_VALUE: "channel_name"]
         //signingConfig signingConfigs.release
+
+        //默认渠道配置，manifestPlaceholders是Map集合
+        // AndroidManifest.xml 里面<meta>CHANNEL_ID的value为 ${CHANNEL_ID}
+//        manifestPlaceholders = [CHANNEL_ID: 0, CHANNEL_NAME: "其它"]
     }
     buildTypes {
         release {
@@ -114,10 +118,28 @@ android {
 //
 //    //渠道Flavors，我这里写了一些常用的
 //    productFlavors {
-//        poco {
-//            //packageName="cn.poco"   //这里可以配置不同的包名
+//        qing {
+//            //packageName="com.qing.*"   //这里可以配置不同的包名
+//            versionName = ""
+//            manifestPlaceholders = [CHANNEL_ID: 0, CHANNEL_NAME: "其它"]
 //        }
 //    }
+//
+//    productFlavors.all {
+//        flavor -> flavor.versionName = defaultConfig.versionName + flavor.versionName
+//    }
+//        /**
+//         如果只打Baidu渠道Release版本
+//         ./gradlew assembleBaiduRelease
+//
+//         如果只打Baidu渠道版本，则：
+//         ./gradlew assembleBaidu
+//         此命令会生成Baidu渠道的Release和Debug版本
+//
+//         如果打全部渠道的Release版本：
+//         ./gradlew assembleRelease --stacktrace
+//         这条命令会把Product Flavor下的所有渠道的Release版本都打出来。
+//         */
 //
 //    //在生成apk文件时，修改下命名而已
 //    applicationVariants.all { variant ->
@@ -125,8 +147,9 @@ android {
 //            def outputFile = output.outputFile
 //            if (outputFile != null && outputFile.name.endsWith('.apk')) {
 ////                def suffix = new Date().format("yyyyMMddHH")
-////                def fileName = "jane-${defaultConfig.versionName}-${suffix}.apk"
+////                def fileName = "${module.getName()}-${defaultConfig.versionName}-${suffix}.apk"
 //                def fileName = outputFile.name.replace(".apk", "-${defaultConfig.versionName}.apk")
+//                def fileName = "${module.getName()}-${variant.productFlavors[0].name}-${variant.productFlavors[0].versionName}-${dateTime}.apk";
 //                output.outputFile = new File(outputFile.parent, fileName)
 //            }
 //        }
