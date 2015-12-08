@@ -116,6 +116,7 @@ public final class CameraWrapper implements CameraAllCallback {
      * 拍照状态
      */
     private States mCameraState = States.CAMERA_IDLE;
+    private boolean isTakeOnePicture;
     private boolean takePicture;
 
     /**
@@ -714,7 +715,16 @@ public final class CameraWrapper implements CameraAllCallback {
     }
 
     /**
-     * 拍照
+     * 只拍一张照拍，然后跳转到其它页面
+     */
+    public void takeOnePicture() {
+        isTakeOnePicture = true;
+        takePicture();
+    }
+
+    /**
+     * 拍照后不跳转页面调用此方法；
+     * 若拍照后要跳转到其它页面，使用takeOnePicture()方法，否则出错
      */
     public void takePicture() {
         takePicture = true;
@@ -1415,14 +1425,21 @@ public final class CameraWrapper implements CameraAllCallback {
         mCameraState = States.CAMERA_IDLE;
         
         //如果只拍一次则不用重新预览
-//        stopPreview();
-//        startPreview();
+        stopPreview();
+        if (isTakeOnePicture) {
+            isTakeOnePicture = false;
+            releaseCamera();
+        }else{
+            startPreview();
+        }
     }
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
 //        MLog.i(TAG, "----------onPreviewFrame--------");
-        mPreviewState = States.PREVIEW_DOING;
+        if (mPreviewState != States.PREVIEW_DOING) {
+            mPreviewState = States.PREVIEW_DOING;
+        }
         if (data != null && data.length > 0) {
 //            mPreviewState = States.PREVIEW_SUCCESS;
             if (mCameraAllCallback != null) {
