@@ -1,4 +1,4 @@
-package com.qing.ui;
+package com.qing.camera;
 
 import android.hardware.Camera;
 

@@ -1,4 +1,4 @@
-package com.qing.ui;
+package com.qing.camera;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
@@ -7,11 +7,15 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.qing.log.MLog;
 import com.qing.utils.GesturesUtils;
 
 /**
  * Created by zwq on 2015/11/11 14:43.<br/><br/>
+ *
+ * 必要权限：
+ * <uses-feature android:name="android.hardware.camera" />
+ * <uses-feature android:name="android.hardware.camera.autofocus" />
+ * <uses-permission android:name="android.permission.CAMERA" />
  */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 

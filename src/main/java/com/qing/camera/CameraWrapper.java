@@ -1,4 +1,4 @@
-package com.qing.ui;
+package com.qing.camera;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -25,7 +25,9 @@ import com.qing.log.MLog;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by zwq on 2015/11/11 14:19.<br/><br/>
@@ -99,16 +101,21 @@ public final class CameraWrapper implements CameraAllCallback {
     private int mCurrentCameraId = mDefaultCameraId;  // Camera ID currently chosen
     private int mCameraCurrentlyLocked = -1;  // Camera ID that's actually acquired
 
+    private static final String KEY_PREVIEW_SIZE = "preview-size";
+    private static final String KEY_FOCUS_AREAS = "focus-areas";
+    private static final String KEY_METERING_AREAS = "metering-areas";
+
     private Camera.Parameters mDefaultParameters;// 默认属性;
     private Camera.Parameters mCurrentParameters;// 当前镜头设置的属性;
+    private Map<Integer, Camera.Parameters> mParameters;
     private List<Camera.Size> mSupportedPreviewSizes;
     private Camera.Size mPreviewSize;
 
     private boolean isViewCreate;
-    private int previewWidth, previewHeight;
+    private int previewWidth = 800, previewHeight = 600;
     private int mCurrentOrientation;
 
-    private int pictureWidth, pictureHeight;
+    private int pictureWidth = 960, pictureHeight = 720;
     private int mCurrentPictureOrientation;
     private int mPictureDegree;
 
@@ -252,6 +259,10 @@ public final class CameraWrapper implements CameraAllCallback {
             mDefaultParameters = mCamera.getParameters();
 
             mSupportedPreviewSizes = mDefaultParameters.getSupportedPreviewSizes();
+//            for (int i = 0; i < mSupportedPreviewSizes.size(); i++) {
+//                MLog.i(TAG, "preview-> width:" + mSupportedPreviewSizes.get(i).width + ", height:" + mSupportedPreviewSizes.get(i).height);
+//            }
+
 //            List<Camera.Size> picSizes = mDefaultParameters.getSupportedPictureSizes();
 //            for (int i = 0; i < picSizes.size(); i++) {
 //                MLog.i(TAG, "pic width:"+picSizes.get(i).width+", height:"+picSizes.get(i).height);
@@ -389,9 +400,15 @@ public final class CameraWrapper implements CameraAllCallback {
      * @return
      */
     public Camera.Parameters getCameraParameters() {
-        if (mCurrentParameters == null) {
+        if (mParameters == null) {
+            mParameters = new HashMap<Integer, Camera.Parameters>();
+        }
+        if (mParameters.containsKey(mCurrentCameraId)) {
+            mCurrentParameters = mParameters.get(mCurrentCameraId);
+        }else{
             if (mCamera != null) {
                 mCurrentParameters = mCamera.getParameters();
+                mParameters.put(mCurrentCameraId, mCurrentParameters);
             }
         }
         return mCurrentParameters;
@@ -412,7 +429,7 @@ public final class CameraWrapper implements CameraAllCallback {
      * @param height
      */
     public void setOptimalPreviewSize(int width, int height) {
-        if (!isViewCreate && mSupportedPreviewSizes != null) {
+        if (mSupportedPreviewSizes != null) {
             mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height, 4.0f/3);
             setPreviewSize(mPreviewSize.width, mPreviewSize.height);
         }
@@ -482,14 +499,11 @@ public final class CameraWrapper implements CameraAllCallback {
      * @param height
      */
     public void setPreviewSize(int width, int height) {
-        if (width == 0 || height == 0) {
-            width = 800;
-            height = 600;
-        }
         previewWidth = width;
         previewHeight = height;
         if (mCamera != null) {
             getCameraParameters();
+            mCurrentParameters.remove(KEY_PREVIEW_SIZE);
             mCurrentParameters.setPreviewSize(previewWidth, previewHeight);
             try {
                 mCamera.setParameters(mCurrentParameters);
@@ -506,10 +520,6 @@ public final class CameraWrapper implements CameraAllCallback {
      */
     public void setPictureSize(int width, int height) {
 //        MLog.i(TAG, "picture width:" + width + ", height:" + height);
-        if (width == 0 || height == 0) {
-            width = 960;
-            height = 720;
-        }
         pictureWidth = width;
         pictureHeight = height;
         if (mCamera != null) {
@@ -1124,8 +1134,8 @@ public final class CameraWrapper implements CameraAllCallback {
     public void setFocusAndMeteringArea(String focusArea, String meteringArea) {
         getCameraParameters();
         if (mFocusAreaSupported && mMeteringSupported && mCurrentParameters != null) {
-            mCurrentParameters.set("focus-areas", focusArea);
-            mCurrentParameters.set("metering-areas", meteringArea);
+            mCurrentParameters.set(KEY_FOCUS_AREAS, focusArea);
+            mCurrentParameters.set(KEY_METERING_AREAS, meteringArea);
             try {
                 mCamera.setParameters(mCurrentParameters);
             } catch (RuntimeException e) {
