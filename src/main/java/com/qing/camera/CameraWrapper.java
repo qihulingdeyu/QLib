@@ -63,7 +63,8 @@ public final class CameraWrapper implements CameraAllCallback {
 
     private Context mContext;
     private CameraSurfaceView mCameraSurfaceView;
-    private boolean isLandscape = false;//是否横屏
+    /** 是否横屏 */
+    private boolean isLandscape = false;
 
     private CameraAllCallback mCameraAllCallback;
     private CameraHandler mCameraHandler;
@@ -751,7 +752,7 @@ public final class CameraWrapper implements CameraAllCallback {
         //1.不能对焦状态;2.对焦成功;3.对焦失败;
         if (takePicture && (mFocusMode.equals(Camera.Parameters.FOCUS_MODE_INFINITY)
                 || mFocusMode.equals(Camera.Parameters.FOCUS_MODE_FIXED)
-                || mFocusMode.equals("edof")
+                || mFocusMode.equals(Camera.Parameters.FOCUS_MODE_EDOF)
                 || (mFocusState == States.FOCUS_SUCCESS
                 || mFocusState == States.FOCUS_FAIL))) {
 //            MLog.i(TAG, "checkFocusStateAndTakePicture:"+takePicture);
