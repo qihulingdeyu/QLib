@@ -85,7 +85,7 @@ public class SelectorButton extends ImageView {
 
 	private void setSelector(int normal, int pressed) {
 		selector = DrawableUtils.pressedSelector(mContext, normal, pressed);
-		if(selector==null && normal != -1){
+		if(selector == null && normal != -1){
 			this.setImageResource(normal);
 		}else{
 			this.setImageDrawable(selector);
@@ -94,14 +94,14 @@ public class SelectorButton extends ImageView {
 	
 	private void setSelector(Bitmap normal, Bitmap pressed) {
 		selector = DrawableUtils.pressedSelector(mContext, normal, pressed);
-		if(selector==null){
+		if(selector == null){
 			this.setImageDrawable(selector);
 		}
 	}
 
 	@Override
 	public void setScaleType(ScaleType scaleType) {
-		this.setScaleType(scaleType);
+		super.setScaleType(scaleType);
 	}
 	
 	/**
@@ -110,7 +110,7 @@ public class SelectorButton extends ImageView {
 	public void setChecked(boolean isChecked){
 		setSwitchState(!isChecked);
 		this.isChecked = isChecked;
-		if(checkedListener!=null){
+		if(checkedListener != null){
 			checkedListener.onCheckedChanged(this, isChecked);
 		}
 	}
