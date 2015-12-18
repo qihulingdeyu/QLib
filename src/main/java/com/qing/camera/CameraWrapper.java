@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
@@ -25,6 +26,8 @@ import com.qing.log.MLog;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,8 +112,13 @@ public final class CameraWrapper implements CameraAllCallback {
     private Camera.Parameters mDefaultParameters;// 默认属性;
     private Camera.Parameters mCurrentParameters;// 当前镜头设置的属性;
     private Map<Integer, Camera.Parameters> mParameters;
+
     private List<Camera.Size> mSupportedPreviewSizes;
+    private Map<Integer, Camera.Size> mSupportedPreviewDataLengths;
     private Camera.Size mPreviewSize;
+    private List<Camera.Size> mSupportedPictureSizes;
+
+    private float defaultRatio = 4.0f/3;
 
     private boolean isViewCreate;
     private int previewWidth = 800, previewHeight = 600;
@@ -260,13 +268,20 @@ public final class CameraWrapper implements CameraAllCallback {
             mDefaultParameters = mCamera.getParameters();
 
             mSupportedPreviewSizes = mDefaultParameters.getSupportedPreviewSizes();
-//            for (int i = 0; i < mSupportedPreviewSizes.size(); i++) {
-//                MLog.i(TAG, "preview-> width:" + mSupportedPreviewSizes.get(i).width + ", height:" + mSupportedPreviewSizes.get(i).height);
-//            }
-
-//            List<Camera.Size> picSizes = mDefaultParameters.getSupportedPictureSizes();
-//            for (int i = 0; i < picSizes.size(); i++) {
-//                MLog.i(TAG, "pic width:"+picSizes.get(i).width+", height:"+picSizes.get(i).height);
+            if (mSupportedPreviewSizes != null) {
+                mSupportedPreviewDataLengths = new HashMap<Integer, Camera.Size>();
+                Camera.Size size = null;
+                for (int i = 0; i < mSupportedPreviewSizes.size(); i++) {
+                    size = mSupportedPreviewSizes.get(i);
+                    mSupportedPreviewDataLengths.put(size.width * size.height, size);
+//                    MLog.i(TAG, "preview-> width:"+size.width+", height:"+size.height);
+                }
+            }
+            mSupportedPictureSizes = mDefaultParameters.getSupportedPictureSizes();
+//            if (mSupportedPictureSizes != null) {
+//                for (int i = 0; i < mSupportedPictureSizes.size(); i++) {
+//                    Log.i(TAG, "picture-> width:"+mSupportedPictureSizes.get(i).width+", height:"+mSupportedPictureSizes.get(i).height);
+//                }
 //            }
 
             mZoomSupported = mDefaultParameters.isZoomSupported();
@@ -339,8 +354,8 @@ public final class CameraWrapper implements CameraAllCallback {
         mCameraState = States.CAMERA_IDLE;
         saveCameraConfig("currentCameraId", mCurrentCameraId);
 
-        setPreviewSize(previewWidth, previewHeight);
-        setPictureSize(pictureWidth, pictureHeight);
+        setOptimalPreviewSize(previewWidth, previewHeight);
+        setOptimalPictureSize(pictureWidth, pictureHeight);
 
         if (mCameraSurfaceView.getSurfaceHolder() != null) {
 //            MLog.i(TAG, "openCamera--SurfaceHolder:" + mPreviewState.state);
@@ -401,16 +416,19 @@ public final class CameraWrapper implements CameraAllCallback {
      * @return
      */
     public Camera.Parameters getCameraParameters() {
-        if (mParameters == null) {
-            mParameters = new HashMap<Integer, Camera.Parameters>();
-        }
-        if (mParameters.containsKey(mCurrentCameraId)) {
-            mCurrentParameters = mParameters.get(mCurrentCameraId);
-        }else{
-            if (mCamera != null) {
-                mCurrentParameters = mCamera.getParameters();
-                mParameters.put(mCurrentCameraId, mCurrentParameters);
-            }
+//        if (mParameters == null) {
+//            mParameters = new HashMap<Integer, Camera.Parameters>();
+//        }
+//        if (mParameters.containsKey(mCurrentCameraId)) {
+//            mCurrentParameters = mParameters.get(mCurrentCameraId);
+//        }else{
+//            if (mCamera != null) {
+//                mCurrentParameters = mCamera.getParameters();
+//                mParameters.put(mCurrentCameraId, mCurrentParameters);
+//            }
+//        }
+        if (mCamera != null) {
+            mCurrentParameters = mCamera.getParameters();
         }
         return mCurrentParameters;
     }
@@ -424,20 +442,15 @@ public final class CameraWrapper implements CameraAllCallback {
     }
 
     /**
-     * 设置最佳的大小，在开始预览之前设置，否则可能会无效
-     *
-     * @param width
-     * @param height
+     * 另外一个镜头的Id
+     * @return
      */
-    public void setOptimalPreviewSize(int width, int height) {
-        if (mSupportedPreviewSizes != null) {
-            mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height, 4.0f/3);
-            setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-        }
+    public int getNextCameraId() {
+        return (mCameraCurrentlyLocked + 1) % mNumberOfCameras;
     }
 
     /**
-     * 最佳的预览大小
+     * 最佳的大小
      *
      * @param sizes
      * @param width
@@ -445,7 +458,7 @@ public final class CameraWrapper implements CameraAllCallback {
      * @param previewRatio 强制4:3的比例
      * @return
      */
-    private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int width, int height, float previewRatio) {
+    private Camera.Size getOptimalSize(List<Camera.Size> sizes, int width, int height, float previewRatio) {
 //        MLog.i(TAG, "getOptimalPreviewSize width:"+width+", height:"+height);
         if (sizes == null) {
             return null;
@@ -470,6 +483,15 @@ public final class CameraWrapper implements CameraAllCallback {
             if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
                 continue;
             if (Math.abs(size.height - targetHeight) < minDiff) {
+                if (optimalSize != null) {
+                    if (optimalSize.width > size.width) {
+                        break;
+                    }else if(optimalSize.width == size.width) {
+                        if (optimalSize.height >= size.height) {
+                            break;
+                        }
+                    }
+                }
                 optimalSize = size;
                 minDiff = Math.abs(size.height - targetHeight);
             }
@@ -494,6 +516,76 @@ public final class CameraWrapper implements CameraAllCallback {
         return optimalSize;
     }
 
+    public Map<Integer, Camera.Size> getPreviewDataLenghts() {
+        return mSupportedPreviewDataLengths;
+    }
+
+    /**
+     * 设置最佳的大小，在开始预览之前设置，否则可能会无效
+     *
+     * @param width
+     * @param height
+     */
+    public void setOptimalPreviewSize(int width, int height) {
+        if (mSupportedPreviewSizes != null) {
+            mPreviewSize = getOptimalSize(mSupportedPreviewSizes, width, height, defaultRatio);
+            MLog.i(TAG, "setOptimalPreviewSize width:" + mPreviewSize.width + ", height:" + mPreviewSize.height);
+
+            previewWidth = mPreviewSize.width;
+            previewHeight = mPreviewSize.height;
+            if (mCamera != null) {
+                getCameraParameters();
+                mCurrentParameters.setPreviewSize(previewWidth, previewHeight);
+                try {
+                    mCamera.setParameters(mCurrentParameters);
+//                MLog.i(TAG, "set preview size success");
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 设置最佳的大小，在开始预览之前设置，否则可能会无效
+     *
+     * @param width
+     * @param height
+     */
+    public void setOptimalPictureSize(int width, int height) {
+        if (mSupportedPictureSizes != null) {
+            Collections.sort(mSupportedPictureSizes, new Comparator<Camera.Size>() {
+                @Override
+                public int compare(Camera.Size size1, Camera.Size size2) {
+                    int one = size1.height * size1.width;
+                    int two = size2.height * size2.width;
+                    if (one > two) {
+                        return -1;
+                    } else if (two == one) {
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+                }
+            });
+            Camera.Size mPictureSize = getOptimalSize(mSupportedPictureSizes, width, height, defaultRatio);
+            Log.i(TAG, "setOptimalPictureSize width:"+ mPictureSize.width +", height:"+mPictureSize.height);
+
+            pictureWidth = mPictureSize.width;
+            pictureHeight = mPictureSize.height;
+            if (mCamera != null) {
+                getCameraParameters();
+//                mCurrentParameters.setPictureFormat(PixelFormat.JPEG);
+                mCurrentParameters.setPictureSize(pictureWidth, pictureHeight);
+                try {
+                    mCamera.setParameters(mCurrentParameters);
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     /**
      * 设置预览大小，在开始预览之前设置，否则可能会无效
      * @param width
@@ -502,16 +594,6 @@ public final class CameraWrapper implements CameraAllCallback {
     public void setPreviewSize(int width, int height) {
         previewWidth = width;
         previewHeight = height;
-        if (mCamera != null) {
-            getCameraParameters();
-            mCurrentParameters.remove(KEY_PREVIEW_SIZE);
-            mCurrentParameters.setPreviewSize(previewWidth, previewHeight);
-            try {
-                mCamera.setParameters(mCurrentParameters);
-            }catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /**
@@ -523,16 +605,6 @@ public final class CameraWrapper implements CameraAllCallback {
 //        MLog.i(TAG, "picture width:" + width + ", height:" + height);
         pictureWidth = width;
         pictureHeight = height;
-        if (mCamera != null) {
-            getCameraParameters();
-            mCurrentParameters.setPictureFormat(PixelFormat.JPEG);
-            mCurrentParameters.setPictureSize(pictureWidth, pictureHeight);
-            try {
-                mCamera.setParameters(mCurrentParameters);
-            }catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /**
@@ -543,7 +615,7 @@ public final class CameraWrapper implements CameraAllCallback {
      */
     public void setPreviewAndPictureSize(int width, int height) {
         setPreviewSize(width, height);
-        setPictureSize(width, height);
+        setPictureSize(height, width);
     }
 
     /**
@@ -685,7 +757,7 @@ public final class CameraWrapper implements CameraAllCallback {
     /**
      * 开始预览
      */
-    public void startPreview() {
+    public synchronized void startPreview() {
 //        MLog.i(TAG, "startPreview--:" + mPreviewState.state);
         if (mCamera != null && mPreviewState == States.PREVIEW_IDLE) {
             mCamera.setErrorCallback(this);
@@ -700,7 +772,7 @@ public final class CameraWrapper implements CameraAllCallback {
     /**
      * 停止预览
      */
-    public void stopPreview() {
+    public synchronized void stopPreview() {
 //        MLog.i(TAG, "stopPreview--:"+ mPreviewState.state);
         if (mCamera != null && mPreviewState == States.PREVIEW_DOING) {
             autoLoopFocus(false);
@@ -715,7 +787,7 @@ public final class CameraWrapper implements CameraAllCallback {
     /**
      * 释放镜头
      */
-    public void releaseCamera() {
+    public synchronized void releaseCamera() {
 //        MLog.i(TAG, "releaseCamera");
         if (mCamera != null) {
             mCamera.release();
@@ -1086,6 +1158,10 @@ public final class CameraWrapper implements CameraAllCallback {
         if (mFocusState == States.FOCUS_DOING) {// 如果正在对焦直接返回;
             return;
         }
+        if (mFocusState == States.FOCUS_SUCCESS) {
+            checkFocusStateAndTakePicture();
+            return;
+        }
         // 如果是FOCUS_MODE_INFINITY,不能开始对焦;
         if (!mFocusMode.equals(Camera.Parameters.FOCUS_MODE_INFINITY)) {
             if (!isFront()) {
@@ -1114,7 +1190,7 @@ public final class CameraWrapper implements CameraAllCallback {
                 try {
                     mFocusState = States.FOCUS_DOING;
                     //4秒之后自动清理对焦状态;
-                    mCameraHandler.sendEmptyMessageDelayed(MSG_CANCLE_FOCUS, interval-1000);
+                    mCameraHandler.sendEmptyMessageDelayed(MSG_CANCLE_FOCUS, interval+300);
                     mFocusStartTime = System.currentTimeMillis();
                     mCamera.autoFocus(this);
                 } catch (Exception e) {
@@ -1244,6 +1320,10 @@ public final class CameraWrapper implements CameraAllCallback {
         mOrientationEventListener = new OrientationEventListener(mContext, SensorManager.SENSOR_DELAY_UI) {
             float currentScreenDegree;
 
+            /**
+             * 照片角度已经校正， 外部不需要校正了
+             * @param orientation
+             */
             @Override
             public void onOrientationChanged(int orientation) {
                 float picDegree = checkPictureDegree(orientation);
@@ -1389,22 +1469,26 @@ public final class CameraWrapper implements CameraAllCallback {
         if (success && mCameraHandler != null) {
             mCameraHandler.removeMessages(MSG_CANCLE_FOCUS);
         }
-        if (mFocusState == States.TAKE_PICTURE_AFTER_FOCUS_FINISH) {
+        if (mFocusState == States.FOCUS_DOING
+                || mFocusState == States.FOCUS_DOING_ON_TOUCH
+                || mFocusState == States.TAKE_PICTURE_AFTER_FOCUS_FINISH) {
+
+            States focusOrginState = mFocusState;
+//            MLog.i(TAG, "onAutoFocus:" + mFocusState.state);
+
             if (success) {
                 mFocusState = States.FOCUS_SUCCESS;
             } else {
                 mFocusState = States.FOCUS_FAIL;
             }
-            checkFocusStateAndTakePicture();
-        } else if (mFocusState == States.FOCUS_DOING || mFocusState == States.FOCUS_DOING_ON_TOUCH) {
-            //如果正在对焦
-            if (success) {
-                mFocusState = States.FOCUS_SUCCESS;
-            } else {
-                mFocusState = States.FOCUS_FAIL;
+
+            if (focusOrginState == States.FOCUS_DOING_ON_TOUCH) {
+                autoLoopFocus(true);
+            }
+            if (focusOrginState == States.TAKE_PICTURE_AFTER_FOCUS_FINISH) {
+                checkFocusStateAndTakePicture();
             }
         }
-
     }
 
     @Override
@@ -1413,6 +1497,8 @@ public final class CameraWrapper implements CameraAllCallback {
         mCameraState = States.CAMERA_IDLE;
         if (error == Camera.CAMERA_ERROR_SERVER_DIED) {
             MLog.i(TAG, "onError: CAMERA ERROR SERVER DIED ->" + error);
+            //尝试重新打开
+            reopenCamera();
         }
         if (mCameraAllCallback != null) {
             mCameraAllCallback.onError(error, camera);
