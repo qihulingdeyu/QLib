@@ -8,8 +8,8 @@ import android.net.NetworkInfo;
 import android.os.Build;
 
 import com.qing.log.MLog;
-import com.qing.utils.FileUtils;
-import com.qing.utils.StringUtils;
+import com.qing.utils.FileUtil;
+import com.qing.utils.StringUtil;
 import com.qing.utils.XmlTag;
 
 import java.io.File;
@@ -39,7 +39,7 @@ public class CaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
         Thread.setDefaultUncaughtExceptionHandler(this);
 
         //sd目录：包名/log
-        logPath = FileUtils.getAppPath(mContext) + "log";
+        logPath = FileUtil.getAppPath(mContext) + "log";
     }
 
     @Override
@@ -78,17 +78,17 @@ public class CaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
      * @return
      */
     private String save2File(String info, boolean sortByDate) {
-        if (StringUtils.isNullOrEmpty(info)) return null;
+        if (StringUtil.isNullOrEmpty(info)) return null;
 
-        String fileName = StringUtils.getDateTime("yyyyMMddHHmmss")+"_"+this.hashCode()+".log";
+        String fileName = StringUtil.getDateTime("yyyyMMddHHmmss")+"_"+this.hashCode()+".log";
 
-        if(StringUtils.isNullOrEmpty(logPath)){
+        if(StringUtil.isNullOrEmpty(logPath)){
             logPath = mContext.getDir("log", Context.MODE_PRIVATE).getPath();
         }
         if (sortByDate){
-            logPath += File.separator + StringUtils.getDateTime("yyyyMMdd");
+            logPath += File.separator + StringUtil.getDateTime("yyyyMMdd");
         }
-        FileUtils.write2SD(info, logPath + File.separator + fileName, true);
+        FileUtil.write2SD(info, logPath + File.separator + fileName, true);
         return fileName;
     }
 

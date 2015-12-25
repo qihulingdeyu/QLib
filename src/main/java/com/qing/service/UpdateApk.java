@@ -12,9 +12,9 @@ import com.qing.callback.DownloadCallback;
 import com.qing.callback.HttpCallback;
 import com.qing.log.MLog;
 import com.qing.ui.AlertDialog;
-import com.qing.utils.DownloadUtils;
-import com.qing.utils.HttpUtils;
-import com.qing.utils.StringUtils;
+import com.qing.utils.DownloadUtil;
+import com.qing.utils.HttpUtil;
+import com.qing.utils.StringUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,7 +64,7 @@ public class UpdateApk extends BaseService {
             path = bundle.getString("path");
         }
 
-        if (StringUtils.isNullOrEmpty(updateUrl) || !updateUrl.startsWith("http")){
+        if (StringUtil.isNullOrEmpty(updateUrl) || !updateUrl.startsWith("http")){
             //地址错误
             if (showDialog){
                 dl = new AlertDialog(mContext);
@@ -85,28 +85,28 @@ public class UpdateApk extends BaseService {
             pdl.setMessage("正在检查更新...");
             pdl.show();
         }
-        HttpUtils.doGet(url, new HttpCallback(){
+        HttpUtil.doGet(url, new HttpCallback() {
             @Override
             public void onSuccess(String content, InputStream is) {
-                if (pdl!=null){
+                if (pdl != null) {
                     pdl.dismiss();
                 }
                 //{"ver":"15", "url":"","desc":""}
                 boolean isNew = true;
                 String desc = "是否下载更新？";
-                if (!StringUtils.isNullOrEmpty(content) && content.startsWith("{")){
+                if (!StringUtil.isNullOrEmpty(content) && content.startsWith("{")) {
                     try {
                         JSONObject obj = new JSONObject(content);
-                        if (obj.has("ver")){
+                        if (obj.has("ver")) {
                             int ver = obj.getInt("ver");
-                            if (ver>verCode){
+                            if (ver > verCode) {
                                 isNew = false;
                             }
                         }
-                        if (obj.has("url")){
+                        if (obj.has("url")) {
                             downloadUrl = obj.getString("url");
                         }
-                        if (obj.has("desc")){
+                        if (obj.has("desc")) {
                             desc = obj.getString("desc");//更新内容
                         }
                     } catch (JSONException e) {
@@ -114,11 +114,11 @@ public class UpdateApk extends BaseService {
                     }
 
                 }
-                if (showDialog && isNew){
+                if (showDialog && isNew) {
                     dl = new AlertDialog(mContext);
                     dl.setMessage("已是最新版本！");
                     dl.show();
-                }else if(showDialog){
+                } else if (showDialog) {
                     dl = new AlertDialog(mContext);
                     dl.setTitle("新版本");
                     dl.setMessage(desc);
@@ -135,7 +135,7 @@ public class UpdateApk extends BaseService {
 
             @Override
             public void onFail(String msg) {
-                if (pdl!=null){
+                if (pdl != null) {
                     pdl.dismiss();
                 }
             }
@@ -143,7 +143,7 @@ public class UpdateApk extends BaseService {
     }
 
     private void download(String url){
-        if (StringUtils.isNullOrEmpty(url) || !url.startsWith("http")){
+        if (StringUtil.isNullOrEmpty(url) || !url.startsWith("http")){
             if (showDialog){
                 dl = new AlertDialog(mContext);
                 dl.setMessage("下载地址错误");
@@ -151,7 +151,7 @@ public class UpdateApk extends BaseService {
             }
         }else{
             //下载
-            DownloadUtils.download(url, path, new DownloadCallback() {
+            DownloadUtil.download(url, path, new DownloadCallback() {
                 @Override
                 public void onStart() {
                     //开启通知栏通知
@@ -159,7 +159,7 @@ public class UpdateApk extends BaseService {
 
                 @Override
                 public void onDownloading(long progress) {
-                    MLog.i(TAG, "progress:"+progress);
+                    MLog.i(TAG, "progress:" + progress);
                 }
 
                 @Override

@@ -4,14 +4,14 @@ package com.qing.utils;
  * Created by zwq on 2015/09/22 13:59.<br/><br/>
  * 启动线程时调用start方法
  */
-public abstract class ThreadUtils implements Runnable {
+public abstract class ThreadUtil implements Runnable {
 
-    private static final String TAG = ThreadUtils.class.getName();
+    private static final String TAG = ThreadUtil.class.getName();
     private volatile Thread mThread;
     private boolean isRunning;
     private long sleepTime;
 
-    public ThreadUtils(){
+    public ThreadUtil(){
         if (mThread == null){
             mThread = new Thread(this);
         }

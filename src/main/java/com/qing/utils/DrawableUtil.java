@@ -19,7 +19,7 @@ import java.util.Random;
  * Created by zwq on 2015/04/21 16:20.<br/><br/>
  * 图片、文字背景选择器的Drawable
  */
-public class DrawableUtils {
+public class DrawableUtil {
 
     /**
      * 获取随机颜色

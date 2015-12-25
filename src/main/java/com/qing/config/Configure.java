@@ -3,7 +3,7 @@ package com.qing.config;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.qing.utils.StringUtils;
+import com.qing.utils.StringUtil;
 
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +38,7 @@ public class Configure {
     }
 
     public static void getSharedPreferences(String name){
-        if (StringUtils.isNullOrEmpty(name)){
+        if (StringUtil.isNullOrEmpty(name)){
             name = "config";
         }
         preferences = mContext.getSharedPreferences(name, Context.MODE_PRIVATE);

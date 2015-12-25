@@ -29,10 +29,10 @@ import com.qing.qlib.R;
 import com.qing.qlib.RelativeLayoutPage;
 import com.qing.ui.AlertDialog;
 import com.qing.ui.HorizontalProgressBar;
-import com.qing.utils.DrawableUtils;
-import com.qing.utils.NetUtils;
-import com.qing.utils.StringUtils;
-import com.qing.utils.UIUtils;
+import com.qing.utils.DrawableUtil;
+import com.qing.utils.NetUtil;
+import com.qing.utils.StringUtil;
+import com.qing.utils.UIUtil;
 
 /**
  * Created by zwq on 2015/04/07 14:51.<br/><br/>
@@ -85,7 +85,7 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 
 	protected void topTitleLayout() {
 		// 顶部标题布局
-		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
+		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtil.getRealPixel720(100));
 		titleLayout = new RelativeLayout(mContext);
 		titleLayout.setId(ID_TITLE_LAYOUT);
 		this.addView(titleLayout, rParams);
@@ -106,7 +106,7 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 	protected void webViewLayout() {
 		// 浏览器
 		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		rParams.topMargin = UIUtils.getRealPixel720(100);
+		rParams.topMargin = UIUtil.getRealPixel720(100);
 		rParams.addRule(RelativeLayout.BELOW, ID_TITLE_LAYOUT);
 		webView = new XWebView(mContext);
 		webView.setId(ID_WEBVIEW);
@@ -120,34 +120,34 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 
 	protected void topButtonLayout() {
 		// 顶部按钮布局
-		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
+		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtil.getRealPixel720(100));
 		btnLayout = new RelativeLayout(mContext);
 		this.addView(btnLayout, rParams);
 
 		// 返回按钮
 		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_VERTICAL);
-//		rParams.leftMargin = UIUtils.getRealPixel720(15);
+//		rParams.leftMargin = UIUtil.getRealPixel720(15);
 		backBtn = new ImageView(mContext);
-		backBtn.setImageDrawable(DrawableUtils.pressedSelector(mContext, R.mipmap.back_btn_normal, R.mipmap.back_btn_press));
+		backBtn.setImageDrawable(DrawableUtil.pressedSelector(mContext, R.mipmap.back_btn_normal, R.mipmap.back_btn_press));
 		backBtn.setOnClickListener(mOnClickListener);
 		btnLayout.addView(backBtn, rParams);
 
 		rParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		rParams.addRule(RelativeLayout.CENTER_VERTICAL);
 		rParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-		rParams.rightMargin = UIUtils.getRealPixel720(40);
+		rParams.rightMargin = UIUtil.getRealPixel720(40);
 		closeBtn = new ImageView(mContext);
-		closeBtn.setImageDrawable(DrawableUtils.pressedSelector(mContext, R.mipmap.close_btn_normal, R.mipmap.close_btn_press));
+		closeBtn.setImageDrawable(DrawableUtil.pressedSelector(mContext, R.mipmap.close_btn_normal, R.mipmap.close_btn_press));
 		closeBtn.setOnClickListener(mOnClickListener);
 		btnLayout.addView(closeBtn, rParams);
 	}
 
 	protected void progressBarLayout() {
 		//进度条
-		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(8));
+		rParams = new LayoutParams(LayoutParams.MATCH_PARENT, UIUtil.getRealPixel720(8));
 		rParams.addRule(RelativeLayout.ALIGN_TOP, ID_WEBVIEW);
-		rParams.topMargin = UIUtils.getRealPixel720(100);
+		rParams.topMargin = UIUtil.getRealPixel720(100);
 		progressBar = new HorizontalProgressBar(mContext);
 		progressBar.setId(ID_PROGRESS_BAR);
 		this.addView(progressBar, rParams);
@@ -173,7 +173,7 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 		// 提示文字1
 		lParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		lParams.gravity = Gravity.CENTER_HORIZONTAL;
-		lParams.topMargin = UIUtils.getRealPixel720(40);
+		lParams.topMargin = UIUtil.getRealPixel720(40);
 		mTip1 = new TextView(mContext);
 		mTip1.setTextColor(Color.WHITE);
 		mTip1.setText(mText1);
@@ -245,8 +245,8 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 
 		/** 拼接js */
 		private String conbineJS(String methodName, String jsContent) {
-			if (StringUtils.isNullOrEmpty(methodName)) return null;
-			if (StringUtils.isNullOrEmpty(jsContent)) return null;
+			if (StringUtil.isNullOrEmpty(methodName)) return null;
+			if (StringUtil.isNullOrEmpty(jsContent)) return null;
 			return "javascript:window."+webView.JS_INVOKE_LOCAL_OBJECT+"."+methodName+"("+jsContent+");";
 		}
 
@@ -321,7 +321,7 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 		}
 
 		// 判断是否有网络
-		if (NetUtils.isNetworkConnected(mContext)) {
+		if (NetUtil.isNetworkConnected(mContext)) {
 //			showLoading();
 			webView.setAllMethodListener(mAllMethodListener);
 			webView.loadUrl(url.trim());

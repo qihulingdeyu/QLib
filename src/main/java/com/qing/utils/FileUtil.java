@@ -25,15 +25,15 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.qing.utils.StringUtils.isNullOrEmpty;
+import static com.qing.utils.StringUtil.isNullOrEmpty;
 
 /**
  * Created by zwq on 2015/04/15 16:20.<br/><br/>
  * 文件操作工具类
  */
-public class FileUtils {
+public class FileUtil {
 
-    private static final String TAG = FileUtils.class.getName();
+    private static final String TAG = FileUtil.class.getName();
     private static String sdPath;
     private static String appPath;
 
@@ -204,7 +204,7 @@ public class FileUtils {
 
     /** 文件是否存在 */
     public static boolean isFileExists(String path){
-        if (StringUtils.isNullOrEmpty(path) || !new File(path).exists()) {
+        if (StringUtil.isNullOrEmpty(path) || !new File(path).exists()) {
             return false;
         }
         return true;
@@ -798,7 +798,7 @@ public class FileUtils {
      * @return
      */
     public static String getFileMD5(String filepath) {
-        if(StringUtils.isNullOrEmpty(filepath)){
+        if(StringUtil.isNullOrEmpty(filepath)){
             MLog.i(TAG, "filepath is null or empty");
             return null;
         }

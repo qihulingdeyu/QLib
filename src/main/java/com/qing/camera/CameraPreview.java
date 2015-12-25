@@ -7,7 +7,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.qing.utils.GesturesUtils;
+import com.qing.utils.GesturesUtil;
 
 /**
  * Created by zwq on 2015/11/11 14:43.<br/><br/>
@@ -26,7 +26,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private boolean mSurfaceCreated = false;
 
     private float ratio = 4.0f/3;
-    private GesturesUtils gesturesUtils;
+    private GesturesUtil gesturesUtils;
 
     public CameraPreview(Context context) {
         this(context, null);
@@ -68,8 +68,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         });
         cameraWrapper.openCamera();
 
-//        gesturesUtils = GesturesUtils.getInstance();
-//        gesturesUtils.setGesturesListener(new GesturesUtils.GesturesListener() {
+//        gesturesUtils = GesturesUtil.getInstance();
+//        gesturesUtils.setGesturesListener(new GesturesUtil.GesturesListener() {
 //            @Override
 //            public float getCurrentDegree() {
 //                return 0;

@@ -1,6 +1,6 @@
 package com.qing.utils;
 
-import static com.qing.utils.StringUtils.isNullOrEmpty;
+import static com.qing.utils.StringUtil.isNullOrEmpty;
 
 /**
  * Created by zwq on 2015/04/15 11:28.<br/><br/>

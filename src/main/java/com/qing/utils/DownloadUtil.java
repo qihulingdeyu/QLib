@@ -14,16 +14,16 @@ import java.net.URL;
  * Created by zwq on 2015/08/31 16:56.<br/><br/>
  * 下载是耗时操作，需要开启新线程执行
  */
-public class DownloadUtils {
+public class DownloadUtil {
 
-    private static final String TAG = DownloadUtils.class.getName();
+    private static final String TAG = DownloadUtil.class.getName();
 
     public static void download(String url, String path, DownloadCallback callback){
         download(url, path, null, callback);
     }
 
     public static void download(final String url, final String path, final String fileName, final DownloadCallback callback){
-        ThreadUtils mThread = new ThreadUtils() {
+        ThreadUtil mThread = new ThreadUtil() {
             @Override
             public void execute() {
                 if(url == null || path==null){
@@ -35,7 +35,7 @@ public class DownloadUtils {
                     file = file.getParentFile();
                     isFile = true;
                 }else{
-                    if (StringUtils.isNullOrEmpty(fileName)) {
+                    if (StringUtil.isNullOrEmpty(fileName)) {
                         if (callback!=null) callback.postResult(DownloadCallback.FAIL, "文件名不能为空");
                     }
                 }

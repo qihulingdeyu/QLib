@@ -27,7 +27,7 @@ import java.util.HashMap;
  * Created by zwq on 2015/07/21 16:20.<br/><br/>
  * 获取手机的硬件、功能状态信息
  */
-public class PhoneUtils {
+public class PhoneUtil {
 
     private static final String FILE_MEMORY = "/proc/meminfo";
     private static final String FILE_CPU = "/proc/cpuinfo";
@@ -113,18 +113,18 @@ public class PhoneUtils {
      */
     public String mFingerprint;
 
-    private static PhoneUtils phoneUtils;
-    private PhoneUtils(Context context) {
+    private static PhoneUtil phoneUtils;
+    private PhoneUtil(Context context) {
         phoneUtils = this;
         getAllInfo(context);
     }
 
-    public static PhoneUtils init(Context context) {
+    public static PhoneUtil init(Context context) {
         if (phoneUtils==null){
-            synchronized (PhoneUtils.class){
+            synchronized (PhoneUtil.class){
                 if(phoneUtils==null){
-                    new PhoneUtils(context);
-//                    phoneUtils = new PhoneUtils(context);
+                    new PhoneUtil(context);
+//                    phoneUtils = new PhoneUtil(context);
                 }
             }
         }
@@ -419,7 +419,7 @@ public class PhoneUtils {
      * @param context
      * @return
      */
-    public PhoneUtils getAllInfo(Context context) {
+    public PhoneUtil getAllInfo(Context context) {
         phoneUtils.mIMEI = getIMEI(context);
         phoneUtils.mPhoneType = getPhoneType(context);
         phoneUtils.mSdkVersion = getSdkVersion();

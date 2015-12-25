@@ -8,7 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.qing.utils.DrawableUtils;
+import com.qing.utils.DrawableUtil;
 
 /**
  * Created by zwq on 2015/04/13 12:22.<br/><br/>
@@ -84,7 +84,7 @@ public class SelectorButton extends ImageView {
 	}
 
 	private void setSelector(int normal, int pressed) {
-		selector = DrawableUtils.pressedSelector(mContext, normal, pressed);
+		selector = DrawableUtil.pressedSelector(mContext, normal, pressed);
 		if(selector == null && normal != -1){
 			this.setImageResource(normal);
 		}else{
@@ -93,7 +93,7 @@ public class SelectorButton extends ImageView {
 	}
 	
 	private void setSelector(Bitmap normal, Bitmap pressed) {
-		selector = DrawableUtils.pressedSelector(mContext, normal, pressed);
+		selector = DrawableUtil.pressedSelector(mContext, normal, pressed);
 		if(selector == null){
 			this.setImageDrawable(selector);
 		}

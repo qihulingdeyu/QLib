@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.qing.utils.UIUtils;
+import com.qing.utils.UIUtil;
 
 /**
  * Created by zwq on 2015/09/06 12:06.<br/><br/>
@@ -40,14 +40,14 @@ public class TextViewPager extends RelativeLayout {
     public TextViewPager(Context context) {
         super(context);
         mContext = context;
-        screenW = UIUtils.getScreenW();
+        screenW = UIUtil.getScreenW();
         initView();
     }
 
     @SuppressLint("ClickableViewAccessibility")
     public void initView() {
         this.setBackgroundColor(Color.TRANSPARENT);
-        this.setPadding(0, UIUtils.getRealPixel720(10), 0, UIUtils.getRealPixel720(10));
+        this.setPadding(0, UIUtil.getRealPixel720(10), 0, UIUtil.getRealPixel720(10));
 
         // 小圆点
         RelativeLayout.LayoutParams rParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
@@ -60,7 +60,7 @@ public class TextViewPager extends RelativeLayout {
         //文字布局
         rParams = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT);
         rParams.addRule(RelativeLayout.BELOW, ID_DOT_VIEW);
-        rParams.topMargin = UIUtils.getRealPixel720(5);
+        rParams.topMargin = UIUtil.getRealPixel720(5);
         myHorizontalScrollView = new MyHorizontalScrollView(mContext);
         myHorizontalScrollView.setHorizontalFadingEdgeEnabled(false);
         myHorizontalScrollView.setHorizontalScrollBarEnabled(false);
@@ -98,7 +98,7 @@ public class TextViewPager extends RelativeLayout {
             textView.setText(textArr[i]);
             textView.setTextColor(Color.WHITE);
 
-            int textWidth = textArr[i].length() * UIUtils.getRealPixel720(12) + UIUtils.getRealPixel720(30)*2;
+            int textWidth = textArr[i].length() * UIUtil.getRealPixel720(12) + UIUtil.getRealPixel720(30)*2;
             itemWidth[1+i] = textWidth;
             textViewArr[i] = textView;
 
@@ -264,7 +264,7 @@ public class TextViewPager extends RelativeLayout {
             lastX = (int) event.getX();
         }else if(event.getAction() == MotionEvent.ACTION_MOVE){
             currentX = (int) event.getX();
-            if(Math.abs(lastX - currentX)<UIUtils.getScreenW()/4){
+            if(Math.abs(lastX - currentX)< UIUtil.getScreenW()/4){
                 distanceX += (lastX - currentX);
             }else{
                 distanceX = 0;
@@ -273,7 +273,7 @@ public class TextViewPager extends RelativeLayout {
             lastX = currentX;
         }else if(event.getAction() == MotionEvent.ACTION_UP){
             lastX = 0;
-            if(Math.abs(distanceX)>=UIUtils.getScreenW()/5){
+            if(Math.abs(distanceX)>= UIUtil.getScreenW()/5){
 //				Log.i("bbb", "distanceX:"+distanceX);
                 move = distanceX;
                 moveOne(move > 0 ? 1 : -1);

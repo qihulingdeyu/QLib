@@ -7,10 +7,10 @@ import android.view.MotionEvent;
  * Created by zwq on 2015/10/22 10:54.<br/><br/>
  * 缩放、旋转
  */
-public class GesturesUtils {
+public class GesturesUtil {
 
-    private static final String TAG = GesturesUtils.class.getName();
-    private static GesturesUtils instance;
+    private static final String TAG = GesturesUtil.class.getName();
+    private static GesturesUtil instance;
     private GesturesListener mGesturesListener;
 
     private boolean twoPoint;
@@ -30,13 +30,13 @@ public class GesturesUtils {
     private float scaleStep = 0.01f;
     private float scaleRate = 1;//缩放方向
 
-    private GesturesUtils() { }
+    private GesturesUtil() { }
 
-    public static GesturesUtils getInstance() {
+    public static GesturesUtil getInstance() {
         if (instance == null) {
-            synchronized (GesturesUtils.class) {
+            synchronized (GesturesUtil.class) {
                 if (instance == null) {
-                    instance = new GesturesUtils();
+                    instance = new GesturesUtil();
                 }
             }
         }

@@ -3,10 +3,10 @@ package com.qing.utils;
 /**
  * Created by zwq on 2015/10/18 17:55.<br/><br/>
  */
-public class SqlUtils {
+public class SqlUtil {
 
-    private static final String TAG = SqlUtils.class.getName();
-    private static SqlUtils sqlUtils;// = new SqlUtils();
+    private static final String TAG = SqlUtil.class.getName();
+    private static SqlUtil sqlUtils;// = new SqlUtil();
     private static StringBuffer stringBuffer;
     private int columnCount;
     private String currentColumnType;
@@ -26,15 +26,15 @@ public class SqlUtils {
         }
     }
 
-    private SqlUtils(){
+    private SqlUtil(){
         stringBuffer = new StringBuffer();
     }
 
-    public static SqlUtils getInstance() {
+    public static SqlUtil getInstance() {
         if (sqlUtils == null){
-            synchronized (SqlUtils.class){
+            synchronized (SqlUtil.class){
                 if (sqlUtils == null){
-                    sqlUtils = new SqlUtils();
+                    sqlUtils = new SqlUtil();
                 }
             }
         }
@@ -47,20 +47,20 @@ public class SqlUtils {
      * 添加了换行符
      * @return
      */
-    public SqlUtils print(){
+    public SqlUtil print(){
         print = true;
         return sqlUtils;
     }
 
-    public SqlUtils createTable(Class<?> entityClass){
+    public SqlUtil createTable(Class<?> entityClass){
         if (entityClass == null){
             throw new IllegalArgumentException("clazz is null");
         }
         return createTable(entityClass.getSimpleName());
     }
 
-    public SqlUtils createTable(String tableName){
-        if (StringUtils.isNullOrEmpty(tableName)){
+    public SqlUtil createTable(String tableName){
+        if (StringUtil.isNullOrEmpty(tableName)){
             throw new IllegalArgumentException("tableName is null");
         }
         columnCount = 0;
@@ -73,7 +73,7 @@ public class SqlUtils {
         return sqlUtils;
     }
 
-    public SqlUtils dropTable(String tableName){
+    public SqlUtil dropTable(String tableName){
         stringBuffer.append("drop table if exists " + tableName + ";");
         return sqlUtils;
     }
@@ -84,7 +84,7 @@ public class SqlUtils {
      * @param type 类型
      * @return
      */
-    public SqlUtils addColumn(String columnName, ColumnType type){
+    public SqlUtil addColumn(String columnName, ColumnType type){
         return addColumn(columnName, type, getDefaultLength(type));
     }
 
@@ -114,7 +114,7 @@ public class SqlUtils {
      * @param length 长度、大小
      * @return
      */
-    public SqlUtils addColumn(String columnName, ColumnType type, int length){
+    public SqlUtil addColumn(String columnName, ColumnType type, int length){
         check(columnName);
         if (type == null){
             throw new IllegalArgumentException("column type is null");
@@ -131,19 +131,19 @@ public class SqlUtils {
         return sqlUtils;
     }
 
-    public SqlUtils primaryKey(){
+    public SqlUtil primaryKey(){
         stringBuffer.append(" primary key");
         return sqlUtils;
     }
 
-    public SqlUtils autoincrement(){
+    public SqlUtil autoincrement(){
         if (currentColumnType.equals(ColumnType.Integer.typeName)){
             stringBuffer.append(" autoincrement");
         }
         return sqlUtils;
     }
 
-    public SqlUtils notNull(){
+    public SqlUtil notNull(){
         stringBuffer.append(" not null");
         return sqlUtils;
     }
@@ -155,7 +155,7 @@ public class SqlUtils {
      * @param referenceTableColumnName 关联的表名的列名
      * @return
      */
-    public SqlUtils addForeignKey(String columnName, String referenceTableName, String referenceTableColumnName){
+    public SqlUtil addForeignKey(String columnName, String referenceTableName, String referenceTableColumnName){
         check(columnName);
         check(referenceTableName);
         check(referenceTableColumnName);
@@ -189,7 +189,7 @@ public class SqlUtils {
     }
 
     private void check(String name){
-        if (StringUtils.isNullOrEmpty(name)){
+        if (StringUtil.isNullOrEmpty(name)){
             throw new IllegalArgumentException("name is null");
         }
     }

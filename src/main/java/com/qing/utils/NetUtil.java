@@ -10,7 +10,7 @@ import android.telephony.TelephonyManager;
  * Created by zwq on 2015/07/21 16:20.<br/><br/>
  * 获取网络状态的工具类
  */
-public class NetUtils {
+public class NetUtil {
 
     /**
      * 判断Network是否开启(包括移动网络和wifi)

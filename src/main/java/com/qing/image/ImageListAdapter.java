@@ -7,9 +7,9 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 
-import com.qing.utils.FileUtils;
-import com.qing.utils.StringUtils;
-import com.qing.utils.UIUtils;
+import com.qing.utils.FileUtil;
+import com.qing.utils.StringUtil;
+import com.qing.utils.UIUtil;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class ImageListAdapter extends BaseAdapter {
     }
 
     public void setItemWidth(int numColumns, int spacing) {
-        mItemWidth = (UIUtils.getScreenW()-(numColumns+1)*UIUtils.getRealPixel720(spacing))/numColumns;
+        mItemWidth = (UIUtil.getScreenW()-(numColumns+1)* UIUtil.getRealPixel720(spacing))/numColumns;
     }
 
     @Override
@@ -73,10 +73,10 @@ public class ImageListAdapter extends BaseAdapter {
         if (mImageInfos != null && position < mImageInfos.size()){
             ImageInfo imageInfo = mImageInfos.get(position);
             if (imageInfo != null){
-                if (StringUtils.isNullOrEmpty(imageInfo.getThumb_path())){
+                if (StringUtil.isNullOrEmpty(imageInfo.getThumb_path())){
                     bitmap = ImageStore.getImageThumbnail(imageInfo);
                 }else{
-                    bitmap = FileUtils.getSDBitmap(imageInfo.getThumb_path());
+                    bitmap = FileUtil.getSDBitmap(imageInfo.getThumb_path());
                 }
             }
         }

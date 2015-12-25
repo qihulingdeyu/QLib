@@ -18,9 +18,9 @@ import android.provider.MediaStore.Images.Media;
 import android.provider.MediaStore.Images.Thumbnails;
 
 import com.qing.log.MLog;
-import com.qing.utils.FileUtils;
-import com.qing.utils.StringUtils;
-import com.qing.utils.ThreadUtils;
+import com.qing.utils.FileUtil;
+import com.qing.utils.StringUtil;
+import com.qing.utils.ThreadUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ public class ImageStore {
     private static Map<String, List<ImageInfo>> folderInfos = new HashMap<>();
 
     private static Handler mHandler;
-    private static ThreadUtils threadUtils;
+    private static ThreadUtil threadUtils;
     private static ImageStoreChangeListener mListener;
 
     private static String cacheThumbPath;
@@ -69,7 +69,7 @@ public class ImageStore {
 
     /** 自定义缩略图缓存目录 */
     public static void setCacheThumbPath(String path){
-        if (StringUtils.isNullOrEmpty(path))
+        if (StringUtil.isNullOrEmpty(path))
             return;
         File file = new File(path);
         if (!file.exists()){
@@ -114,7 +114,7 @@ public class ImageStore {
             threadUtils.clearAll();
             threadUtils = null;
         }
-        threadUtils = new ThreadUtils() {
+        threadUtils = new ThreadUtil() {
             @Override
             public void execute() {
                 MLog.i(TAG, "--loadImage-start-");
@@ -202,14 +202,14 @@ public class ImageStore {
                     tempThumbPathList.clear();
                 }
                 for (ImageInfo imageInfo : imageInfos) {
-                    if (imageInfo != null && StringUtils.isNullOrEmpty(imageInfo.getThumb_path())){
+                    if (imageInfo != null && StringUtil.isNullOrEmpty(imageInfo.getThumb_path())){
                         if (cacheThumbPath == null){
 //                            MLog.i(TAG, "--Thumb_path-use system thumb-");
                             getImageThumbInfo(imageInfo);
 
                         }else{
                             //从自定义缩略图目录获取
-                            String thumbName = StringUtils.getMD5(imageInfo.getPath()) + thumbSuffix;
+                            String thumbName = StringUtil.getMD5(imageInfo.getPath()) + thumbSuffix;
                             File file = new File(cacheThumbPath, thumbName);
 
                             imageInfo.setThumb_id(-1);
@@ -225,7 +225,7 @@ public class ImageStore {
                                 }
 
                                 //保存缩略图
-                                if (!FileUtils.write2SD(thumb, file.getAbsolutePath(), true)){
+                                if (!FileUtil.write2SD(thumb, file.getAbsolutePath(), true)){
                                     continue;
                                 }
                                 MLog.i(TAG, "--create--Thumb_path:"+file.getAbsolutePath());
@@ -436,7 +436,7 @@ public class ImageStore {
                 if (filesList != null && !filesList.isEmpty() && filesList.removeAll(tempThumbPathList)){
 //                    MLog.i(TAG, "delete 444 filesList size:"+filesList.size());
                     for (String fileName : filesList) {
-                        FileUtils.deleteSDFile(directory.getAbsolutePath() +"/"+ fileName);
+                        FileUtil.deleteSDFile(directory.getAbsolutePath() + "/" + fileName);
                     }
                     filesList.clear();
                 }
@@ -559,7 +559,7 @@ public class ImageStore {
         imageInfo.setWidth(bitmap.getWidth());
         imageInfo.setHeight(bitmap.getHeight());
         imageInfo.setSize(bitmap.getByteCount());
-        boolean success = FileUtils.write2SD(bitmap, imageInfo.getPath(), false);
+        boolean success = FileUtil.write2SD(bitmap, imageInfo.getPath(), false);
         if (success){
             success = insertToContentProvider(imageInfo);
         }
@@ -576,7 +576,7 @@ public class ImageStore {
         if (imageInfo == null){
             return success;
         }
-        success = FileUtils.deleteSDFile(imageInfo.getPath());
+        success = FileUtil.deleteSDFile(imageInfo.getPath());
         if (success){
             if (mContext != null){
                 ContentResolver resolver = mContext.getContentResolver();

@@ -9,7 +9,7 @@ import android.graphics.drawable.StateListDrawable;
 import android.util.AttributeSet;
 import android.widget.Button;
 
-import com.qing.utils.DrawableUtils;
+import com.qing.utils.DrawableUtil;
 
 /**
  * Created by zwq on 2015/04/13 15:22.<br/><br/>
@@ -58,9 +58,9 @@ public class SelectorButtonV2 extends Button{
 	private void initBgSelector(int type) {
 		Resources res = mContext.getResources();
 		if(type==1){
-			bgSelector = DrawableUtils.pressedSelector(mContext, mNormalResId, mPressResId);
+			bgSelector = DrawableUtil.pressedSelector(mContext, mNormalResId, mPressResId);
 		}else if(type==2){
-			bgSelector = DrawableUtils.pressedSelector(mContext, mNormalBmp, mPressBmp);
+			bgSelector = DrawableUtil.pressedSelector(mContext, mNormalBmp, mPressBmp);
 		}
 		
 		if(bgSelector!=null){
@@ -96,7 +96,7 @@ public class SelectorButtonV2 extends Button{
 		this.setText(text);
 		this.setClickable(true);
 
-		ColorStateList colorsList = DrawableUtils.colorPressedDrawable2(normalColor, pressColor);
+		ColorStateList colorsList = DrawableUtil.colorPressedDrawable2(normalColor, pressColor);
 		if (colorsList!=null){
 			this.setTextColor(colorsList);
 		}

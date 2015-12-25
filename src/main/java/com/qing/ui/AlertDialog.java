@@ -14,8 +14,8 @@ import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.qing.utils.DrawableUtils;
-import com.qing.utils.UIUtils;
+import com.qing.utils.DrawableUtil;
+import com.qing.utils.UIUtil;
 
 /**
  * Created by zwq on 2015/07/23 10:11.<br/><br/>
@@ -35,7 +35,7 @@ public class AlertDialog extends Dialog {
     private LinearLayout.LayoutParams lParams;
     
     public AlertDialog(Context context) {
-        this(context, (int)(UIUtils.getScreenW()*0.8f), (int)(UIUtils.getScreenH()*0.05f));
+        this(context, (int)(UIUtil.getScreenW()*0.8f), (int)(UIUtil.getScreenH()*0.05f));
     }
     /**
      * width和height是dialog中间内容布局的宽高
@@ -63,7 +63,7 @@ public class AlertDialog extends Dialog {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         //去边框
-        getWindow().setBackgroundDrawable(DrawableUtils.shapeDrawable(Color.WHITE));//new ColorDrawable(0x00000000));
+        getWindow().setBackgroundDrawable(DrawableUtil.shapeDrawable(Color.WHITE));//new ColorDrawable(0x00000000));
         
         setContentView(containerLayout);
         setCanceledOnTouchOutside(false);
@@ -79,11 +79,11 @@ public class AlertDialog extends Dialog {
         containerLayout = new LinearLayout(mContext);
         containerLayout.setOrientation(LinearLayout.VERTICAL);
         
-        int padding = UIUtils.getRealPixel720(15);
+        int padding = UIUtil.getRealPixel720(15);
         //标题布局
-        lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
+        lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, UIUtil.getRealPixel720(100));
         titleLayout = new LinearLayout(mContext);
-        titleLayout.setPadding(padding, UIUtils.getRealPixel720(10), padding, 0);
+        titleLayout.setPadding(padding, UIUtil.getRealPixel720(10), padding, 0);
         containerLayout.addView(titleLayout, lParams);
         
         addTitle("");
@@ -92,7 +92,7 @@ public class AlertDialog extends Dialog {
         lParams = new LinearLayout.LayoutParams(mWidth, LinearLayout.LayoutParams.WRAP_CONTENT);
         contentLayout = new LinearLayout(mContext);
         contentLayout.setMinimumHeight(mHeight);
-        contentLayout.setPadding(padding, 0, padding, UIUtils.getRealPixel720(20));
+        contentLayout.setPadding(padding, 0, padding, UIUtil.getRealPixel720(20));
         contentLayout.setGravity(Gravity.CENTER);
         containerLayout.addView(contentLayout, lParams);
         
@@ -109,10 +109,10 @@ public class AlertDialog extends Dialog {
         contentLayout.addView(content, lParams);
         
         //按钮布局
-        lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, UIUtils.getRealPixel720(100));
+        lParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, UIUtil.getRealPixel720(100));
         btnLayout = new LinearLayout(mContext);
         btnLayout.setPadding(0, 1, 0, 0);
-        btnLayout.setBackgroundDrawable(DrawableUtils.shapeDrawable(true, 0x1e000000));
+        btnLayout.setBackgroundDrawable(DrawableUtil.shapeDrawable(true, 0x1e000000));
         containerLayout.addView(btnLayout, lParams);
         
         addButton("确定", null);
@@ -208,17 +208,17 @@ public class AlertDialog extends Dialog {
                 LinearLayout.LayoutParams.MATCH_PARENT, 1);
 
         if(buttonCount<1){
-            btn.setBackgroundDrawable(DrawableUtils.colorShapePressedDrawableB(true, Color.WHITE, btnPressedColor));
+            btn.setBackgroundDrawable(DrawableUtil.colorShapePressedDrawableB(true, Color.WHITE, btnPressedColor));
         }else{
             View preBtn = btnLayout.getChildAt(buttonCount-1);
             if(buttonCount==1){
-                preBtn.setBackgroundDrawable(DrawableUtils.colorShapePressedDrawableL(true, Color.WHITE, btnPressedColor));
+                preBtn.setBackgroundDrawable(DrawableUtil.colorShapePressedDrawableL(true, Color.WHITE, btnPressedColor));
             }else{
                 //不用圆角
-                preBtn.setBackgroundDrawable(DrawableUtils.colorPressedDrawable(Color.WHITE, btnPressedColor));
+                preBtn.setBackgroundDrawable(DrawableUtil.colorPressedDrawable(Color.WHITE, btnPressedColor));
             }
             lParams.leftMargin = 1;
-            btn.setBackgroundDrawable(DrawableUtils.colorShapePressedDrawableL(false, Color.WHITE, btnPressedColor));
+            btn.setBackgroundDrawable(DrawableUtil.colorShapePressedDrawableL(false, Color.WHITE, btnPressedColor));
         }
         btnLayout.addView(btn, lParams);
         return dialog;

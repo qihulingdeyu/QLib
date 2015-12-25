@@ -33,9 +33,9 @@ import java.util.Map.Entry;
  * http请求工具类
  */
 @SuppressWarnings("ALL")
-public class HttpUtils {
+public class HttpUtil {
 
-    private static final String TAG = HttpUtils.class.getName();
+    private static final String TAG = HttpUtil.class.getName();
 
     private static List<Runnable> threadList = new ArrayList<>();
     private static List<Runnable> waitThreadList = new ArrayList<>();
@@ -146,7 +146,7 @@ public class HttpUtils {
             int i = 0;
             while (it.hasNext()){
                 if (i < num){
-                    ThreadUtils thread = (ThreadUtils) it.next();
+                    ThreadUtil thread = (ThreadUtil) it.next();
                     threadList.add(thread);
                     thread.start();
                     waitThreadList.remove(thread);
@@ -164,7 +164,7 @@ public class HttpUtils {
     }
 
     private static void doGetThread(final String url, final HttpCallback callback){
-        ThreadUtils mThread = new ThreadUtils() {
+        ThreadUtil mThread = new ThreadUtil() {
             @Override
             public void execute() {
                 if(callback!=null)
@@ -190,7 +190,7 @@ public class HttpUtils {
 //                            String encode = conn.getContentEncoding();
 //                            MLog.i("bbb", "encode:" + encode);
 
-                            callback.postResult(HttpCallback.SUCCESS, FileUtils.stream2String(is, false), is);
+                            callback.postResult(HttpCallback.SUCCESS, FileUtil.stream2String(is, false), is);
                         }
                     }else{
                         if(callback!=null)
@@ -227,7 +227,7 @@ public class HttpUtils {
     }
 
     private static void doPostThread(final String url, final List<NameValuePair> params, final HttpCallback callback){
-        ThreadUtils mThread = new ThreadUtils() {
+        ThreadUtil mThread = new ThreadUtil() {
             @Override
             public void execute() {
                 if(callback!=null)
@@ -262,7 +262,7 @@ public class HttpUtils {
                         if(callback!=null) {
                             InputStream is = conn.getInputStream();
 //                          MLog.i("bbb", "len:"+is.available());
-                            callback.postResult(HttpCallback.SUCCESS, FileUtils.stream2String(is, false), is);
+                            callback.postResult(HttpCallback.SUCCESS, FileUtil.stream2String(is, false), is);
                         }
                     }else{
                         if(callback!=null) callback.postResult(HttpCallback.FAIL, "request fail, code:"+code+", msg:"+conn.getResponseMessage());
@@ -296,7 +296,7 @@ public class HttpUtils {
     }
 
     private static void doPostThread1(final String url, final List<NameValuePair> params, final HttpCallback callback){
-        ThreadUtils mThread = new ThreadUtils() {
+        ThreadUtil mThread = new ThreadUtil() {
             @Override
             public void execute() {
                 if(callback!=null)
@@ -316,7 +316,7 @@ public class HttpUtils {
                         if(callback!=null) {
                             InputStream is = hr.getEntity().getContent();
 //                          MLog.i("bbb", "isS:" + httpEntity.isStreaming()+", len:"+is.available());
-                            callback.postResult(HttpCallback.SUCCESS, FileUtils.stream2String(is, false), is);
+                            callback.postResult(HttpCallback.SUCCESS, FileUtil.stream2String(is, false), is);
                         }
                     }else{
                         if(callback!=null) callback.postResult(HttpCallback.FAIL, "request fail, code:"+code);

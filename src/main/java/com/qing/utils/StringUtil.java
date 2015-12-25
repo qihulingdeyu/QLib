@@ -12,7 +12,7 @@ import java.util.Random;
  * Created by zwq on 2015/04/15 11:28.<br/><br/>
  * 操作字符工具类
  */
-public class StringUtils {
+public class StringUtil {
 
     private static SimpleDateFormat sdf;
     private static String mTemplate = "yyyy-MM-dd HH:mm:ss";

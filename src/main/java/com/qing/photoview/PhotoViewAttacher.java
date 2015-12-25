@@ -40,7 +40,7 @@ import com.qing.log.MLog;
 import com.qing.photoview.gestures.OnGestureListener;
 import com.qing.photoview.gestures.VersionedGestureDetector;
 import com.qing.photoview.scrollerproxy.ScrollerProxy;
-import com.qing.utils.GesturesUtils;
+import com.qing.utils.GesturesUtil;
 
 import java.lang.ref.WeakReference;
 
@@ -150,7 +150,7 @@ public class PhotoViewAttacher implements IPhotoView, View.OnTouchListener,
 
     private boolean mRotationEnable;
     private float mRotation;
-    private GesturesUtils gesturesUtils;
+    private GesturesUtil gesturesUtils;
     private RotationGesturesListener gesturesListener;
     private Handler mHandler;
     private final int ROTATION_MSG = 1;
@@ -302,7 +302,7 @@ public class PhotoViewAttacher implements IPhotoView, View.OnTouchListener,
     public void setRotationable(boolean rotationable) {
         mRotationEnable = rotationable;
         if (mRotationEnable){
-            gesturesUtils = GesturesUtils.getInstance();
+            gesturesUtils = GesturesUtil.getInstance();
             gesturesListener = new RotationGesturesListener();
             gesturesUtils.setGesturesListener(gesturesListener);
             mHandler = new RotationHandler();
@@ -323,7 +323,7 @@ public class PhotoViewAttacher implements IPhotoView, View.OnTouchListener,
         }
     }
 
-    class RotationGesturesListener implements GesturesUtils.GesturesListener {
+    class RotationGesturesListener implements GesturesUtil.GesturesListener {
         @Override
         public float getCurrentDegree() {
             return getRotation();
@@ -372,7 +372,7 @@ public class PhotoViewAttacher implements IPhotoView, View.OnTouchListener,
                     MLog.i(LOG_TAG, "Scale must be within the range of minScale and maxScale");
                     return;
                 }
-                float degrees = GesturesUtils.checkDegree(mRotation);
+                float degrees = GesturesUtil.checkDegree(mRotation);
                 mSuppMatrix.postRotate(degrees - mRotation);
                 checkAndDisplayMatrix();
                 mRotation = degrees;

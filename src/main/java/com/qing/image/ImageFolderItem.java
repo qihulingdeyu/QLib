@@ -7,7 +7,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.qing.utils.UIUtils;
+import com.qing.utils.UIUtil;
 
 /**
  * Created by zwq on 2015/10/10 17:52.<br/><br/>
@@ -24,10 +24,10 @@ public class ImageFolderItem extends RelativeLayout {
     public ImageView image;
     public TextView name;
     public TextView des;
-    private int margin = UIUtils.getRealPixel720(15);
+    private int margin = UIUtil.getRealPixel720(15);
     private void initView() {
         LayoutParams rParams = new LayoutParams(
-                UIUtils.getRealPixel720(188), UIUtils.getRealPixel720(188));
+                UIUtil.getRealPixel720(188), UIUtil.getRealPixel720(188));
 //            rParams.setMargins(margin, margin, margin, margin);
         RelativeLayout preivewLayout = new RelativeLayout(getContext());
         preivewLayout.setId(ID_PREVIEW);

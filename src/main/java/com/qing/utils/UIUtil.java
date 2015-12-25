@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
  * Created by zwq on 2015/04/15 11:28.<br/><br/>
  * 获取屏幕大小、将对应数值转换为实际像素值、显示Toast
  */
-public class UIUtils {
+public class UIUtil {
 
     private static float mDensity;
     private static float mDensityDpi;

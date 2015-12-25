@@ -5,8 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.qing.utils.FileUtils;
-import com.qing.utils.StringUtils;
+import com.qing.utils.FileUtil;
+import com.qing.utils.StringUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -64,10 +64,10 @@ public class ImageFolderListAdapter extends BaseAdapter {
             if (imageInfoList != null && !imageInfoList.isEmpty()){
                 ImageInfo imageInfo = imageInfoList.get(0);
                 if (imageInfo != null){
-                    if (StringUtils.isNullOrEmpty(imageInfo.getThumb_path())){
+                    if (StringUtil.isNullOrEmpty(imageInfo.getThumb_path())){
                         folderItem.image.setImageBitmap(ImageStore.getImageThumbnail(imageInfo.getImage_id()));
                     }else{
-                        folderItem.image.setImageBitmap(FileUtils.getSDBitmap(imageInfo.getThumb_path()));
+                        folderItem.image.setImageBitmap(FileUtil.getSDBitmap(imageInfo.getThumb_path()));
                     }
                     folderItem.name.setText(""+imageInfo.getFolder_name());
                     folderItem.des.setText("("+imageInfoList.size()+")");
