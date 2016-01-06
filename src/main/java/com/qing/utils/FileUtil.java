@@ -207,7 +207,7 @@ public class FileUtil {
             return null;
 
         String fileName = uri.getLastPathSegment();
-//        MLog.i("bbb", ""+fileName);
+//        MLog.i(TAG, ""+fileName);
         if (fileName != null) {
             String path = uri.getPath();
             if (fileName.lastIndexOf(".") != -1) {
@@ -218,13 +218,13 @@ public class FileUtil {
                 //image video audio
                 String columnName = null;
                 if (path.contains("image")) {
-                    MLog.i("bbb", "/*image*/");
+                    MLog.i(TAG, "/*image*/");
                     columnName = MediaStore.Images.Media.DATA;
                 } else if (path.contains("video")) {
-                    MLog.i("bbb", "/*video*/");
+                    MLog.i(TAG, "/*video*/");
                     columnName = MediaStore.Video.Media.DATA;
                 } else if (path.contains("audio")) {
-                    MLog.i("bbb", "/*audio*/");
+                    MLog.i(TAG, "/*audio*/");
                     columnName = MediaStore.Audio.Media.DATA;
                 }else{
                     //未知类型
