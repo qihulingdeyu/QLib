@@ -2,13 +2,16 @@ package com.qing.utils;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.StatFs;
+import android.provider.MediaStore;
 
 import com.qing.log.MLog;
 
@@ -191,6 +194,53 @@ public class FileUtil {
         InputStream is = getAssetsStream(context,resName);
         String str = stream2String(is);
         return str;
+    }
+
+    /**
+     * 根据Uri获取文件的真正路径
+     * @param context
+     * @param uri
+     * @return
+     */
+    public static String getPathFromUri(Context context, Uri uri) {
+        if (uri == null)
+            return null;
+
+        String fileName = uri.getLastPathSegment();
+//        MLog.i("bbb", ""+fileName);
+        if (fileName != null) {
+            String path = uri.getPath();
+            if (fileName.lastIndexOf(".") != -1) {
+                //real path
+                return path;
+            } else if (path != null) {
+                //图片、视频、音频
+                //image video audio
+                String columnName = null;
+                if (path.contains("image")) {
+                    MLog.i("bbb", "/*image*/");
+                    columnName = MediaStore.Images.Media.DATA;
+                } else if (path.contains("video")) {
+                    MLog.i("bbb", "/*video*/");
+                    columnName = MediaStore.Video.Media.DATA;
+                } else if (path.contains("audio")) {
+                    MLog.i("bbb", "/*audio*/");
+                    columnName = MediaStore.Audio.Media.DATA;
+                }else{
+                    //未知类型
+                    return path;
+                }
+                Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+                if (columnName != null && cursor != null && cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndexOrThrow(columnName);
+                    path = cursor.getString(index);
+                    cursor.close();
+                    cursor = null;
+                    return path;
+                }
+            }
+        }
+        return null;
     }
     
     /** SD卡存在并可以使用 */
