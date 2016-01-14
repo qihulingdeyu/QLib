@@ -27,7 +27,7 @@ import com.qing.log.MLog;
 import com.qing.qlib.MainActivity;
 import com.qing.qlib.R;
 import com.qing.qlib.RelativeLayoutPage;
-import com.qing.ui.AlertDialog;
+import com.qing.ui.AlertDialogV2;
 import com.qing.ui.HorizontalProgressBar;
 import com.qing.utils.DrawableUtil;
 import com.qing.utils.NetUtil;
@@ -291,7 +291,7 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 			MLog.i("bbb", "url:" + url);
 			String fileName = url.substring(url.lastIndexOf("/") + 1);
 
-			AlertDialog dialog = new AlertDialog(mContext);
+			AlertDialogV2 dialog = new AlertDialogV2(mContext);
 			dialog.setMessage("是否下载" + fileName);
 			dialog.addButton("否", new DialogInterface.OnClickListener() {
 				@Override

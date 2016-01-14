@@ -28,8 +28,6 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.qing.utils.StringUtil.isNullOrEmpty;
-
 /**
  * Created by zwq on 2015/04/15 16:20.<br/><br/>
  * 文件操作工具类
@@ -580,13 +578,14 @@ public class FileUtil {
     }
     
     /**
-     * 把流写到SD卡
+     * 把流数据写到SD卡
      * @param is
      * @param path
      * @param deleteOld
+     * @param close 关闭stream
      * @return
      */
-    public static boolean write2SD(InputStream is, String path, boolean deleteOld){
+    public static boolean write2SD(InputStream is, String path, boolean deleteOld, boolean close){
         if(is==null || isNullOrEmpty(path)){
             MLog.i(TAG, "InputStream is null or path is (null or empty)");
             return false;
@@ -647,7 +646,7 @@ public class FileUtil {
                 }
                 os = null;
             }
-            if(is!=null){
+            if(close && is!=null){
                 try {
                     is.close();
                 } catch (IOException e) {
@@ -703,7 +702,11 @@ public class FileUtil {
         return write2SD(data, path, deleteOld);
     }
 
-    public static boolean write2SD(byte[] data, String path, boolean deleteOld){
+    public static boolean write2SD(byte[] data, String path, boolean deleteOld) {
+        return write2SD(data, 0, -1, path, deleteOld, false);
+    }
+
+    public static boolean write2SD(byte[] data, int offset, int count, String path, boolean deleteOld, boolean append){
         if (data == null) {
             return false;
         }
@@ -729,11 +732,13 @@ public class FileUtil {
                 }
             }
         }
-
+        if (count == -1 || count > data.length) {
+            count = data.length;
+        }
         OutputStream os = null;
         try {
-            os = new FileOutputStream(file);
-            os.write(data, 0, data.length);
+            os = new FileOutputStream(file, append);
+            os.write(data, offset, count);
             os.flush();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -767,7 +772,7 @@ public class FileUtil {
      */
     public static boolean assets2SD(Context context, String path, String sdPath, boolean deleteOld){
         InputStream is = getAssetsStream(context, path);
-        return write2SD(is, sdPath, deleteOld);
+        return write2SD(is, sdPath, deleteOld, true);
     }
     /**
      * 
@@ -777,7 +782,7 @@ public class FileUtil {
      */
     public static boolean copySDFile(String src, String des){
         InputStream is = getSDStream(src);
-        return write2SD(is, des, true);
+        return write2SD(is, des, true, true);
     }
     
     /**
@@ -854,5 +859,12 @@ public class FileUtil {
         }
         File file = new File(filepath);
         return getFileMD5(file);
+    }
+
+    private static boolean isNullOrEmpty(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            return true;
+        }
+        return false;
     }
 }

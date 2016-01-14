@@ -11,7 +11,7 @@ import android.os.Bundle;
 import com.qing.callback.DownloadCallback;
 import com.qing.callback.HttpCallback;
 import com.qing.log.MLog;
-import com.qing.ui.AlertDialog;
+import com.qing.ui.AlertDialogV2;
 import com.qing.utils.DownloadUtil;
 import com.qing.utils.HttpUtil;
 import com.qing.utils.StringUtil;
@@ -32,7 +32,7 @@ public class UpdateApk extends BaseService {
     private UpdateApkReceiver receiver;
     private boolean isRunning;
     private boolean showDialog;
-    private AlertDialog dl;
+    private AlertDialogV2 dl;
     private ProgressDialog pdl;
 
     private String updateUrl;
@@ -67,7 +67,7 @@ public class UpdateApk extends BaseService {
         if (StringUtil.isNullOrEmpty(updateUrl) || !updateUrl.startsWith("http")){
             //地址错误
             if (showDialog){
-                dl = new AlertDialog(mContext);
+                dl = new AlertDialogV2(mContext);
                 dl.setMessage("请求地址错误");
                 dl.show();
             }
@@ -115,11 +115,11 @@ public class UpdateApk extends BaseService {
 
                 }
                 if (showDialog && isNew) {
-                    dl = new AlertDialog(mContext);
+                    dl = new AlertDialogV2(mContext);
                     dl.setMessage("已是最新版本！");
                     dl.show();
                 } else if (showDialog) {
-                    dl = new AlertDialog(mContext);
+                    dl = new AlertDialogV2(mContext);
                     dl.setTitle("新版本");
                     dl.setMessage(desc);
                     dl.addButton("取消", null);
@@ -145,7 +145,7 @@ public class UpdateApk extends BaseService {
     private void download(String url){
         if (StringUtil.isNullOrEmpty(url) || !url.startsWith("http")){
             if (showDialog){
-                dl = new AlertDialog(mContext);
+                dl = new AlertDialogV2(mContext);
                 dl.setMessage("下载地址错误");
                 dl.show();
             }

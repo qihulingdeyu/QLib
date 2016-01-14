@@ -1027,18 +1027,22 @@ public final class CameraWrapper implements CameraAllCallback {
     }
 
     /**
-     * 手动对焦
+     * 设置对焦区域和测光区域
+     * @param focusX
+     * @param focusY
+     * @param meteringX
+     * @param meteringY
      */
-    public void setFocusOnTouch(MotionEvent event) {
-        if (isZooming)
+    public void setFocusAndMeteringArea(float focusX, float focusY, float meteringX, float meteringY) {
+        if (!mFocusAreaSupported || isZooming)
             return;
         autoLoopFocus(false);//取消自动循环对焦
-//        MLog.i(TAG, "setFocusOnTouch");
+//        Log.i(TAG, "setFocusOnTouch");
         if (mFocusState == States.FOCUS_DOING || mFocusState == States.FOCUS_DOING_ON_TOUCH)
             return;
 
-        Rect focusRect = calculateTouchArea(event.getRawX(), event.getRawY(), 1f);
-        Rect meteringRect = calculateTouchArea(event.getRawX(), event.getRawY(), 1.5f);
+        Rect focusRect = calculateArea(focusX, focusY, 1f);
+        Rect meteringRect = calculateArea(meteringX, meteringY, 1.5f);
 
         if (getCameraParameters() == null)
             return;
@@ -1062,17 +1066,26 @@ public final class CameraWrapper implements CameraAllCallback {
             mFocusStartTime = System.currentTimeMillis();
             mCamera.autoFocus(this);
             mFocusState = States.FOCUS_DOING_ON_TOUCH;
+            autoLoopFocus(true);
         } catch (Exception e) {
             e.printStackTrace();
             mFocusState = States.FOCUS_FAIL;
+            autoLoopFocus(true);
         }
+    }
+
+    /**
+     * 手动对焦
+     */
+    public void setFocusOnTouch(MotionEvent event) {
+        setFocusAndMeteringArea(event.getRawX(), event.getRawY(), event.getRawX(), event.getRawY());
     }
 
     /**
      * 计算触摸区域
      * Convert touch position x:y to {@link Camera.Area} position -1000:-1000 to 1000:1000.
      */
-    private Rect calculateTouchArea(float x, float y, float coefficient) {
+    private Rect calculateArea(float x, float y, float coefficient) {
         if (mPreviewSize == null)
             return null;
         float focusAreaSize = 300;
@@ -1199,26 +1212,6 @@ public final class CameraWrapper implements CameraAllCallback {
                 }
             } else {
                 mFocusState = States.FOCUS_SUCCESS;
-            }
-        }
-    }
-
-    /**
-     * 设置对焦区域和测光区域
-     * @param focusArea
-     * @param meteringArea
-     */
-    public void setFocusAndMeteringArea(String focusArea, String meteringArea) {
-        getCameraParameters();
-        if (mFocusAreaSupported && mMeteringSupported && mCurrentParameters != null) {
-            mCurrentParameters.set(KEY_FOCUS_AREAS, focusArea);
-            mCurrentParameters.set(KEY_METERING_AREAS, meteringArea);
-            try {
-                mCamera.setParameters(mCurrentParameters);
-            } catch (RuntimeException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
     }
