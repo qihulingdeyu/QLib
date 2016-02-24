@@ -80,7 +80,7 @@ public final class CameraWrapper implements CameraAllCallback {
      * 相机配置
      */
     private SharedPreferences sharedPreferences;
-    private final String camera_config = "camera_config";
+    private final String camera_config = "camera_default_config";
     private final String camera_preview_orientation = "_camera_preview_orientation";//镜头的预览旋转角度
     private final String camera_pic_orientation = "_camera_pic_orientation";//照片旋转角度
     private final String camera_patch_degree = "_camera_patch_degree";//校正的角度

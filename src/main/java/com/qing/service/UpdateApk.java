@@ -11,7 +11,7 @@ import android.os.Bundle;
 import com.qing.callback.DownloadCallback;
 import com.qing.callback.HttpCallback;
 import com.qing.log.MLog;
-import com.qing.ui.AlertDialogV2;
+import com.qing.widget.AlertDialogV2;
 import com.qing.utils.DownloadUtil;
 import com.qing.utils.HttpUtil;
 import com.qing.utils.StringUtil;

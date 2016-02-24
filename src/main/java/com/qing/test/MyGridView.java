@@ -12,7 +12,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import com.qing.qlib.IPage;
-import com.qing.ui.RefreshAdaterView;
+import com.qing.widget.RefreshAdaterView;
 
 import java.util.ArrayList;
 import java.util.List;

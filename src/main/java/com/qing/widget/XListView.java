@@ -1,4 +1,4 @@
-package com.qing.ui;
+package com.qing.widget;
 
 import java.io.IOException;
 import java.io.InputStream;

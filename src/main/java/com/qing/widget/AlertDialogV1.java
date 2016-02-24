@@ -1,4 +1,4 @@
-package com.qing.ui;
+package com.qing.widget;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -34,7 +34,7 @@ public class AlertDialogV1 extends Dialog {
 //		vWidth = (int) (manager.getDefaultDisplay().getWidth());
 //		vHeight = (int) (manager.getDefaultDisplay().getHeight());
 
-		initView();
+        initContainerView();
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class AlertDialogV1 extends Dialog {
 		setCanceledOnTouchOutside(false);
 	}
 
-	private void initView() {
+	private void initContainerView() {
 		containerLayout = new LinearLayout(mContext);
 		containerLayout.setOrientation(LinearLayout.VERTICAL);
 	}

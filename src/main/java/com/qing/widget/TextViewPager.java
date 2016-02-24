@@ -1,4 +1,4 @@
-package com.qing.ui;
+package com.qing.widget;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
