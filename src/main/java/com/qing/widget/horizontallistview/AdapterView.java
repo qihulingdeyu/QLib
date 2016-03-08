@@ -675,16 +675,16 @@ public abstract class AdapterView<T extends Adapter> extends ViewGroup {
     }
 
     public interface OnItemSelectedListener {
-        void onItemSelected(AdapterView<?> var1, View var2, int var3, long var4);
+        void onItemSelected(AdapterView<?> parent, View view, int position, long id);
 
         void onNothingSelected(AdapterView<?> var1);
     }
 
     public interface OnItemLongClickListener {
-        boolean onItemLongClick(AdapterView<?> var1, View var2, int var3, long var4);
+        boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id);
     }
 
     public interface OnItemClickListener {
-        void onItemClick(AdapterView<?> var1, View var2, int var3, long var4);
+        void onItemClick(AdapterView<?> parent, View view, int position, long id);
     }
 }

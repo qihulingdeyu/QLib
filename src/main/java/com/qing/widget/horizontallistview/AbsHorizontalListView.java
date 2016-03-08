@@ -4242,8 +4242,8 @@ public abstract class AbsHorizontalListView extends AdapterView<ListAdapter> imp
         int SCROLL_STATE_TOUCH_SCROLL = 1;
         int SCROLL_STATE_FLING = 2;
 
-        void onScrollStateChanged(AbsHorizontalListView var1, int var2);
+        void onScrollStateChanged(AbsHorizontalListView view, int scrollState);
 
-        void onScroll(AbsHorizontalListView var1, int var2, int var3, int var4);
+        void onScroll(AbsHorizontalListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount);
     }
 }

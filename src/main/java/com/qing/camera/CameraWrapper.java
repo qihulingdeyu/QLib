@@ -7,7 +7,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -770,16 +769,20 @@ public final class CameraWrapper implements CameraAllCallback {
     }
 
     /**
-     * 停止预览
+     * 停止预览 <br/>
+     * about -> java.lang.RuntimeException: Method called after release(); <br/>
+     *          android.hardware.Camera.setHasPreviewCallback(Native Method) <br/>
+     * solve -> http://stackoverflow.com/questions/9829596/android-camera-release-error-from-previewcallback <br/>
+     *          http://stackoverflow.com/questions/3592283/camera-force-close-when-returning-from-sleep-android <br/>
      */
     public synchronized void stopPreview() {
-//        MLog.i(TAG, "stopPreview--:"+ mPreviewState.state);
-        if (mCamera != null && mPreviewState == States.PREVIEW_DOING) {
-            autoLoopFocus(false);
-            mCamera.setPreviewCallbackWithBuffer(null);
-            mCamera.setPreviewCallback(null);
-            mCamera.stopPreview();
+//        Log.i(TAG, "stopPreview--:"+ mPreviewState.state);
+        if (mCamera != null && (mPreviewState == States.PREVIEW_START || mPreviewState == States.PREVIEW_SUCCESS || mPreviewState == States.PREVIEW_DOING)) {
             mPreviewState = States.PREVIEW_STOP;
+            autoLoopFocus(false);
+            mCamera.stopPreview();
+//            mCamera.setPreviewCallbackWithBuffer(null);
+            mCamera.setPreviewCallback(null);
             mPreviewState = States.PREVIEW_IDLE;
         }
     }
@@ -788,12 +791,13 @@ public final class CameraWrapper implements CameraAllCallback {
      * 释放镜头
      */
     public synchronized void releaseCamera() {
-//        MLog.i(TAG, "releaseCamera");
+//        Log.i(TAG, "releaseCamera");
         if (mCamera != null) {
+            mPreviewState = States.PREVIEW_IDLE;
+            mCamera.setPreviewCallback(null);//确保释放预览回调
             mCamera.release();
             mCamera = null;
             mCameraState = States.CAMERA_IDLE;
-            mPreviewState = States.PREVIEW_IDLE;
         }
     }
 

@@ -865,6 +865,18 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
         requestLayout();
     }
 
+    public void scrollToCenter(int position) {
+        int dx = 0;
+        Adapter adapter = getAdapter();
+        if (adapter != null && adapter.getCount() > position) {
+            View view = getChildAt(0);
+            if (view != null) {
+                dx = getPaddingLeft() + position * view.getWidth() + view.getWidth() / 2 - getWidth() / 2;
+            }
+        }
+        scrollTo(dx);
+    }
+
     @Override
     public int getFirstVisiblePosition() {
         return mLeftViewAdapterIndex;
