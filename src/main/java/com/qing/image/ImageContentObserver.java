@@ -4,7 +4,6 @@ import android.content.Context;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
-import android.provider.MediaStore;
 
 import com.qing.log.MLog;
 
@@ -36,7 +35,7 @@ public class ImageContentObserver extends ContentObserver {
     public void onChange(boolean selfChange, Uri uri) {
         super.onChange(selfChange, uri);
 
-        MLog.i(TAG, "--onChange--selfChange:" + selfChange + "uri:" + uri.toString());
+        MLog.i(TAG, "--onChange--selfChange:" + selfChange + ", uri:" + uri.toString());
         //删除: content://media/external
         //添加: content://media/external/images/media
         if (uri.toString().equals("content://media/external") ||

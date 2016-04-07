@@ -8,25 +8,25 @@ public class ImageInfo {
 
     private static final String TAG = ImageInfo.class.getName();
     private int _id;
-    private int image_id;
+    private int imageId;
     private String title;
     private String name;
     private String path;
-    private long date_taken;
-    private long date_added;
-    private long date_modified;
+    private long dateTaken;
+    private long dateAdded;
+    private long dateModified;
     private int width;
     private int height;
     private int size;
     private int orientation;
-    private int folder_id;//文件夹id
-    private String folder_name;//文件夹名称
+    private int folderId;//文件夹id
+    private String folderName;//文件夹名称
 
-    private int thumb_id;
-    private String thumb_path;//缩略图目录
-    private int thumb_width;
-    private int thumb_height;
-    private int thumb_kind;//缩略图类型
+    private int thumbId;
+    private String thumbPath;//缩略图目录
+    private int thumbWidth;
+    private int thumbHeight;
+    private int thumbKind;//缩略图类型
 
     public ImageInfo() {
 
@@ -40,44 +40,44 @@ public class ImageInfo {
         this._id = _id;
     }
 
-    public long getDate_added() {
-        return date_added;
+    public long getDateAdded() {
+        return dateAdded;
     }
 
-    public void setDate_added(long date_added) {
-        this.date_added = date_added;
+    public void setDateAdded(long dateAdded) {
+        this.dateAdded = dateAdded;
     }
 
-    public long getDate_modified() {
-        return date_modified;
+    public long getDateModified() {
+        return dateModified;
     }
 
-    public void setDate_modified(long date_modified) {
-        this.date_modified = date_modified;
+    public void setDateModified(long dateModified) {
+        this.dateModified = dateModified;
     }
 
-    public long getDate_taken() {
-        return date_taken;
+    public long getDateTaken() {
+        return dateTaken;
     }
 
-    public void setDate_taken(long date_taken) {
-        this.date_taken = date_taken;
+    public void setDateTaken(long dateTaken) {
+        this.dateTaken = dateTaken;
     }
 
-    public int getFolder_id() {
-        return folder_id;
+    public int getFolderId() {
+        return folderId;
     }
 
-    public void setFolder_id(int folder_id) {
-        this.folder_id = folder_id;
+    public void setFolderId(int folderId) {
+        this.folderId = folderId;
     }
 
-    public String getFolder_name() {
-        return folder_name;
+    public String getFolderName() {
+        return folderName;
     }
 
-    public void setFolder_name(String folder_name) {
-        this.folder_name = folder_name;
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
     }
 
     public int getHeight() {
@@ -88,12 +88,12 @@ public class ImageInfo {
         this.height = height;
     }
 
-    public int getImage_id() {
-        return image_id;
+    public int getImageId() {
+        return imageId;
     }
 
-    public void setImage_id(int image_id) {
-        this.image_id = image_id;
+    public void setImageId(int imageId) {
+        this.imageId = imageId;
     }
 
     public String getName() {
@@ -128,44 +128,44 @@ public class ImageInfo {
         this.size = size;
     }
 
-    public int getThumb_height() {
-        return thumb_height;
+    public int getThumbHeight() {
+        return thumbHeight;
     }
 
-    public void setThumb_height(int thumb_height) {
-        this.thumb_height = thumb_height;
+    public void setThumbHeight(int thumbHeight) {
+        this.thumbHeight = thumbHeight;
     }
 
-    public int getThumb_id() {
-        return thumb_id;
+    public int getThumbId() {
+        return thumbId;
     }
 
-    public void setThumb_id(int thumb_id) {
-        this.thumb_id = thumb_id;
+    public void setThumbId(int thumbId) {
+        this.thumbId = thumbId;
     }
 
-    public int getThumb_kind() {
-        return thumb_kind;
+    public int getThumbKind() {
+        return thumbKind;
     }
 
-    public void setThumb_kind(int thumb_kind) {
-        this.thumb_kind = thumb_kind;
+    public void setThumbKind(int thumbKind) {
+        this.thumbKind = thumbKind;
     }
 
-    public String getThumb_path() {
-        return thumb_path;
+    public String getThumbPath() {
+        return thumbPath;
     }
 
-    public void setThumb_path(String thumb_path) {
-        this.thumb_path = thumb_path;
+    public void setThumbPath(String thumbPath) {
+        this.thumbPath = thumbPath;
     }
 
-    public int getThumb_width() {
-        return thumb_width;
+    public int getThumbWidth() {
+        return thumbWidth;
     }
 
-    public void setThumb_width(int thumb_width) {
-        this.thumb_width = thumb_width;
+    public void setThumbWidth(int thumbWidth) {
+        this.thumbWidth = thumbWidth;
     }
 
     public String getTitle() {
@@ -188,47 +188,47 @@ public class ImageInfo {
     public String toString() {
         return "ImageInfo{" +
                 "_id=" + _id +
-                ", image_id=" + image_id +
+                ", imageId=" + imageId +
                 ", title='" + title + '\'' +
                 ", name='" + name + '\'' +
                 ", path='" + path + '\'' +
-                ", date_taken=" + date_taken +
-                ", date_added=" + date_added +
-                ", date_modified=" + date_modified +
+                ", dateTaken=" + dateTaken +
+                ", dateAdded=" + dateAdded +
+                ", dateModified=" + dateModified +
                 ", width=" + width +
                 ", height=" + height +
                 ", size=" + size +
                 ", orientation=" + orientation +
-                ", folder_id=" + folder_id +
-                ", folder_name='" + folder_name + '\'' +
-                ", thumb_id=" + thumb_id +
-                ", thumb_path='" + thumb_path + '\'' +
-                ", thumb_width=" + thumb_width +
-                ", thumb_height=" + thumb_height +
-                ", thumb_kind=" + thumb_kind +
+                ", folderId=" + folderId +
+                ", folderName='" + folderName + '\'' +
+                ", thumbId=" + thumbId +
+                ", thumbPath='" + thumbPath + '\'' +
+                ", thumbWidth=" + thumbWidth +
+                ", thumbHeight=" + thumbHeight +
+                ", thumbKind=" + thumbKind +
                 '}';
     }
 
     public String toBeautyString() {
         return "ImageInfo{" +
-                "\n image_id=" + image_id +
+                "\n imageId=" + imageId +
                 ",\n title='" + title + '\'' +
                 ",\n name='" + name + '\'' +
                 ",\n path='" + path + '\'' +
-                ",\n date_taken=" + date_taken +
-                ",\n date_added=" + date_added +
-                ",\n date_modified=" + date_modified +
+                ",\n dateTaken=" + dateTaken +
+                ",\n dateAdded=" + dateAdded +
+                ",\n dateModified=" + dateModified +
                 ",\n width=" + width +
                 ",\n height=" + height +
                 ",\n size=" + size +
                 ",\n orientation=" + orientation +
-                ",\n folder_id=" + folder_id +
-                ",\n folder_name='" + folder_name + '\'' +
-                ",\n thumb_id=" + thumb_id +
-                ",\n thumb_path='" + thumb_path + '\'' +
-                ",\n thumb_width=" + thumb_width +
-                ",\n thumb_height=" + thumb_height +
-                ",\n thumb_kind=" + thumb_kind +
+                ",\n folderId=" + folderId +
+                ",\n folderName='" + folderName + '\'' +
+                ",\n thumbId=" + thumbId +
+                ",\n thumbPath='" + thumbPath + '\'' +
+                ",\n thumbWidth=" + thumbWidth +
+                ",\n thumbHeight=" + thumbHeight +
+                ",\n thumbKind=" + thumbKind +
                 "\n}";
     }
 }

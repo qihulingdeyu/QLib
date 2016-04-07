@@ -24,7 +24,7 @@ public class ImageListAdapter extends BaseAdapter {
     private List<ImageInfo> mImageInfos;
     private int mItemWidth;
 
-    public ImageListAdapter(Context context){
+    public ImageListAdapter(Context context) {
         mContext = context;
         setItemWidth(4, 3);
     }
@@ -39,12 +39,12 @@ public class ImageListAdapter extends BaseAdapter {
     }
 
     public void setItemWidth(int numColumns, int spacing) {
-        mItemWidth = (UIUtil.getScreenW()-(numColumns+1)* UIUtil.getRealPixel720(spacing))/numColumns;
+        mItemWidth = (UIUtil.getScreenW() - (numColumns + 1) * UIUtil.getRealPixel720(spacing)) / numColumns;
     }
 
     @Override
     public int getCount() {
-        return mImageInfos==null?0:mImageInfos.size();
+        return mImageInfos == null ? 0 : mImageInfos.size();
     }
 
     @Override
@@ -60,23 +60,23 @@ public class ImageListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ImageItem imageItem = null;
-        if (convertView == null){
+        if (convertView == null) {
             imageItem = new ImageItem(mContext);
             imageItem.setLayoutParams(new AbsListView.LayoutParams(mItemWidth, mItemWidth));
             convertView = imageItem;
             convertView.setTag(imageItem);
-        }else{
+        } else {
             imageItem = (ImageItem) convertView.getTag();
         }
 
         Bitmap bitmap = null;
-        if (mImageInfos != null && position < mImageInfos.size()){
+        if (mImageInfos != null && position < mImageInfos.size()) {
             ImageInfo imageInfo = mImageInfos.get(position);
-            if (imageInfo != null){
-                if (StringUtil.isNullOrEmpty(imageInfo.getThumb_path())){
+            if (imageInfo != null) {
+                if (StringUtil.isNullOrEmpty(imageInfo.getThumbPath())) {
                     bitmap = ImageStore.getImageThumbnail(imageInfo);
-                }else{
-                    bitmap = FileUtil.getSDBitmap(imageInfo.getThumb_path());
+                } else {
+                    bitmap = FileUtil.getSDBitmap(imageInfo.getThumbPath());
                 }
             }
         }

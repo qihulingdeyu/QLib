@@ -48,7 +48,7 @@ public class StringUtil {
      * @param content
      * @return
      */
-    public static String getMD5(String content) {
+    public static String getStringMD5(String content) {
         if(content==null) return null;
         byte[] md5 = null;
         try {
@@ -79,7 +79,7 @@ public class StringUtil {
      * @param content
      * @return
      */
-    public static String getMD5_V2(String content) {
+    public static String getStringMD5_V2(String content) {
         if(content==null) return null;
         try {
             MessageDigest digest = MessageDigest.getInstance("MD5");

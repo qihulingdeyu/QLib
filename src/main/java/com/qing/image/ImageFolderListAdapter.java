@@ -20,7 +20,7 @@ public class ImageFolderListAdapter extends BaseAdapter {
     private Context mContext;
     private Map<String, List<ImageInfo>> mFolderList;
 
-    public ImageFolderListAdapter(Context context){
+    public ImageFolderListAdapter(Context context) {
         mContext = context;
     }
 
@@ -35,7 +35,7 @@ public class ImageFolderListAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return mFolderList==null?0:mFolderList.size();
+        return mFolderList == null ? 0 : mFolderList.size();
     }
 
     @Override
@@ -51,37 +51,37 @@ public class ImageFolderListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ImageFolderItem folderItem = null;
-        if (convertView == null){
+        if (convertView == null) {
             folderItem = new ImageFolderItem(mContext);
 
             convertView = folderItem;
             convertView.setTag(folderItem);
-        }else{
+        } else {
             folderItem = (ImageFolderItem) convertView.getTag();
         }
-        if (mFolderList != null){
+        if (mFolderList != null) {
             List<ImageInfo> imageInfoList = mFolderList.get(getImageFolderName(position));
-            if (imageInfoList != null && !imageInfoList.isEmpty()){
+            if (imageInfoList != null && !imageInfoList.isEmpty()) {
                 ImageInfo imageInfo = imageInfoList.get(0);
-                if (imageInfo != null){
-                    if (StringUtil.isNullOrEmpty(imageInfo.getThumb_path())){
-                        folderItem.image.setImageBitmap(ImageStore.getImageThumbnail(imageInfo.getImage_id()));
-                    }else{
-                        folderItem.image.setImageBitmap(FileUtil.getSDBitmap(imageInfo.getThumb_path()));
+                if (imageInfo != null) {
+                    if (StringUtil.isNullOrEmpty(imageInfo.getThumbPath())) {
+                        folderItem.image.setImageBitmap(ImageStore.getImageThumbnail(imageInfo.getImageId()));
+                    } else {
+                        folderItem.image.setImageBitmap(FileUtil.getSDBitmap(imageInfo.getThumbPath()));
                     }
-                    folderItem.name.setText(""+imageInfo.getFolder_name());
-                    folderItem.des.setText("("+imageInfoList.size()+")");
+                    folderItem.name.setText("" + imageInfo.getFolderName());
+                    folderItem.des.setText("(" + imageInfoList.size() + ")");
                 }
             }
         }
         return convertView;
     }
 
-    public String getImageFolderName(int position){
-        if (mFolderList != null){
+    public String getImageFolderName(int position) {
+        if (mFolderList != null) {
             int i = 0;
             for (Map.Entry<String, List<ImageInfo>> entry : mFolderList.entrySet()) {
-                if (i == position){
+                if (i == position) {
                     return entry.getKey();
                 }
                 i++;

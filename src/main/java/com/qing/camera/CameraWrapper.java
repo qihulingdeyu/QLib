@@ -99,6 +99,8 @@ public final class CameraWrapper implements CameraAllCallback {
      * 初始化参数
      **/
     private Camera mCamera;
+    public static final int NO_CAMERA_PERMISSION_ERROR = 200;//没相机权限
+    private int mErrorCode = -1;
     private int mNumberOfCameras;// 镜头数量;
     private final int mDefaultCameraId = 0;
     private int mCurrentCameraId = mDefaultCameraId;  // Camera ID currently chosen
@@ -182,6 +184,15 @@ public final class CameraWrapper implements CameraAllCallback {
      */
     private boolean mSilenceOnTaken;
 
+    /**
+     * 曝光
+     */
+    private boolean mAutoExposureLock;
+    private int mMinExposureValue;
+    private int mMaxExposureValue;
+    private float mExposureStep;
+    private int mExposureValue;
+
     public CameraWrapper(Context context, CameraSurfaceView cameraSurfaceView) {
         mContext = context;
         if (cameraSurfaceView == null) {
@@ -195,7 +206,9 @@ public final class CameraWrapper implements CameraAllCallback {
         } else if (screenOrientation == Configuration.ORIENTATION_PORTRAIT) {
             isLandscape = false;
         }
-
+        if (mCameraHandler == null) {
+            mCameraHandler = new CameraHandler(mContext.getMainLooper());
+        }
         initOrientationEventListener();
         getCameraInfo();
     }
@@ -309,12 +322,25 @@ public final class CameraWrapper implements CameraAllCallback {
             // 检测测光
             try {
                 mMaxNumMeteringAreas = mDefaultParameters.getMaxNumMeteringAreas();
-                mMeteringSupported = mMaxNumMeteringAreas > 0;
             } catch (NumberFormatException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodError e) {
                 e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            mMeteringSupported = mMaxNumMeteringAreas > 0;
+
+            //曝光
+            mAutoExposureLock = mDefaultParameters.getAutoExposureLock();
+            mMinExposureValue = mDefaultParameters.getMinExposureCompensation();
+            mMaxExposureValue = mDefaultParameters.getMaxExposureCompensation();
+            mExposureStep = mDefaultParameters.getExposureCompensationStep();
+            mExposureValue = mDefaultParameters.getExposureCompensation();
+//
+//            Log.i(TAG, "mMinExposureValue:"+mMinExposureValue+", mMaxExposureValue:"+mMaxExposureValue
+//                    +", mExposureValue:"+mExposureValue+", mExposureStep:"+mExposureStep
+//                    +", mAutoExposureLock:"+ mAutoExposureLock);
 
 //            MLog.i(TAG, "mNumberOfCameras:"+mNumberOfCameras+", mCurrentCameraId:"+mCurrentCameraId
 //                    +", mZoomSupported:"+mZoomSupported+", mFocusAreaSupported:"+mFocusAreaSupported
@@ -345,6 +371,15 @@ public final class CameraWrapper implements CameraAllCallback {
             mCamera = Camera.open(mCurrentCameraId);
         } catch (RuntimeException e){
             e.printStackTrace();
+            if (mErrorCode == NO_CAMERA_PERMISSION_ERROR) {
+                mErrorCode = -1;
+            } else {
+                mErrorCode = NO_CAMERA_PERMISSION_ERROR;
+                Log.i(TAG, "openCamera error:" + mErrorCode + ", not camera permission, " + e.getMessage());
+                if (mCameraAllCallback != null) {
+                    mCameraAllCallback.onError(NO_CAMERA_PERMISSION_ERROR, null);
+                }
+            }
         }
         mCameraCurrentlyLocked = mCurrentCameraId;
         MLog.i(TAG, "openCamera:" + mCurrentCameraId);
@@ -655,8 +690,10 @@ public final class CameraWrapper implements CameraAllCallback {
      */
     public void patchPreviewAndPictureDegree() {
         int degree = (mCurrentOrientation + 90) % 360;
-        CameraOrientationInfoArray[mCurrentCameraId][0] = degree;
-        CameraOrientationInfoArray[mCurrentCameraId][2] = degree;
+        if (mCurrentCameraId < CameraOrientationInfoArray.length) {
+            CameraOrientationInfoArray[mCurrentCameraId][0] = degree;
+            CameraOrientationInfoArray[mCurrentCameraId][2] = degree;
+        }
 //        MLog.i(TAG, "patchPreviewAndPictureDegree degree:" + degree);
 
         setPreviewOrientation(degree);
@@ -1289,6 +1326,91 @@ public final class CameraWrapper implements CameraAllCallback {
      */
     public int getMaxNumMeteringAreas() {
         return mMaxNumMeteringAreas;
+    }
+
+    /**
+     * 曝光功能是否被锁定
+     * @return
+     */
+    public boolean isAutoExposureLock() {
+        return mAutoExposureLock;
+    }
+
+    /**
+     * 最小曝光值
+     * @return
+     */
+    public int getMinExposureValue() {
+        return mMinExposureValue;
+    }
+
+    /**
+     * 最大曝光值
+     * @return
+     */
+    public int getMaxExposureValue() {
+        return mMaxExposureValue;
+    }
+
+    /**
+     * 曝光值递增(减)的最小值
+     * @return
+     */
+    public float getExposureStep() {
+        return mExposureStep;
+    }
+
+    /**
+     * 当前曝光值
+     * @return
+     */
+    public int getExposureValue() {
+        return mExposureValue;
+    }
+
+    /**
+     * 设置曝光是否自动锁定
+     * @param lock
+     */
+    public void setAutoExposureLock(boolean lock) {
+        if (lock != mAutoExposureLock) {
+            getCameraParameters();
+            if (mCurrentParameters != null) {
+                mCurrentParameters.setAutoExposureLock(lock);
+                try {
+                    mCamera.setParameters(mCurrentParameters);
+                    mAutoExposureLock = lock;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 设置曝光值
+     * @param exposureValue
+     */
+    public void setExposureValue(int exposureValue) {
+        if (exposureValue < mMinExposureValue) {
+            exposureValue = mMinExposureValue;
+        }
+        if (exposureValue > mMaxExposureValue) {
+            exposureValue = mMaxExposureValue;
+        }
+        if (exposureValue != mExposureValue) {
+            getCameraParameters();
+            if (mCurrentParameters != null) {
+                mCurrentParameters.setExposureCompensation(exposureValue);
+                try {
+                    mCamera.setParameters(mCurrentParameters);
+                    mExposureValue = exposureValue;
+//                    Log.i(TAG, "--setExposureValue  mExposureValue:"+mExposureValue);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**

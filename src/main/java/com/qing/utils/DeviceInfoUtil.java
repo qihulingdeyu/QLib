@@ -27,7 +27,7 @@ import java.util.HashMap;
  * Created by zwq on 2015/07/21 16:20.<br/><br/>
  * 获取手机的硬件、功能状态信息
  */
-public class PhoneUtil {
+public class DeviceInfoUtil {
 
     private static final String FILE_MEMORY = "/proc/meminfo";
     private static final String FILE_CPU = "/proc/cpuinfo";
@@ -113,24 +113,24 @@ public class PhoneUtil {
      */
     public String mFingerprint;
 
-    private static PhoneUtil phoneUtils;
-    private PhoneUtil(Context context) {
-        phoneUtils = this;
+    private static DeviceInfoUtil deviceInfoUtil;
+
+    private DeviceInfoUtil(Context context) {
+        deviceInfoUtil = this;
         getAllInfo(context);
     }
 
-    public static PhoneUtil init(Context context) {
-        if (phoneUtils==null){
-            synchronized (PhoneUtil.class){
-                if(phoneUtils==null){
-                    new PhoneUtil(context);
-//                    phoneUtils = new PhoneUtil(context);
+    public static DeviceInfoUtil init(Context context) {
+        if (deviceInfoUtil == null) {
+            synchronized (DeviceInfoUtil.class) {
+                if (deviceInfoUtil == null) {
+                    new DeviceInfoUtil(context);
+//                    deviceInfoUtil = new DeviceInfoUtil(context);
                 }
             }
         }
-        return phoneUtils;
+        return deviceInfoUtil;
     }
-
 
     /**
      * 获取手机的IMEI
@@ -139,12 +139,9 @@ public class PhoneUtil {
      * @return
      */
     public String getIMEI(Context context) {
-        TelephonyManager manager = (TelephonyManager) context
-                .getSystemService(Activity.TELEPHONY_SERVICE);
         // check if has the permission
-        if (PackageManager.PERMISSION_GRANTED == context.getPackageManager()
-                .checkPermission(Manifest.permission.READ_PHONE_STATE,
-                        context.getPackageName())) {
+        if (PackageManager.PERMISSION_GRANTED == context.getPackageManager().checkPermission(Manifest.permission.READ_PHONE_STATE, context.getPackageName())) {
+            TelephonyManager manager = (TelephonyManager) context.getSystemService(Activity.TELEPHONY_SERVICE);
             return manager.getDeviceId();
         } else {
             return null;
@@ -158,8 +155,7 @@ public class PhoneUtil {
      * @return
      */
     public int getPhoneType(Context context) {
-        TelephonyManager manager = (TelephonyManager) context
-                .getSystemService(Activity.TELEPHONY_SERVICE);
+        TelephonyManager manager = (TelephonyManager) context.getSystemService(Activity.TELEPHONY_SERVICE);
         return manager.getPhoneType();
     }
 
@@ -419,31 +415,31 @@ public class PhoneUtil {
      * @param context
      * @return
      */
-    public PhoneUtil getAllInfo(Context context) {
-        phoneUtils.mIMEI = getIMEI(context);
-        phoneUtils.mPhoneType = getPhoneType(context);
-        phoneUtils.mSdkVersion = getSdkVersion();
-        phoneUtils.mOsVersion = getOsVersion();
-        phoneUtils.mAppName = getAppName(context);
+    public DeviceInfoUtil getAllInfo(Context context) {
+        deviceInfoUtil.mIMEI = getIMEI(context);
+        deviceInfoUtil.mPhoneType = getPhoneType(context);
+        deviceInfoUtil.mSdkVersion = getSdkVersion();
+        deviceInfoUtil.mOsVersion = getOsVersion();
+        deviceInfoUtil.mAppName = getAppName(context);
 
-        phoneUtils.mAppVersion = getAppVersion(context);
-        phoneUtils.mNetWorkCountryIso = getNetWorkCountryIso(context);
-        phoneUtils.mNetWorkOperator = getNetWorkOperator(context);
-        phoneUtils.mNetWorkOperatorName = getNetWorkOperatorName(context);
-        phoneUtils.mNetWorkType = getNetworkType(context);
+        deviceInfoUtil.mAppVersion = getAppVersion(context);
+        deviceInfoUtil.mNetWorkCountryIso = getNetWorkCountryIso(context);
+        deviceInfoUtil.mNetWorkOperator = getNetWorkOperator(context);
+        deviceInfoUtil.mNetWorkOperatorName = getNetWorkOperatorName(context);
+        deviceInfoUtil.mNetWorkType = getNetworkType(context);
 
-        phoneUtils.mIsOnLine = isOnline(context);
-        phoneUtils.mConnectTypeName = getConnectTypeName(context);
-        phoneUtils.mFreeMemory = getFreeMemory(context);
-        phoneUtils.mTotalMemory = getTotalMemory(context);
-        phoneUtils.mCupInfo = getCpuInfo();
+        deviceInfoUtil.mIsOnLine = isOnline(context);
+        deviceInfoUtil.mConnectTypeName = getConnectTypeName(context);
+        deviceInfoUtil.mFreeMemory = getFreeMemory(context);
+        deviceInfoUtil.mTotalMemory = getTotalMemory(context);
+        deviceInfoUtil.mCupInfo = getCpuInfo();
 
-        phoneUtils.mProductName = getProductName();
-        phoneUtils.mModelName = getModelName();
-        phoneUtils.mManufacturerName = getManufacturerName();
-        phoneUtils.mBasebandVersion = getBasebandVersion();
-        phoneUtils.mFingerprint = getFingerprint();
-        return phoneUtils;
+        deviceInfoUtil.mProductName = getProductName();
+        deviceInfoUtil.mModelName = getModelName();
+        deviceInfoUtil.mManufacturerName = getManufacturerName();
+        deviceInfoUtil.mBasebandVersion = getBasebandVersion();
+        deviceInfoUtil.mFingerprint = getFingerprint();
+        return deviceInfoUtil;
     }
 
     @Override

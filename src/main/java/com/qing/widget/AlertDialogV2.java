@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.TextUtils.TruncateAt;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -86,6 +87,10 @@ public class AlertDialogV2 extends AlertDialogV1 {
         content.setTextSize(18);
         content.setTextColor(Color.BLACK);
         content.setMinLines(1);
+        content.setMaxLines(15);
+        content.setVerticalScrollBarEnabled(true);
+        content.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
+        content.setMovementMethod(ScrollingMovementMethod.getInstance());
 //		content.setMinHeight(mHeight);
         contentLayout.addView(content, lParams);
 

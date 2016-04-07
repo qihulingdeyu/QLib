@@ -54,51 +54,55 @@ public class ImageStore {
     private static boolean deleteInvalidThumb;
     private static List<String> tempThumbPathList;
 
-    public interface ImageStoreChangeListener{
+    public interface ImageStoreChangeListener {
         void onChange();
     }
 
-    public static void setImageStoreChangeListener(ImageStoreChangeListener listener){
+    public static void setImageStoreChangeListener(ImageStoreChangeListener listener) {
         mListener = listener;
     }
 
-    /** 是否已经加载过 */
+    /**
+     * 是否已经加载过
+     */
     public static boolean isHasLoad() {
         return hasLoad;
     }
 
-    /** 自定义缩略图缓存目录 */
-    public static void setCacheThumbPath(String path){
+    /**
+     * 自定义缩略图缓存目录
+     */
+    public static void setCacheThumbPath(String path) {
         if (StringUtil.isNullOrEmpty(path))
             return;
         File file = new File(path);
-        if (!file.exists()){
-            if (file.mkdirs()){
+        if (!file.exists()) {
+            if (file.mkdirs()) {
                 cacheThumbPath = path;
                 deleteInvalidThumb = true;
             }
-        }else{
+        } else {
             cacheThumbPath = path;
             deleteInvalidThumb = true;
         }
         file = null;
     }
 
-    public static void loadImage(Context context){
+    public static void loadImage(Context context) {
         mContext = context;
 
-        if (mHandler == null){
+        if (mHandler == null) {
             mHandler = new Handler(new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message msg) {
-                    if (msg.what == 1){
+                    if (msg.what == 1) {
                         MLog.i(TAG, "--loadImage-finish-");
                         hasLoad = true;
                         if (mListener != null) {
                             mListener.onChange();
                         }
-                    }else if (msg.what == 2){
-                        if (threadUtils != null){
+                    } else if (msg.what == 2) {
+                        if (threadUtils != null) {
                             threadUtils.clearAll();
                             threadUtils = null;
                         }
@@ -108,7 +112,7 @@ public class ImageStore {
             });
         }
 
-        if (threadUtils != null){
+        if (threadUtils != null) {
             MLog.i(TAG, "--loadImage-stop running thread-");
             threadUtils.stop();
             threadUtils.clearAll();
@@ -120,15 +124,21 @@ public class ImageStore {
                 MLog.i(TAG, "--loadImage-start-");
 
                 //获取图片数据
-                if (!isRunning()){ return; }
+                if (!isRunning()) {
+                    return;
+                }
                 getImageInfos();
 
                 //获取缩略图数据
-                if (!isRunning()){ return; }
+                if (!isRunning()) {
+                    return;
+                }
                 getImageThumbInfos();
 
                 //按文件夹分类
-                if (!isRunning()){ return; }
+                if (!isRunning()) {
+                    return;
+                }
                 sortByFolder();
 
 //                printList();
@@ -140,7 +150,7 @@ public class ImageStore {
                 if (mHandler != null)
                     mHandler.sendEmptyMessage(1);
 
-                if (deleteInvalidThumb && cacheThumbPath != null){
+                if (deleteInvalidThumb && cacheThumbPath != null) {
                     deleteInvalidThumb = false;
                     deleteInvalidThumb();
                 }
@@ -151,33 +161,33 @@ public class ImageStore {
         threadUtils.start();
     }
 
-    private static synchronized void getImageInfos(){
+    private static synchronized void getImageInfos() {
         Cursor cursor = null;
         ImageInfo imageInfo = null;
-        cursor = mContext.getContentResolver().query(Media.EXTERNAL_CONTENT_URI, null, null, null, " "+ Media._ID+" desc ");
+        cursor = mContext.getContentResolver().query(Media.EXTERNAL_CONTENT_URI, null, null, null, " " + Media._ID + " desc ");
 
-        if (cursor != null){
+        if (cursor != null) {
             synchronized (imageInfos) {
                 imageInfos.clear();
-                while (cursor.moveToNext()){
+                while (cursor.moveToNext()) {
                     imageInfo = new ImageInfo();
 
                     imageInfo.set_id(cursor.getInt(cursor.getColumnIndex(Media._ID)));
-                    imageInfo.setImage_id(imageInfo.get_id());
+                    imageInfo.setImageId(imageInfo.get_id());
                     imageInfo.setTitle(cursor.getString(cursor.getColumnIndex(Media.TITLE)));
                     imageInfo.setName(cursor.getString(cursor.getColumnIndex(Media.DISPLAY_NAME)));
                     imageInfo.setPath(cursor.getString(cursor.getColumnIndex(Media.DATA)));
 
-                    imageInfo.setDate_taken(cursor.getLong(cursor.getColumnIndex(Media.DATE_TAKEN)));
-                    imageInfo.setDate_added(cursor.getLong(cursor.getColumnIndex(Media.DATE_ADDED)));
-                    imageInfo.setDate_modified(cursor.getLong(cursor.getColumnIndex(Media.DATE_MODIFIED)));
+                    imageInfo.setDateTaken(cursor.getLong(cursor.getColumnIndex(Media.DATE_TAKEN)));
+                    imageInfo.setDateAdded(cursor.getLong(cursor.getColumnIndex(Media.DATE_ADDED)));
+                    imageInfo.setDateModified(cursor.getLong(cursor.getColumnIndex(Media.DATE_MODIFIED)));
                     imageInfo.setWidth(cursor.getInt(cursor.getColumnIndex(Media.WIDTH)));
                     imageInfo.setHeight(cursor.getInt(cursor.getColumnIndex(Media.HEIGHT)));
 
                     imageInfo.setSize(cursor.getInt(cursor.getColumnIndex(Media.SIZE)));
                     imageInfo.setOrientation(cursor.getInt(cursor.getColumnIndex(Media.ORIENTATION)));
-                    imageInfo.setFolder_id(cursor.getInt(cursor.getColumnIndex(Media.BUCKET_ID)));
-                    imageInfo.setFolder_name(cursor.getString(cursor.getColumnIndex(Media.BUCKET_DISPLAY_NAME)));
+                    imageInfo.setFolderId(cursor.getInt(cursor.getColumnIndex(Media.BUCKET_ID)));
+                    imageInfo.setFolderName(cursor.getString(cursor.getColumnIndex(Media.BUCKET_DISPLAY_NAME)));
 
                     imageInfos.add(imageInfo);
                 }
@@ -193,43 +203,43 @@ public class ImageStore {
     private static synchronized void getImageThumbInfos() {
         //判断thumb_path是否为null
         //
-        if (imageInfos!=null && !imageInfos.isEmpty()){
-            synchronized (imageInfos){
-                if (deleteInvalidThumb){
+        if (imageInfos != null && !imageInfos.isEmpty()) {
+            synchronized (imageInfos) {
+                if (deleteInvalidThumb) {
                     if (tempThumbPathList == null) {
                         tempThumbPathList = new ArrayList<>();
                     }
                     tempThumbPathList.clear();
                 }
                 for (ImageInfo imageInfo : imageInfos) {
-                    if (imageInfo != null && StringUtil.isNullOrEmpty(imageInfo.getThumb_path())){
-                        if (cacheThumbPath == null){
+                    if (imageInfo != null && StringUtil.isNullOrEmpty(imageInfo.getThumbPath())) {
+                        if (cacheThumbPath == null) {
 //                            MLog.i(TAG, "--Thumb_path-use system thumb-");
                             getImageThumbInfo(imageInfo);
 
-                        }else{
+                        } else {
                             //从自定义缩略图目录获取
-                            String thumbName = StringUtil.getMD5(imageInfo.getPath()) + thumbSuffix;
+                            String thumbName = StringUtil.getStringMD5(imageInfo.getPath()) + thumbSuffix;
                             File file = new File(cacheThumbPath, thumbName);
 
-                            imageInfo.setThumb_id(-1);
-                            imageInfo.setThumb_kind(Thumbnails.MINI_KIND);
-                            if (!file.exists()){
+                            imageInfo.setThumbId(-1);
+                            imageInfo.setThumbKind(Thumbnails.MINI_KIND);
+                            if (!file.exists()) {
                                 //创建缩略图
                                 Bitmap thumb = null;
 //                                thumb = getImageThumbnail(imageInfo);
                                 thumb = getImageThumbnail(imageInfo.getPath(), Thumbnails.MINI_KIND);
-                                if (thumb != null && !thumb.isRecycled()){
-                                    imageInfo.setThumb_width(thumb.getWidth());
-                                    imageInfo.setThumb_height(thumb.getHeight());
+                                if (thumb != null && !thumb.isRecycled()) {
+                                    imageInfo.setThumbWidth(thumb.getWidth());
+                                    imageInfo.setThumbHeight(thumb.getHeight());
                                 }
 
                                 //保存缩略图
-                                if (!FileUtil.write2SD(thumb, file.getAbsolutePath(), true)){
+                                if (!FileUtil.write2SD(thumb, file.getAbsolutePath(), true)) {
                                     continue;
                                 }
-                                MLog.i(TAG, "--create--Thumb_path:"+file.getAbsolutePath());
-                            }else{
+                                MLog.i(TAG, "--create--Thumb_path:" + file.getAbsolutePath());
+                            } else {
 //                                MLog.i(TAG, "Thumb_path:"+file.getAbsolutePath());
 
                                 BitmapFactory.Options options = new BitmapFactory.Options();
@@ -237,11 +247,11 @@ public class ImageStore {
                                 BitmapFactory.decodeFile(file.getAbsolutePath(), options);
                                 options.inJustDecodeBounds = false;
 
-                                imageInfo.setThumb_width(options.outWidth);
-                                imageInfo.setThumb_height(options.outHeight);
+                                imageInfo.setThumbWidth(options.outWidth);
+                                imageInfo.setThumbHeight(options.outHeight);
                             }
-                            imageInfo.setThumb_path(file.getAbsolutePath());
-                            if (deleteInvalidThumb){
+                            imageInfo.setThumbPath(file.getAbsolutePath());
+                            if (deleteInvalidThumb) {
 //                                MLog.i(TAG, "file name:"+file.getName());
                                 tempThumbPathList.add(file.getName());
                             }
@@ -253,17 +263,17 @@ public class ImageStore {
         }
     }
 
-    private static void getImageThumbInfo(ImageInfo imageInfo){
-        if (imageInfo != null){
+    private static void getImageThumbInfo(ImageInfo imageInfo) {
+        if (imageInfo != null) {
             Cursor cursor = mContext.getContentResolver().query(Thumbnails.EXTERNAL_CONTENT_URI,
-                    null, Thumbnails.IMAGE_ID+"=?", new String[]{""+imageInfo.get_id()}, null);
-            if (cursor != null){
-                while (cursor.moveToNext()){
-                    imageInfo.setThumb_id(cursor.getInt(cursor.getColumnIndex(Thumbnails._ID)));
-                    imageInfo.setThumb_path(cursor.getString(cursor.getColumnIndex(Thumbnails.DATA)));
-                    imageInfo.setThumb_width(cursor.getInt(cursor.getColumnIndex(Thumbnails.WIDTH)));
-                    imageInfo.setThumb_height(cursor.getInt(cursor.getColumnIndex(Thumbnails.HEIGHT)));
-                    imageInfo.setThumb_kind(cursor.getInt(cursor.getColumnIndex(Thumbnails.KIND)));
+                    null, Thumbnails.IMAGE_ID + "=?", new String[]{"" + imageInfo.get_id()}, null);
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    imageInfo.setThumbId(cursor.getInt(cursor.getColumnIndex(Thumbnails._ID)));
+                    imageInfo.setThumbPath(cursor.getString(cursor.getColumnIndex(Thumbnails.DATA)));
+                    imageInfo.setThumbWidth(cursor.getInt(cursor.getColumnIndex(Thumbnails.WIDTH)));
+                    imageInfo.setThumbHeight(cursor.getInt(cursor.getColumnIndex(Thumbnails.HEIGHT)));
+                    imageInfo.setThumbKind(cursor.getInt(cursor.getColumnIndex(Thumbnails.KIND)));
                 }
                 cursor.close();
             }
@@ -273,8 +283,9 @@ public class ImageStore {
 
     /**
      * 获取图片缩略图
+     *
      * @param imagePath 原始图片目录
-     * @param kind 缩略图类型
+     * @param kind      缩略图类型
      * @return
      */
     public static Bitmap getImageThumbnail(String imagePath, int kind) {
@@ -285,10 +296,10 @@ public class ImageStore {
         //512 384 压缩到四分之一
         //768 576 八分之一
         //1024 768 十六分之一
-        if (kind == Thumbnails.MINI_KIND){//1
+        if (kind == Thumbnails.MINI_KIND) {//1
             //512 x 384
             return getImageThumbnail(imagePath, 192, 144, true);//512/4, 384/4);
-        }else if (kind == Thumbnails.MICRO_KIND){//3
+        } else if (kind == Thumbnails.MICRO_KIND) {//3
             //96 x 96
             return getImageThumbnail(imagePath, 96, 96, false);
         }
@@ -298,13 +309,14 @@ public class ImageStore {
     /**
      * 根据指定的图像路径和大小来获取缩略图
      * 此方法有两点好处：
-     *     1. 使用较小的内存空间，第一次获取的bitmap实际上为null，只是为了读取宽度和高度，
-     *        第二次读取的bitmap是根据比例压缩过的图像，第三次读取的bitmap是所要的缩略图。
-     *     2. 缩略图对于原图像来讲没有拉伸，这里使用了2.2版本的新工具ThumbnailUtils，使
-     *        用这个工具生成的图像不会被拉伸。
-     * @param imagePath 图像的路径
-     * @param width 指定输出图像的宽度
-     * @param height 指定输出图像的高度
+     * 1. 使用较小的内存空间，第一次获取的bitmap实际上为null，只是为了读取宽度和高度，
+     * 第二次读取的bitmap是根据比例压缩过的图像，第三次读取的bitmap是所要的缩略图。
+     * 2. 缩略图对于原图像来讲没有拉伸，这里使用了2.2版本的新工具ThumbnailUtils，使
+     * 用这个工具生成的图像不会被拉伸。
+     *
+     * @param imagePath  图像的路径
+     * @param width      指定输出图像的宽度
+     * @param height     指定输出图像的高度
      * @param changeSize 是否改变输出大小
      * @return 生成的缩略图
      */
@@ -320,7 +332,7 @@ public class ImageStore {
         int h = options.outHeight;
 
         int ratio = 1;
-        if (w > 0 && h > 0){
+        if (w > 0 && h > 0) {
             int scaleWidth = w / width;
             int ramainW = w % width;
             int scaleHeight = h / height;
@@ -335,27 +347,27 @@ public class ImageStore {
             if (ratio < 1) {
                 ratio = 1;
             }                       //0 1 2 4 8
-            if (ratio > 1){         //1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+            if (ratio > 1) {         //1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
                 int exp = ratio / 2;//0 1 2 2 3 3 3 3 4 4  4  4
-                if (ratio % 2 > 0){
+                if (ratio % 2 > 0) {
                     exp += 1;
                 }
-                if (exp > 4){//最小十六分之一
+                if (exp > 4) {//最小十六分之一
                     exp = 4;
                 }
-                int ratio1 = (int) Math.pow(2, exp-1);
+                int ratio1 = (int) Math.pow(2, exp - 1);
                 int ratio2 = (int) Math.pow(2, exp);
-                if (ratio > ratio1 && ratio <= ratio2){
+                if (ratio > ratio1 && ratio <= ratio2) {
                     ratio = ratio2;
-                }else{
+                } else {
                     ratio = ratio1;
                 }
             }
-            if (changeSize){
+            if (changeSize) {
                 width = w / ratio;
                 height = h / ratio;
-            }else{
-                if (ratio > 4){
+            } else {
+                if (ratio > 4) {
                     ratio = 4;
                 }
             }
@@ -373,30 +385,30 @@ public class ImageStore {
     }
 
     private static synchronized void sortByFolder() {
-        if (imageInfos!=null && !imageInfos.isEmpty()){
+        if (imageInfos != null && !imageInfos.isEmpty()) {
             String folderName = null;
             List<ImageInfo> folderItem = null;
 
-            synchronized (imageInfos){
+            synchronized (imageInfos) {
                 folderInfos.clear();
                 for (ImageInfo imageInfo : imageInfos) {
-                    if (imageInfo!=null){
-                        folderName = imageInfo.getFolder_name();
+                    if (imageInfo != null) {
+                        folderName = imageInfo.getFolderName();
 
-                        if (!folderInfos.containsKey(folderName)){
+                        if (!folderInfos.containsKey(folderName)) {
                             folderItem = new ArrayList<>();
                             folderInfos.put(folderName, folderItem);
-                        }else{
+                        } else {
                             folderItem = folderInfos.get(folderName);
                         }
-                        if (folderItem != null){
+                        if (folderItem != null) {
                             folderItem.add(imageInfo);
                         }
                     }
                 }
             }
             //按文件夹名称升序排序
-            synchronized (folderInfos){
+            synchronized (folderInfos) {
                 folderInfos = sortMapByKey(folderInfos);
             }
 
@@ -405,8 +417,8 @@ public class ImageStore {
         }
     }
 
-    private static Map<String, List<ImageInfo>> sortMapByKey(Map<String, List<ImageInfo>> src){
-        if (src == null || src.isEmpty()){
+    private static Map<String, List<ImageInfo>> sortMapByKey(Map<String, List<ImageInfo>> src) {
+        if (src == null || src.isEmpty()) {
             return src;
         }
         Map<String, List<ImageInfo>> sortMap = new TreeMap<String, List<ImageInfo>>(new Comparator<String>() {
@@ -424,16 +436,16 @@ public class ImageStore {
      */
     private static void deleteInvalidThumb() {
 //        MLog.i(TAG, "delete 111");
-        if (tempThumbPathList != null && !tempThumbPathList.isEmpty()){
+        if (tempThumbPathList != null && !tempThumbPathList.isEmpty()) {
 //            MLog.i(TAG, "delete 222 size:"+tempThumbPathList.size());
             File directory = new File(cacheThumbPath);
-            String[] files =  directory.list();
+            String[] files = directory.list();
 
-            if (files != null && files.length > 0){
-                List<String> filesList = new ArrayList<>( Arrays.asList(files) );
+            if (files != null && files.length > 0) {
+                List<String> filesList = new ArrayList<>(Arrays.asList(files));
 //                MLog.i(TAG, "delete 333 filesList size:"+filesList.size());
 
-                if (filesList != null && !filesList.isEmpty() && filesList.removeAll(tempThumbPathList)){
+                if (filesList != null && !filesList.isEmpty() && filesList.removeAll(tempThumbPathList)) {
 //                    MLog.i(TAG, "delete 444 filesList size:"+filesList.size());
                     for (String fileName : filesList) {
                         FileUtil.deleteSDFile(directory.getAbsolutePath() + "/" + fileName);
@@ -447,61 +459,71 @@ public class ImageStore {
         tempThumbPathList = null;
     }
 
-    public static List<ImageInfo> getImageInfosList(){
+    /**
+     * 获取所有图片
+     * @return
+     */
+    public static List<ImageInfo> getImageInfosList() {
         return imageInfos;
     }
 
-    public static Map<String, List<ImageInfo>> getImageInfosFolderList(){
+    /**
+     * 获取所有图片以文件夹分类
+     * @return
+     */
+    public static Map<String, List<ImageInfo>> getImageInfosFolderList() {
         return folderInfos;
     }
 
-    private static void printList(){
-        for (Map.Entry<String, List<ImageInfo>> entry: folderInfos.entrySet()) {
+    private static void printList() {
+        for (Map.Entry<String, List<ImageInfo>> entry : folderInfos.entrySet()) {
             for (ImageInfo imageInfo : entry.getValue()) {
                 MLog.i(TAG, imageInfo.toString());
             }
         }
     }
 
-    public static void clearAll(){
-        if (imageInfos != null){
+    public static void clearAll() {
+        if (imageInfos != null) {
             imageInfos.clear();
             imageInfos = null;
         }
-        if (folderInfos != null){
+        if (folderInfos != null) {
             folderInfos.clear();
             folderInfos = null;
         }
-        if (mListener != null){
+        if (mListener != null) {
             mListener = null;
         }
-        if (mHandler != null){
+        if (mHandler != null) {
             mHandler = null;
         }
     }
 
     /**
      * 获取缩略图
+     *
      * @param imageInfo 原图信息
      * @return
      */
-    public static Bitmap getImageThumbnail(ImageInfo imageInfo){
-        imageInfo.setThumb_id(-1);
-        imageInfo.setThumb_kind(Thumbnails.MINI_KIND);
-        Bitmap bitmap = getImageThumbnail(imageInfo.getImage_id());
-        if (bitmap != null && !bitmap.isRecycled()){
-            imageInfo.setThumb_width(bitmap.getWidth());
-            imageInfo.setThumb_height(bitmap.getHeight());
+    public static Bitmap getImageThumbnail(ImageInfo imageInfo) {
+        imageInfo.setThumbId(-1);
+        imageInfo.setThumbKind(Thumbnails.MINI_KIND);
+        Bitmap bitmap = getImageThumbnail(imageInfo.getImageId());
+        if (bitmap != null && !bitmap.isRecycled()) {
+            imageInfo.setThumbWidth(bitmap.getWidth());
+            imageInfo.setThumbHeight(bitmap.getHeight());
         }
         return bitmap;
     }
 
     /**
      * 获取缩略图
+     *
      * @param id 原图在ContentProvider中的id
      * @return
      */
-    public static Bitmap getImageThumbnail(int id){
+    public static Bitmap getImageThumbnail(int id) {
         Bitmap bitmap = null;
         if (mContext != null)
             bitmap = Thumbnails.getThumbnail(mContext.getContentResolver(), id, Thumbnails.MINI_KIND, null);
@@ -509,33 +531,33 @@ public class ImageStore {
     }
 
 
-    private static void getImageInfo(int id){
+    private static void getImageInfo(int id) {
         Cursor cursor = null;
         ImageInfo imageInfo = null;
-        if (id>0){
-            cursor = mContext.getContentResolver().query(Media.EXTERNAL_CONTENT_URI, null, Media._ID+"=?", new String[]{""+id}, null);
-        }else{
-            cursor = mContext.getContentResolver().query(Media.EXTERNAL_CONTENT_URI, null, null, null, " "+ Media._ID+" desc ");
+        if (id > 0) {
+            cursor = mContext.getContentResolver().query(Media.EXTERNAL_CONTENT_URI, null, Media._ID + "=?", new String[]{"" + id}, null);
+        } else {
+            cursor = mContext.getContentResolver().query(Media.EXTERNAL_CONTENT_URI, null, null, null, " " + Media._ID + " desc ");
         }
-        if (cursor != null){
-            while (cursor.moveToNext()){
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
                 imageInfo = new ImageInfo();
 
                 imageInfo.set_id(cursor.getInt(cursor.getColumnIndex(Media._ID)));
-                imageInfo.setImage_id(imageInfo.get_id());
+                imageInfo.setImageId(imageInfo.get_id());
                 imageInfo.setTitle(cursor.getString(cursor.getColumnIndex(Media.TITLE)));
                 imageInfo.setName(cursor.getString(cursor.getColumnIndex(Media.DISPLAY_NAME)));
                 imageInfo.setPath(cursor.getString(cursor.getColumnIndex(Media.DATA)));
 
-                imageInfo.setDate_added(cursor.getLong(cursor.getColumnIndex(Media.DATE_ADDED)));
-                imageInfo.setDate_modified(cursor.getLong(cursor.getColumnIndex(Media.DATE_MODIFIED)));
+                imageInfo.setDateAdded(cursor.getLong(cursor.getColumnIndex(Media.DATE_ADDED)));
+                imageInfo.setDateModified(cursor.getLong(cursor.getColumnIndex(Media.DATE_MODIFIED)));
                 imageInfo.setWidth(cursor.getInt(cursor.getColumnIndex(Media.WIDTH)));
                 imageInfo.setHeight(cursor.getInt(cursor.getColumnIndex(Media.HEIGHT)));
 
                 imageInfo.setSize(cursor.getInt(cursor.getColumnIndex(Media.SIZE)));
                 imageInfo.setOrientation(cursor.getInt(cursor.getColumnIndex(Media.ORIENTATION)));
-                imageInfo.setFolder_id(cursor.getInt(cursor.getColumnIndex(Media.BUCKET_ID)));
-                imageInfo.setFolder_name(cursor.getString(cursor.getColumnIndex(Media.BUCKET_DISPLAY_NAME)));
+                imageInfo.setFolderId(cursor.getInt(cursor.getColumnIndex(Media.BUCKET_ID)));
+                imageInfo.setFolderName(cursor.getString(cursor.getColumnIndex(Media.BUCKET_DISPLAY_NAME)));
 
                 MLog.i(TAG, imageInfo.toString());
             }
@@ -546,13 +568,14 @@ public class ImageStore {
 
     /**
      * 保存图片
+     *
      * @param bitmap
-     * @param path 目录必须以‘/’结尾，不包括图片名
-     * @param name 图片名
+     * @param path   目录必须以‘/’结尾，不包括图片名
+     * @param name   图片名
      * @return
      */
     @TargetApi(12)
-    public static boolean saveImage(Bitmap bitmap, String path, String name){
+    public static boolean saveImage(Bitmap bitmap, String path, String name) {
         ImageInfo imageInfo = new ImageInfo();
         imageInfo.setName(name);
         imageInfo.setPath(path + name);
@@ -560,7 +583,7 @@ public class ImageStore {
         imageInfo.setHeight(bitmap.getHeight());
         imageInfo.setSize(bitmap.getByteCount());
         boolean success = FileUtil.write2SD(bitmap, imageInfo.getPath(), false);
-        if (success){
+        if (success) {
             success = insertToContentProvider(imageInfo);
         }
         return success;
@@ -568,21 +591,22 @@ public class ImageStore {
 
     /**
      * 删除图片并刷新数据库
+     *
      * @param imageInfo
      * @return
      */
-    public static boolean deleteImage(ImageInfo imageInfo){
+    public static boolean deleteImage(ImageInfo imageInfo) {
         boolean success = false;
-        if (imageInfo == null){
+        if (imageInfo == null) {
             return success;
         }
         success = FileUtil.deleteSDFile(imageInfo.getPath());
-        if (success){
-            if (mContext != null){
+        if (success) {
+            if (mContext != null) {
                 ContentResolver resolver = mContext.getContentResolver();
-                int result = resolver.delete(Media.EXTERNAL_CONTENT_URI, Media._ID+"=?", new String[]{""+imageInfo.getImage_id()});
+                int result = resolver.delete(Media.EXTERNAL_CONTENT_URI, Media._ID + "=?", new String[]{"" + imageInfo.getImageId()});
 //                MLog.i(TAG, "delete image-->result:"+result);
-                if (result == 1){
+                if (result == 1) {
                     success = true;
                 }
             }
@@ -592,25 +616,26 @@ public class ImageStore {
 
     /**
      * ImageInfo要包含名称、路径、大小
+     *
      * @param imageInfo
      * @return
      */
-    public static boolean insertToContentProvider(ImageInfo imageInfo){
+    public static boolean insertToContentProvider(ImageInfo imageInfo) {
         if (imageInfo == null) {
             return false;
         }
         long dateTaken = System.currentTimeMillis();
-        imageInfo.setDate_taken(dateTaken);
-        imageInfo.setDate_added(dateTaken / 1000);
-        imageInfo.setDate_modified(dateTaken / 1000);
+        imageInfo.setDateTaken(dateTaken);
+        imageInfo.setDateAdded(dateTaken / 1000);
+        imageInfo.setDateModified(dateTaken / 1000);
         imageInfo.setOrientation(getImageRotation(imageInfo.getPath()));
 
         ContentValues values = new ContentValues();
         values.put(Media.DISPLAY_NAME, imageInfo.getName());//文件名;
         values.put(Media.DATA, imageInfo.getPath());//路径;
-        values.put(Media.DATE_TAKEN, imageInfo.getDate_taken());//时间;
-        values.put(Media.DATE_ADDED, imageInfo.getDate_added());//时间;
-        values.put(Media.DATE_MODIFIED, imageInfo.getDate_modified());//时间;
+        values.put(Media.DATE_TAKEN, imageInfo.getDateTaken());//时间;
+        values.put(Media.DATE_ADDED, imageInfo.getDateAdded());//时间;
+        values.put(Media.DATE_MODIFIED, imageInfo.getDateModified());//时间;
 
         values.put(Media.WIDTH, imageInfo.getWidth());
         values.put(Media.HEIGHT, imageInfo.getHeight());
@@ -635,6 +660,7 @@ public class ImageStore {
 
     /**
      * 插入到数据库
+     *
      * @param imagePath
      * @return
      */
@@ -661,7 +687,7 @@ public class ImageStore {
         try {
             if (resolver != null) {
                 uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                MLog.i(TAG,"insert into content provider");
+                MLog.i(TAG, "insert into content provider");
             }
         } catch (Throwable th) {
             th.printStackTrace();
@@ -671,6 +697,7 @@ public class ImageStore {
 
     /**
      * 获取图片旋转角度
+     *
      * @param image
      * @return
      */
@@ -683,12 +710,16 @@ public class ImageStore {
             if (orientation != null && orientation.length() > 0) {
                 int ori = Integer.parseInt(orientation);
                 switch (ori) {
-                case ExifInterface.ORIENTATION_ROTATE_90:
-                    return 90;
-                case ExifInterface.ORIENTATION_ROTATE_180:
-                    return 180;
-                case ExifInterface.ORIENTATION_ROTATE_270:
-                    return 270;
+                    case ExifInterface.ORIENTATION_NORMAL:
+                        return 0;
+                    case ExifInterface.ORIENTATION_ROTATE_90:
+                        return 90;
+                    case ExifInterface.ORIENTATION_ROTATE_180:
+                        return 180;
+                    case ExifInterface.ORIENTATION_ROTATE_270:
+                        return 270;
+                    default:
+                        return 0;
                 }
             }
         } catch (Exception e) {
