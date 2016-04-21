@@ -924,4 +924,35 @@ public class FileUtil {
     private static boolean isNullOrEmpty(String content) {
         return content == null || content.trim().isEmpty();
     }
+
+    /**
+     * 获取Bitmap保存成文件时的大小，单位 K
+     * @param bitmap
+     * @param format
+     * @return
+     */
+    public static float getBitmapPhysicalSize(Bitmap bitmap, Bitmap.CompressFormat format) {
+        float size = 0;
+        if (bitmap == null || bitmap.isRecycled()) {
+            return size;
+        }
+        if (format == null) {
+            format = Bitmap.CompressFormat.PNG;
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(format, 100, baos);
+        byte[] data = baos.toByteArray();
+        if (data == null) {
+            return size;
+        }
+        size = data.length / 1024.0f;//获取图片大小 k
+        try {
+            baos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        baos = null;
+        data = null;
+        return size;
+    }
 }
