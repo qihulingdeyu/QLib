@@ -7,7 +7,7 @@ dependencies {
 
 android {
     compileSdkVersion 22
-    buildToolsVersion "22.0.1"
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         minSdkVersion 11
@@ -158,11 +158,11 @@ android {
 
 // jar文件默认是：build/intermediates/bundles/release(debug)/目录下的classes.jar
 //task makeJar(type: Copy) {
-//    delete 'build/outputs/mylibs.jar'
+//    delete 'build/outputs/${module.getName()}-${defaultConfig.versionName}.jar'
 //    from('build/intermediates/bundles/release/')
 //    into('build/outputs/')
 //    include('classes.jar')
-//    rename ('classes.jar', 'mylibs.jar')
+//    rename ('classes.jar', '${module.getName()}-${defaultConfig.versionName}.jar')
 //}
 //
 //makeJar.dependsOn(build)
