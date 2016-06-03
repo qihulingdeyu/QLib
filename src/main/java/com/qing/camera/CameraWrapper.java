@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.SurfaceHolder;
@@ -42,7 +41,7 @@ import java.util.Map;
  * 快门声音 (support/open / close) √
  * 震动 (support/open mode/ close)
  * 屏幕常亮
- *
+ * <p/>
  * 缩放---正在聚焦-取消聚焦-缩放-继续聚焦
  * 拍照---是否聚焦-正在聚焦-聚焦完成后拍照
  */
@@ -56,7 +55,9 @@ public final class CameraWrapper implements CameraAllCallback {
          * 获取预览显示对象
          */
         SurfaceHolder getSurfaceHolder();
+
         SurfaceTexture getSurfaceTexture();
+
         /**
          * 刷新界面
          */
@@ -65,8 +66,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     private Context mContext;
     private CameraSurfaceView mCameraSurfaceView;
-    /** 是否横屏 */
-    private boolean isLandscape = false;
+    private boolean isLandscape = false;//是否横屏
 
     private CameraAllCallback mCameraAllCallback;
     private CameraHandler mCameraHandler;
@@ -119,13 +119,13 @@ public final class CameraWrapper implements CameraAllCallback {
     private Camera.Size mPreviewSize;
     private List<Camera.Size> mSupportedPictureSizes;
 
-    private float defaultRatio = 4.0f/3;
+    private float defaultRatio = 4.0f / 3;
 
     private boolean isViewCreate;
-    private int previewWidth = 800, previewHeight = 600;
+    private int previewWidth = 800, previewHeight = 600;//默认预览大小
     private int mCurrentOrientation;
 
-    private int pictureWidth = 960, pictureHeight = 720;
+    private int pictureWidth = 960, pictureHeight = 720;//默认照片大小
     private int mCurrentPictureOrientation;
     private int mPictureDegree;
 
@@ -156,10 +156,10 @@ public final class CameraWrapper implements CameraAllCallback {
     private boolean mFocusAreaSupported;// 是否支持区域对焦;
     private List<String> mFocusModesValues;
     private States mFocusState = States.FOCUS_IDLE;// 设置为正在对焦状态;
-    private String mFocusMode;
+    private String mFocusMode = Camera.Parameters.FOCUS_MODE_AUTO;
     private long mFocusStartTime;
     private boolean isFocusTimeOut;
-    private boolean isLoopFocus;//是否自动循环对焦
+    private boolean isLoopFocus = true;//是否自动循环对焦
     private long interval = 5000;//循环对焦间隔
 
     /**
@@ -171,7 +171,9 @@ public final class CameraWrapper implements CameraAllCallback {
      * 0:off, 1:on, 2:auto, 3:red-eye, 4:torch(常亮) 注：设置为on/auto/red-eye时，只有在对焦或拍照时闪光灯才会亮
      */
     private List<String> mFlashModesValues;// 支持的闪光灯值;
+    private boolean mOnFocusFlashlight;//当flashmode = on, auto时，且对焦时闪光
     private int mCurrentFlashMode;
+    private String mCurrentFlashModeStr = Camera.Parameters.FLASH_MODE_OFF;
 
     /**
      * 是否支持测光
@@ -292,7 +294,7 @@ public final class CameraWrapper implements CameraAllCallback {
             mSupportedPictureSizes = mDefaultParameters.getSupportedPictureSizes();
 //            if (mSupportedPictureSizes != null) {
 //                for (int i = 0; i < mSupportedPictureSizes.size(); i++) {
-//                    Log.i(TAG, "picture-> width:"+mSupportedPictureSizes.get(i).width+", height:"+mSupportedPictureSizes.get(i).height);
+//                    MLog.i(TAG, "picture-> width:"+mSupportedPictureSizes.get(i).width+", height:"+mSupportedPictureSizes.get(i).height);
 //                }
 //            }
 
@@ -302,8 +304,11 @@ public final class CameraWrapper implements CameraAllCallback {
             // 检查区域对焦;
             mFocusModesValues = mDefaultParameters.getSupportedFocusModes();
             try {
-                mFocusAreaSupported = ((mDefaultParameters.getMaxNumFocusAreas() > 0)
-                        && (mFocusModesValues == null ? false : mFocusModesValues.indexOf(Camera.Parameters.FOCUS_MODE_AUTO) >= 0));
+                int mMaxNumFocusAreas = 0;
+                if (Build.VERSION.SDK_INT > 15) {
+                    mMaxNumFocusAreas = mDefaultParameters.getMaxNumFocusAreas();
+                }
+                mFocusAreaSupported = (mMaxNumFocusAreas > 0 && (mFocusModesValues == null ? false : mFocusModesValues.indexOf(Camera.Parameters.FOCUS_MODE_AUTO) >= 0));
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             } catch (Exception e) {
@@ -338,7 +343,7 @@ public final class CameraWrapper implements CameraAllCallback {
             mExposureStep = mDefaultParameters.getExposureCompensationStep();
             mExposureValue = mDefaultParameters.getExposureCompensation();
 //
-//            Log.i(TAG, "mMinExposureValue:"+mMinExposureValue+", mMaxExposureValue:"+mMaxExposureValue
+//            MLog.i(TAG, "mMinExposureValue:"+mMinExposureValue+", mMaxExposureValue:"+mMaxExposureValue
 //                    +", mExposureValue:"+mExposureValue+", mExposureStep:"+mExposureStep
 //                    +", mAutoExposureLock:"+ mAutoExposureLock);
 
@@ -367,22 +372,23 @@ public final class CameraWrapper implements CameraAllCallback {
         stopPreview();
         releaseCamera();
         mCurrentCameraId = cameraId % mNumberOfCameras;
-        try{
+        try {
             mCamera = Camera.open(mCurrentCameraId);
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             e.printStackTrace();
             if (mErrorCode == NO_CAMERA_PERMISSION_ERROR) {
                 mErrorCode = -1;
             } else {
                 mErrorCode = NO_CAMERA_PERMISSION_ERROR;
-                Log.i(TAG, "openCamera error:" + mErrorCode + ", not camera permission, " + e.getMessage());
+                MLog.i(TAG, "openCamera error:" + mErrorCode + ", not camera permission, " + e.getMessage());
                 if (mCameraAllCallback != null) {
                     mCameraAllCallback.onError(NO_CAMERA_PERMISSION_ERROR, null);
                 }
             }
+            mCamera = null;
         }
         mCameraCurrentlyLocked = mCurrentCameraId;
-        MLog.i(TAG, "openCamera:" + mCurrentCameraId);
+//        MLog.i(TAG, "openCamera:" + mCurrentCameraId);
         getCameraDefaultParameters();
 
         mCameraState = States.CAMERA_IDLE;
@@ -402,7 +408,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
         mCurrentOrientation = CameraOrientationInfoArray[mCurrentCameraId][0];
         setPreviewOrientation(mCurrentOrientation);
-        setPictureOrientation(mCurrentOrientation);
+//        setPictureOrientation(mCurrentOrientation);
 
         resetPreviewSize();
 
@@ -450,25 +456,19 @@ public final class CameraWrapper implements CameraAllCallback {
      * @return
      */
     public Camera.Parameters getCameraParameters() {
-//        if (mParameters == null) {
-//            mParameters = new HashMap<Integer, Camera.Parameters>();
-//        }
-//        if (mParameters.containsKey(mCurrentCameraId)) {
-//            mCurrentParameters = mParameters.get(mCurrentCameraId);
-//        }else{
-//            if (mCamera != null) {
-//                mCurrentParameters = mCamera.getParameters();
-//                mParameters.put(mCurrentCameraId, mCurrentParameters);
-//            }
-//        }
         if (mCamera != null) {
-            mCurrentParameters = mCamera.getParameters();
+            try {
+                mCurrentParameters = mCamera.getParameters();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
         }
         return mCurrentParameters;
     }
 
     /**
      * 获取当前镜头Id
+     *
      * @return
      */
     public int getCurrentCameraId() {
@@ -477,10 +477,15 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 另外一个镜头的Id
+     *
      * @return
      */
     public int getNextCameraId() {
         return (mCameraCurrentlyLocked + 1) % mNumberOfCameras;
+    }
+
+    public Map<Integer, Camera.Size> getPreviewDataLenghts() {
+        return mSupportedPreviewDataLengths;
     }
 
     /**
@@ -493,7 +498,7 @@ public final class CameraWrapper implements CameraAllCallback {
      * @return
      */
     private Camera.Size getOptimalSize(List<Camera.Size> sizes, int width, int height, float previewRatio) {
-//        MLog.i(TAG, "getOptimalPreviewSize width:"+width+", height:"+height);
+//        MLog.i(TAG, "getOptimalSize width:"+width+", height:"+height);
         if (sizes == null) {
             return null;
         }
@@ -520,7 +525,7 @@ public final class CameraWrapper implements CameraAllCallback {
                 if (optimalSize != null) {
                     if (optimalSize.width > size.width) {
                         break;
-                    }else if(optimalSize.width == size.width) {
+                    } else if (optimalSize.width == size.width) {
                         if (optimalSize.height >= size.height) {
                             break;
                         }
@@ -532,7 +537,7 @@ public final class CameraWrapper implements CameraAllCallback {
         }
         // Cannot find the one match the aspect ratio, ignore the requirement
         if (optimalSize == null) {
-//            MLog.i(TAG, "optimalSize is null");
+            MLog.i(TAG, "optimalSize is null");
             minDiff = Double.MAX_VALUE;
             for (Camera.Size size : sizes) {
                 if (Math.abs(size.height - targetHeight) < minDiff) {
@@ -548,10 +553,6 @@ public final class CameraWrapper implements CameraAllCallback {
 
 //        MLog.i(TAG, "optimalSize width:" + optimalSize.width + ", height:" + optimalSize.height);
         return optimalSize;
-    }
-
-    public Map<Integer, Camera.Size> getPreviewDataLenghts() {
-        return mSupportedPreviewDataLengths;
     }
 
     /**
@@ -573,7 +574,7 @@ public final class CameraWrapper implements CameraAllCallback {
                 try {
                     mCamera.setParameters(mCurrentParameters);
 //                MLog.i(TAG, "set preview size success");
-                }catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -591,19 +592,25 @@ public final class CameraWrapper implements CameraAllCallback {
             Collections.sort(mSupportedPictureSizes, new Comparator<Camera.Size>() {
                 @Override
                 public int compare(Camera.Size size1, Camera.Size size2) {
-                    int one = size1.height * size1.width;
-                    int two = size2.height * size2.width;
-                    if (one > two) {
+                    int areaOne = size1.height * size1.width;
+                    int areaTwo = size2.height * size2.width;
+                    if (areaOne > areaTwo) {
                         return -1;
-                    } else if (two == one) {
+                    } else if (areaTwo == areaOne) {
                         return 0;
                     } else {
                         return 1;
                     }
                 }
             });
+//            if (mSupportedPictureSizes != null) {
+//                for (int i = 0; i < mSupportedPictureSizes.size(); i++) {
+//                    MLog.i(TAG, "picture--sort--> width:"+mSupportedPictureSizes.get(i).width+", height:"+mSupportedPictureSizes.get(i).height);
+//                }
+//            }
+
             Camera.Size mPictureSize = getOptimalSize(mSupportedPictureSizes, width, height, defaultRatio);
-            Log.i(TAG, "setOptimalPictureSize width:"+ mPictureSize.width +", height:"+mPictureSize.height);
+            MLog.i(TAG, "setOptimalPictureSize width:" + mPictureSize.width + ", height:" + mPictureSize.height);
 
             pictureWidth = mPictureSize.width;
             pictureHeight = mPictureSize.height;
@@ -613,7 +620,7 @@ public final class CameraWrapper implements CameraAllCallback {
                 mCurrentParameters.setPictureSize(pictureWidth, pictureHeight);
                 try {
                     mCamera.setParameters(mCurrentParameters);
-                }catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -622,16 +629,19 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 设置预览大小，在开始预览之前设置，否则可能会无效
+     *
      * @param width
      * @param height
      */
     public void setPreviewSize(int width, int height) {
+//        MLog.i(TAG, "preview width:"+width+", height:"+height);
         previewWidth = width;
         previewHeight = height;
     }
 
     /**
      * 设置图片大小，在开始预览之前设置，否则可能会无效
+     *
      * @param width
      * @param height
      */
@@ -666,8 +676,10 @@ public final class CameraWrapper implements CameraAllCallback {
      */
     public int patchPreviewDegree() {
         int degree = (mCurrentOrientation + 90) % 360;
-        CameraOrientationInfoArray[mCurrentCameraId][0] = degree;
-        CameraOrientationInfoArray[mCurrentCameraId][2] = degree;
+        if (mCurrentCameraId < CameraOrientationInfoArray.length) {
+            CameraOrientationInfoArray[mCurrentCameraId][0] = degree;
+            CameraOrientationInfoArray[mCurrentCameraId][2] = degree;
+        }
 //        MLog.i(TAG, "patchPreviewDegree degree:" + degree);
         setPreviewOrientation(degree);
         saveCameraConfig(mCurrentCameraId + camera_preview_orientation, mCurrentOrientation);
@@ -690,10 +702,8 @@ public final class CameraWrapper implements CameraAllCallback {
      */
     public void patchPreviewAndPictureDegree() {
         int degree = (mCurrentOrientation + 90) % 360;
-        if (mCurrentCameraId < CameraOrientationInfoArray.length) {
-            CameraOrientationInfoArray[mCurrentCameraId][0] = degree;
-            CameraOrientationInfoArray[mCurrentCameraId][2] = degree;
-        }
+        CameraOrientationInfoArray[mCurrentCameraId][0] = degree;
+        CameraOrientationInfoArray[mCurrentCameraId][2] = degree;
 //        MLog.i(TAG, "patchPreviewAndPictureDegree degree:" + degree);
 
         setPreviewOrientation(degree);
@@ -717,7 +727,6 @@ public final class CameraWrapper implements CameraAllCallback {
 //            MLog.i(TAG, "setPreviewOrientation:" + mCurrentOrientation + ", isLandscape:" + isLandscape);
 
             mCamera.setDisplayOrientation(isLandscape == true ? 0 : mCurrentOrientation);
-
         }
     }
 
@@ -732,7 +741,7 @@ public final class CameraWrapper implements CameraAllCallback {
             if (orientation == -1) {
                 orientation = mCurrentPictureOrientation + 90;
             }
-            mCurrentPictureOrientation = (orientation + 360) % 360;;
+            mCurrentPictureOrientation = (orientation + 360) % 360;
 
             getCameraParameters();
             mCurrentParameters.setRotation(mCurrentPictureOrientation);
@@ -746,6 +755,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 获取当前预览旋转角度
+     *
      * @return
      */
     public int getCurrentPreviewOrientation() {
@@ -754,6 +764,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 获取当前照片旋转角度
+     *
      * @return
      */
     public int getCurrentPictureOrientation() {
@@ -769,7 +780,7 @@ public final class CameraWrapper implements CameraAllCallback {
                 mCamera.setPreviewDisplay(holder);// 设置预览失败,释放镜头;
             } catch (IOException e) {
                 e.printStackTrace();
-                MLog.e(TAG, "IOException caused by setPreviewDisplay()");
+                MLog.e(TAG, "IOException caused by setPreviewDisplay() " + e.getMessage());
                 releaseCamera();
             }
         }
@@ -794,27 +805,32 @@ public final class CameraWrapper implements CameraAllCallback {
      * 开始预览
      */
     public synchronized void startPreview() {
-//        MLog.i(TAG, "startPreview--:" + mPreviewState.state);
+//        MLog.i(TAG, "startPreview-->" + mPreviewState.state);
         if (mCamera != null && mPreviewState == States.PREVIEW_IDLE) {
             mCamera.setErrorCallback(this);
             mCamera.setPreviewCallback(this);
-            mCamera.startPreview();
-            mPreviewState = States.PREVIEW_START;
-            autoLoopFocus(true);
-//            MLog.i(TAG, "startPreview-22-:" + mPreviewState.state);
+            try {
+                mCamera.startPreview();
+                mPreviewState = States.PREVIEW_START;
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                mPreviewState = States.PREVIEW_FAIL;
+            }
+            autoLoopFocus(isLoopFocus);
+//            MLog.i(TAG, "startPreview-22->" + mPreviewState.state);
         }
     }
 
     /**
      * 停止预览 <br/>
      * about -> java.lang.RuntimeException: Method called after release(); <br/>
-     *          android.hardware.Camera.setHasPreviewCallback(Native Method) <br/>
+     * android.hardware.Camera.setHasPreviewCallback(Native Method) <br/>
      * solve -> http://stackoverflow.com/questions/9829596/android-camera-release-error-from-previewcallback <br/>
-     *          http://stackoverflow.com/questions/3592283/camera-force-close-when-returning-from-sleep-android <br/>
+     * http://stackoverflow.com/questions/3592283/camera-force-close-when-returning-from-sleep-android <br/>
      */
     public synchronized void stopPreview() {
-//        Log.i(TAG, "stopPreview--:"+ mPreviewState.state);
-        if (mCamera != null && (mPreviewState == States.PREVIEW_START || mPreviewState == States.PREVIEW_SUCCESS || mPreviewState == States.PREVIEW_DOING)) {
+//        MLog.i(TAG, "stopPreview--:"+ mPreviewState.state);
+        if (mCamera != null) {// && (mPreviewState == States.PREVIEW_START || mPreviewState == States.PREVIEW_SUCCESS || mPreviewState == States.PREVIEW_DOING)) {
             mPreviewState = States.PREVIEW_STOP;
             autoLoopFocus(false);
             mCamera.stopPreview();
@@ -828,7 +844,7 @@ public final class CameraWrapper implements CameraAllCallback {
      * 释放镜头
      */
     public synchronized void releaseCamera() {
-//        Log.i(TAG, "releaseCamera");
+//        MLog.i(TAG, "releaseCamera");
         if (mCamera != null) {
             mPreviewState = States.PREVIEW_IDLE;
             mCamera.setPreviewCallback(null);//确保释放预览回调
@@ -839,19 +855,15 @@ public final class CameraWrapper implements CameraAllCallback {
     }
 
     /**
-     * 只拍一张照拍，然后跳转到其它页面
-     */
-    public void takeOnePicture() {
-        isTakeOnePicture = true;
-        takePicture();
-    }
-
-    /**
-     * 拍照后不跳转页面调用此方法；
-     * 若拍照后要跳转到其它页面，使用takeOnePicture()方法，否则出错
+     * 可以连续拍照，此方法适用于拍完照页面不跳转的情况
      */
     public void takePicture() {
         takePicture = true;
+//        MLog.i(TAG, "takePicture-24->"+mFocusState.state);
+        if (takePicture && !mOnFocusFlashlight && mCurrentFlashModeStr.equals(Camera.Parameters.FLASH_MODE_AUTO)) {
+//            MLog.i(TAG, "takePicture:"+takePicture+", mCurrentFlashModeStr:"+mCurrentFlashModeStr);
+            setFlashMode(mCurrentFlashMode, true);
+        }
         if (mFocusState != States.FOCUS_SUCCESS) {
             doFocus(true);
         }
@@ -859,13 +871,22 @@ public final class CameraWrapper implements CameraAllCallback {
     }
 
     /**
+     * 只拍一张，拍完镜头会被释放，此方法适用于拍完照 页面会跳转的情况
+     */
+    public void takeOnePicture() {
+        isTakeOnePicture = true;
+        takePicture();
+    }
+
+    /**
      * 检查对焦状态，如果成功则拍照
      */
     private synchronized void checkFocusStateAndTakePicture() {
+//        MLog.i(TAG, "checkFocusStateAndTakePicture-->"+mFocusState.state);
         //1.不能对焦状态;2.对焦成功;3.对焦失败;
-        if (takePicture && (mFocusMode.equals(Camera.Parameters.FOCUS_MODE_INFINITY)
-                || mFocusMode.equals(Camera.Parameters.FOCUS_MODE_FIXED)
-                || mFocusMode.equals(Camera.Parameters.FOCUS_MODE_EDOF)
+        if (takePicture && (Camera.Parameters.FOCUS_MODE_INFINITY.equals(mFocusMode)
+                || Camera.Parameters.FOCUS_MODE_FIXED.equals(mFocusMode)
+                || Camera.Parameters.FOCUS_MODE_EDOF.equals(mFocusMode)
                 || (mFocusState == States.FOCUS_SUCCESS
                 || mFocusState == States.FOCUS_FAIL))) {
 //            MLog.i(TAG, "checkFocusStateAndTakePicture:"+takePicture);
@@ -874,9 +895,11 @@ public final class CameraWrapper implements CameraAllCallback {
         } else if (mFocusState == States.FOCUS_DOING) {
             //如果是正在对焦,这个时候设置一个标签,让对焦完成之后直接拍照;
             mFocusState = States.TAKE_PICTURE_AFTER_FOCUS_FINISH;
+//            MLog.i(TAG, "checkFocusStateAndTakePicture-28->:"+mFocusState.state);
 
         } else if (mFocusState == States.FOCUS_START) {
             //还未对焦;
+//            MLog.i(TAG, "checkFocusStateAndTakePicture-22->:"+mFocusState.state);
         }
     }
 
@@ -893,7 +916,7 @@ public final class CameraWrapper implements CameraAllCallback {
      * 开始拍照
      */
     private void startTakePicture() {
-//        MLog.i(TAG, "startTakePicture");
+//        MLog.i(TAG, "startTakePicture  canTakePicture:"+canTakePicture());
         if (canTakePicture()) {
             mCamera.setPreviewCallback(null);
             try {
@@ -917,21 +940,21 @@ public final class CameraWrapper implements CameraAllCallback {
         if (mCameraHandler == null) {
             mCameraHandler = new CameraHandler(mContext.getMainLooper());
         }
-        if (mPreviewState == States.PREVIEW_IDLE) {
-//            MLog.i(TAG, "--onSurfaceViewCreate--resume--:" + mPreviewState.state);
+//        MLog.i(TAG, "--onSurfaceViewCreate--mPreviewState:" + mPreviewState.state);
+        if (mPreviewState == States.PREVIEW_IDLE) {//11
+            //---resume---
             reopenCamera();
-
         } else {
             setPreviewSize(previewWidth, previewHeight);
             if (mCameraSurfaceView.getSurfaceHolder() != null) {
 //                MLog.i(TAG, "onSurfaceViewCreate--SurfaceHolder:" + mPreviewState.state);
                 setPreviewDisplay(mCameraSurfaceView.getSurfaceHolder());
 
-            }else if (mCameraSurfaceView.getSurfaceTexture() != null) {
+            } else if (mCameraSurfaceView.getSurfaceTexture() != null) {
 //                MLog.i(TAG, "onSurfaceViewCreate--SurfaceTexture:" + mPreviewState.state);
                 setPreviewDisplay(mCameraSurfaceView.getSurfaceTexture());
 
-            }else{
+            } else {
                 throw new NullPointerException("SurfaceHolder or SurfaceTexture is null");
             }
             if (mCameraHandler != null) {
@@ -940,7 +963,7 @@ public final class CameraWrapper implements CameraAllCallback {
         }
         initOrientationEventListener();
         setOrientationEventListenerEnable(true);
-        autoLoopFocus(true);
+        autoLoopFocus(isLoopFocus);
     }
 
     /**
@@ -995,10 +1018,11 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 设置焦距
+     *
      * @param inOrOut 1:In, -1:Out
      */
     public void setCameraZoomInOrOut(int inOrOut) {
-        if (inOrOut == 1 || inOrOut == -1){
+        if (inOrOut == 1 || inOrOut == -1) {
             setCameraZoom(mCurrentZoom + inOrOut);
         }
     }
@@ -1035,7 +1059,8 @@ public final class CameraWrapper implements CameraAllCallback {
             }
         }
         isZooming = false;
-        mCameraHandler.sendEmptyMessageDelayed(MSG_RESUME_LOOP_FOCUS, interval);
+        mCameraHandler.sendEmptyMessage(MSG_RESUME_LOOP_FOCUS);
+//        mCameraHandler.sendEmptyMessageDelayed(MSG_RESUME_LOOP_FOCUS, interval);
     }
 
     /**
@@ -1058,6 +1083,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 设置自动对焦（默认是自动循环对焦）
+     *
      * @param focus
      */
     public void setAutoFocus(boolean focus) {
@@ -1068,7 +1094,44 @@ public final class CameraWrapper implements CameraAllCallback {
     }
 
     /**
+     * 设置自动循环对焦
+     *
+     * @param loopFocus
+     */
+    public void setAutoLoopFocus(boolean loopFocus) {
+        isLoopFocus = loopFocus;
+    }
+
+    /**
      * 设置对焦区域和测光区域
+     * setFocusAreas接受的List<Area>中的每一个Area的范围是（-1000，-1000）到（1000， 1000），
+     * 也就是说屏幕中心为原点，左上角为（-1000，-1000），右下角为（1000，1000）。
+     * 注意，如果超出这个范围的话，会报setParemeters failed的错误哦！
+     *
+     * @param focusArea    "(left, top, right, bottom, 100)";
+     * @param meteringArea "(left, top, right, bottom, 100)";
+     */
+    public void setFocusAndMeteringArea(String focusArea, String meteringArea) {
+        getCameraParameters();
+        if (mFocusAreaSupported && mMeteringSupported && mCurrentParameters != null) {
+            mCurrentParameters.set(KEY_FOCUS_AREAS, focusArea);
+            mCurrentParameters.set(KEY_METERING_AREAS, meteringArea);
+            try {
+                mCamera.setParameters(mCurrentParameters);
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 设置对焦区域和测光区域<br/>
+     * setFocusAreas接受的List<Area>中的每一个Area的范围是（-1000，-1000）到（1000， 1000），
+     * 也就是说屏幕中心为原点，左上角为（-1000，-1000），右下角为（1000，1000）。
+     * 注意，如果超出这个范围的话，会报setParemeters failed的错误哦！
+     *
      * @param focusX
      * @param focusY
      * @param meteringX
@@ -1078,7 +1141,7 @@ public final class CameraWrapper implements CameraAllCallback {
         if (!mFocusAreaSupported || isZooming)
             return;
         autoLoopFocus(false);//取消自动循环对焦
-//        Log.i(TAG, "setFocusOnTouch");
+//        MLog.i(TAG, "setFocusOnTouch");
         if (mFocusState == States.FOCUS_DOING || mFocusState == States.FOCUS_DOING_ON_TOUCH)
             return;
 
@@ -1107,11 +1170,11 @@ public final class CameraWrapper implements CameraAllCallback {
             mFocusStartTime = System.currentTimeMillis();
             mCamera.autoFocus(this);
             mFocusState = States.FOCUS_DOING_ON_TOUCH;
-            autoLoopFocus(true);
+            autoLoopFocus(isLoopFocus);
         } catch (Exception e) {
             e.printStackTrace();
             mFocusState = States.FOCUS_FAIL;
-            autoLoopFocus(true);
+            autoLoopFocus(isLoopFocus);
         }
     }
 
@@ -1119,21 +1182,26 @@ public final class CameraWrapper implements CameraAllCallback {
      * 手动对焦
      */
     public void setFocusOnTouch(MotionEvent event) {
-        setFocusAndMeteringArea(event.getRawX(), event.getRawY(), event.getRawX(), event.getRawY());
+        setFocusAndMeteringArea(event.getX(), event.getY(), event.getX(), event.getY());
     }
 
     /**
      * 计算触摸区域
      * Convert touch position x:y to {@link Camera.Area} position -1000:-1000 to 1000:1000.
+     *
+     * @param x
+     * @param y
+     * @param coefficient 设置对焦框（测光框）的大小，作为百分比进行调节。
+     * @return
      */
     private Rect calculateArea(float x, float y, float coefficient) {
         if (mPreviewSize == null)
             return null;
         float focusAreaSize = 300;
-        int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
+        int areaSize = (int) (focusAreaSize * coefficient);
 
-        int centerX = (int) (x / mPreviewSize.width * 2000 - 1000);
-        int centerY = (int) (y / mPreviewSize.height * 2000 - 1000);
+        int centerX = (int) (y / mPreviewSize.width * 2000 - 1000);
+        int centerY = (int) (x / mPreviewSize.height * 2000 - 1000);
 
         int left = checkBound(centerX - areaSize / 2, -1000, 1000);
         int right = checkBound(left + areaSize, -1000, 1000);
@@ -1189,7 +1257,7 @@ public final class CameraWrapper implements CameraAllCallback {
             e.printStackTrace();
         }
 
-        autoLoopFocus(true);
+        autoLoopFocus(isLoopFocus);
     }
 
     /**
@@ -1213,14 +1281,18 @@ public final class CameraWrapper implements CameraAllCallback {
             return;
         }
         if (mFocusState == States.FOCUS_SUCCESS) {
-            checkFocusStateAndTakePicture();
-            return;
+            if (takePicture) {
+                checkFocusStateAndTakePicture();
+                return;
+            }
         }
+//        MLog.i(TAG, "doFocus-24->"+mFocusState.state+", "+mFocusMode);
         // 如果是FOCUS_MODE_INFINITY,不能开始对焦;
-        if (!mFocusMode.equals(Camera.Parameters.FOCUS_MODE_INFINITY)) {
+        if (!Camera.Parameters.FOCUS_MODE_INFINITY.equals(mFocusMode)) {
             if (!isFront()) {
                 mFocusState = States.FOCUS_START;
                 if (isFocusTimeOut) {// 如果有对焦超时的情况;
+//                    MLog.i(TAG, "doFocus-isFocusTimeOut->"+isFocusTimeOut);
                     mFocusState = States.FOCUS_SUCCESS;
                     isFocusTimeOut = false;
                     checkFocusStateAndTakePicture();
@@ -1239,12 +1311,14 @@ public final class CameraWrapper implements CameraAllCallback {
      * @param focus
      */
     private void autoFocus(boolean focus) {
+//        MLog.i(TAG, "autoFocus:"+focus+", canTakePicture:"+canTakePicture());
         if (canTakePicture()) {
-            if (focus && Camera.Parameters.FLASH_MODE_AUTO.equals(mFocusMode)) {
+            if (focus && Camera.Parameters.FOCUS_MODE_AUTO.equals(mFocusMode)) {
                 try {
+//                    MLog.i(TAG, "autoFocus:"+focus);
                     mFocusState = States.FOCUS_DOING;
-                    //4秒之后自动清理对焦状态;
-                    mCameraHandler.sendEmptyMessageDelayed(MSG_CANCLE_FOCUS, interval+300);
+                    //n秒之后自动清理对焦状态;
+                    mCameraHandler.sendEmptyMessageDelayed(MSG_CANCLE_FOCUS, interval - 1000);
                     mFocusStartTime = System.currentTimeMillis();
                     mCamera.autoFocus(this);
                 } catch (Exception e) {
@@ -1276,30 +1350,54 @@ public final class CameraWrapper implements CameraAllCallback {
     }
 
     /**
+     * 对焦时闪光
+     */
+    public void setOnFocusFlashlight(boolean flashlight) {
+        mOnFocusFlashlight = flashlight;
+    }
+
+    /**
      * 设置闪光灯默认
      *
      * @param flashMode 0:off, 1:on, 2:auto, 3:red-eye, 4:torch(常亮)
+     * @param force     是否强制更新
      */
-    public void setFlashMode(int flashMode) {
+    private void setFlashMode(int flashMode, boolean force) {
         if (mFlashSupported && mFlashSupportedModeNums > 0) {
             if (flashMode < 0) {
                 flashMode = 0;
             } else if (flashMode > mFlashSupportedModeNums - 1) {
                 flashMode = mFlashSupportedModeNums - 1;
             }
-            if (flashMode == mCurrentFlashMode) {
+            if (!force && flashMode == mCurrentFlashMode) {
                 return;
             }
             getCameraParameters();
-            mCurrentParameters.setFlashMode(mFlashModesValues.get(flashMode));
-            try {
-                mCamera.setParameters(mCurrentParameters);
-                mCurrentFlashMode = flashMode;
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (mCurrentParameters != null || mCamera != null) {
+                try {
+                    String flashModeStr = mFlashModesValues.get(flashMode);
+                    mCurrentFlashModeStr = flashModeStr;
+                    if (!force && !mOnFocusFlashlight && flashModeStr.equals(Camera.Parameters.FLASH_MODE_AUTO)) {
+                        flashModeStr = Camera.Parameters.FLASH_MODE_OFF;
+                    }
+                    mCurrentParameters.setFlashMode(flashModeStr);
+                    mCamera.setParameters(mCurrentParameters);
+                    mCurrentFlashMode = flashMode;
+//                    MLog.i(TAG, "mCurrentFlashMode:" + mCurrentFlashMode+", force:"+force);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-//            MLog.i(TAG, "mCurrentFlashMode:" + mCurrentFlashMode);
         }
+    }
+
+    /**
+     * 设置闪光灯默认
+     *
+     * @param flashMode 0:off, 1:on, 2:auto, 3:red-eye, 4:torch(常亮)
+     */
+    public void setFlashMode(int flashMode) {
+        setFlashMode(flashMode, false);
     }
 
     /**
@@ -1322,6 +1420,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 最大测光区域数量
+     *
      * @return
      */
     public int getMaxNumMeteringAreas() {
@@ -1330,6 +1429,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 曝光功能是否被锁定
+     *
      * @return
      */
     public boolean isAutoExposureLock() {
@@ -1338,6 +1438,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 最小曝光值
+     *
      * @return
      */
     public int getMinExposureValue() {
@@ -1346,6 +1447,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 最大曝光值
+     *
      * @return
      */
     public int getMaxExposureValue() {
@@ -1354,6 +1456,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 曝光值递增(减)的最小值
+     *
      * @return
      */
     public float getExposureStep() {
@@ -1362,6 +1465,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 当前曝光值
+     *
      * @return
      */
     public int getExposureValue() {
@@ -1370,6 +1474,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 设置曝光是否自动锁定
+     *
      * @param lock
      */
     public void setAutoExposureLock(boolean lock) {
@@ -1389,6 +1494,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 设置曝光值
+     *
      * @param exposureValue
      */
     public void setExposureValue(int exposureValue) {
@@ -1405,7 +1511,7 @@ public final class CameraWrapper implements CameraAllCallback {
                 try {
                     mCamera.setParameters(mCurrentParameters);
                     mExposureValue = exposureValue;
-//                    Log.i(TAG, "--setExposureValue  mExposureValue:"+mExposureValue);
+//                    MLog.i(TAG, "--setExposureValue  mExposureValue:"+mExposureValue);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -1437,27 +1543,23 @@ public final class CameraWrapper implements CameraAllCallback {
     private void initOrientationEventListener() {
         setOrientationEventListenerEnable(false);
         mOrientationEventListener = new OrientationEventListener(mContext, SensorManager.SENSOR_DELAY_UI) {
-            float currentScreenDegree;
+            float currentScreenDegree = -1;
 
-            /**
-             * 照片角度已经校正， 外部不需要校正了
-             * @param orientation
-             */
             @Override
             public void onOrientationChanged(int orientation) {
                 float picDegree = checkPictureDegree(orientation);
                 float degree = (360 - picDegree) % 360;
                 if (degree >= 0 && degree != currentScreenDegree) {
+                    if (currentScreenDegree == -1) {
+                        currentScreenDegree = 0;
+                    }
                     if (currentScreenDegree - degree < -180) {
                         degree = degree - 360;
                     }
                     if (currentScreenDegree - degree > 180) {
                         degree = 360 - degree;
                     }
-//                    isLandscape = (picDegree == 90 || picDegree == 270);
-//                    setPictureOrientation(mCurrentOrientation);
-//                    MLog.i(TAG, "picDegree:"+picDegree+", degree:"+degree);
-                    onScreenOrientationChanged(orientation, isFront() ? (int) ((360 - picDegree) % 360) : (int) picDegree, currentScreenDegree, degree);
+                    onScreenOrientationChanged(orientation, (int) ((picDegree + 90) % 360), currentScreenDegree, degree);
                     currentScreenDegree = (360 - picDegree) % 360;
                 }
             }
@@ -1501,6 +1603,7 @@ public final class CameraWrapper implements CameraAllCallback {
 
     /**
      * 自动对焦时间间隔
+     *
      * @param time 毫秒值，默认5000
      */
     public void setAutoFocusInterval(long time) {
@@ -1517,7 +1620,6 @@ public final class CameraWrapper implements CameraAllCallback {
     private void autoLoopFocus(boolean focus) {
         if (mFocusAreaSupported && mCameraHandler != null) {
             mCameraHandler.removeMessages(MSG_LOOP_FOCUS);
-            isLoopFocus = focus;
             if (focus) {
                 mCameraHandler.sendEmptyMessageDelayed(MSG_LOOP_FOCUS, interval);
             }
@@ -1547,10 +1649,10 @@ public final class CameraWrapper implements CameraAllCallback {
                     break;
                 case MSG_LOOP_FOCUS:
                     doFocus(true);
-                    autoLoopFocus(true);
+                    autoLoopFocus(isLoopFocus);
                     break;
                 case MSG_RESUME_LOOP_FOCUS:
-                    autoLoopFocus(true);
+                    autoLoopFocus(isLoopFocus);
                 default:
                     break;
             }
@@ -1600,9 +1702,9 @@ public final class CameraWrapper implements CameraAllCallback {
             } else {
                 mFocusState = States.FOCUS_FAIL;
             }
-
+//            MLog.i(TAG, "--22--onAutoFocus:" + mFocusState.state);
             if (focusOrginState == States.FOCUS_DOING_ON_TOUCH) {
-                autoLoopFocus(true);
+                autoLoopFocus(isLoopFocus);
             }
             if (focusOrginState == States.TAKE_PICTURE_AFTER_FOCUS_FINISH) {
                 checkFocusStateAndTakePicture();
@@ -1639,13 +1741,11 @@ public final class CameraWrapper implements CameraAllCallback {
             mCameraState = States.CAMERA_FAIL;
         }
         mCameraState = States.CAMERA_IDLE;
-        
-        //如果只拍一次则不用重新预览
         stopPreview();
         if (isTakeOnePicture) {
             isTakeOnePicture = false;
             releaseCamera();
-        }else{
+        } else {
             startPreview();
         }
     }

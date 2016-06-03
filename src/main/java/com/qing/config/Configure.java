@@ -21,10 +21,10 @@ public class Configure {
     private static SharedPreferences.Editor editor;
     private static boolean isChange;
 
-    public static Configure init(Context context){
-        if (config==null){
-            synchronized (Configure.class){
-                if (config==null){
+    public static Configure init(Context context) {
+        if (config == null) {
+            synchronized (Configure.class) {
+                if (config == null) {
                     config = new Configure(context);
                 }
             }
@@ -32,13 +32,13 @@ public class Configure {
         return config;
     }
 
-    private Configure(Context context){
+    private Configure(Context context) {
         mContext = context;
         getSharedPreferences("");
     }
 
-    public static void getSharedPreferences(String name){
-        if (StringUtil.isNullOrEmpty(name)){
+    public static void getSharedPreferences(String name) {
+        if (StringUtil.isNullOrEmpty(name)) {
             name = "config";
         }
         preferences = mContext.getSharedPreferences(name, Context.MODE_PRIVATE);
@@ -78,7 +78,7 @@ public class Configure {
     }
 
     private static SharedPreferences.Editor getEditor() {
-        if (isChange || editor==null){
+        if (isChange || editor == null) {
             editor = preferences.edit();
             isChange = false;
         }
