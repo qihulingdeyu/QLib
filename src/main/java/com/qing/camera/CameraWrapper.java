@@ -279,7 +279,15 @@ public final class CameraWrapper implements CameraAllCallback {
     private final void getCameraDefaultParameters() {
         if (mCamera != null) {
 //            MLog.i(TAG, "--getCameraDefaultParameters--");
-            mDefaultParameters = mCamera.getParameters();
+            try {
+                mDefaultParameters = mCamera.getParameters();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                mDefaultParameters = null;
+            }
+            if (mDefaultParameters == null) {
+                return;
+            }
 
             mSupportedPreviewSizes = mDefaultParameters.getSupportedPreviewSizes();
             if (mSupportedPreviewSizes != null) {
@@ -381,15 +389,17 @@ public final class CameraWrapper implements CameraAllCallback {
             } else {
                 mErrorCode = NO_CAMERA_PERMISSION_ERROR;
                 MLog.i(TAG, "openCamera error:" + mErrorCode + ", not camera permission, " + e.getMessage());
-                if (mCameraAllCallback != null) {
-                    mCameraAllCallback.onError(NO_CAMERA_PERMISSION_ERROR, null);
-                }
+                onError(NO_CAMERA_PERMISSION_ERROR, null);
             }
             mCamera = null;
         }
         mCameraCurrentlyLocked = mCurrentCameraId;
 //        MLog.i(TAG, "openCamera:" + mCurrentCameraId);
         getCameraDefaultParameters();
+        if (mDefaultParameters == null) {
+            onError(Camera.CAMERA_ERROR_UNKNOWN, null);
+            return;
+        }
 
         mCameraState = States.CAMERA_IDLE;
         saveCameraConfig("currentCameraId", mCurrentCameraId);
