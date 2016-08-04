@@ -161,7 +161,20 @@ public abstract class AbsHorizontalListView extends AdapterView<ListAdapter> imp
     private float mHorizontalScrollFactor;
 
     public AbsHorizontalListView(Context context) {
-        super(context);
+        this(context, null);
+    }
+
+    public AbsHorizontalListView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public AbsHorizontalListView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        init();
+    }
+
+    private void init() {
         this.initAbsListView();
         Object listSelector = null;
         boolean drawSelectorOnTop = false;

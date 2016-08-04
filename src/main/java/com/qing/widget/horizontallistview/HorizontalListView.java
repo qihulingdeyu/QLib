@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build.VERSION;
 import android.support.v4.util.SparseArrayCompat;
+import android.util.AttributeSet;
 import android.view.FocusFinder;
 import android.view.KeyEvent;
 import android.view.SoundEffectConstants;
@@ -54,7 +55,20 @@ public class HorizontalListView extends AbsHorizontalListView {
     private HorizontalListView.FocusSelector mFocusSelector;
 
     public HorizontalListView(Context context) {
-        super(context);
+        this(context, null);
+    }
+
+    public HorizontalListView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init(context);
+    }
+
+    public HorizontalListView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        init(context);
+    }
+
+    private void init(Context context) {
         Theme theme = context.getTheme();
         Object entries = null;
         Object dividerDrawable = null;
