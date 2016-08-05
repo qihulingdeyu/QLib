@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -63,8 +64,9 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 	protected boolean closeBrowser = false;
 	protected RelativeLayout.LayoutParams rParams;
 
-	private ValueCallback<Uri> uploadFileCallback;
-	private int actRequestCode = 1;
+	private ValueCallback<Uri> mUploadFileCallback;
+    private ValueCallback<Uri[]> mFilePathCallback;
+	private int mFileChooserRequestCode = 1;
 
 	public BrowserLayoutPage(Context context) {
 		super(context);
@@ -273,18 +275,50 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 			}
 		}
 
+        // android < 3.0
+        public void openFileChooser(ValueCallback<Uri> uploadFile) {
+            openFileChooser(uploadFile, null);
+        }
+
+        // android 3.0+
+        public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType) {
+            openFileChooser(uploadFile, acceptType, null);
+        }
+
+        /**
+         在打release包时，必须在混淆配置文件中添加以下配置，否则在点击上传按钮时会没响应
+         -keepclassmembers class * extends android.webkit.WebChromeClient {
+         public void openFileChooser(...);
+         }
+         * @param uploadFile
+         * @param acceptType
+         * @param capture
+         */
+        // android > 4.1.1
 		@Override
 		public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType, String capture) {
 			super.openFileChooser(uploadFile, acceptType, capture);
 			MLog.i(TAG, "--选择文件--");
-			uploadFileCallback = uploadFile;
+			mUploadFileCallback = uploadFile;
 			Intent intent = new Intent();
 			intent.setAction(Intent.ACTION_GET_CONTENT);
 			intent.addCategory(Intent.CATEGORY_DEFAULT);
 			intent.setType(acceptType);
 			intent.putExtra("return-data", true);
-			((Activity) mContext).startActivityForResult(intent, actRequestCode);
+			((Activity) mContext).startActivityForResult(intent, mFileChooserRequestCode);
+//            ((Activity) mContext).startActivityForResult(Intent.createChooser(intent, "FileChooser"), mFileChooserRequestCode);
 		}
+
+        // android > 5.0
+        public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, WebChromeClient.FileChooserParams fileChooserParams) {
+            mFilePathCallback = filePathCallback;
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            ((Activity) mContext).startActivityForResult(intent, mFileChooserRequestCode);
+            return true;
+        }
 
 		@Override
 		public void onDownloadStart(final String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
@@ -438,7 +472,7 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 	@Override
 	public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
 		MLog.i(TAG, "--onActivityResult--");
-//		if (requestCode == actRequestCode && resultCode == Activity.RESULT_OK) {
+//		if (requestCode == mFileChooserRequestCode && resultCode == Activity.RESULT_OK) {
 //			if (data != null) {
 //				Uri uri = data.getData();
 //				Uri thumb = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, uri.getLastPathSegment());
@@ -461,10 +495,17 @@ public class BrowserLayoutPage extends RelativeLayoutPage {
 //				}
 //			}
 //		}
-		if (requestCode == actRequestCode && uploadFileCallback != null) {
-			Uri result = (data == null || resultCode != Activity.RESULT_OK ? null : data.getData());
-			uploadFileCallback.onReceiveValue(result);
-			uploadFileCallback = null;
+		if (requestCode == mFileChooserRequestCode) {
+            Uri result = (data == null || resultCode != Activity.RESULT_OK ? null : data.getData());
+            if (mUploadFileCallback != null) {
+                mUploadFileCallback.onReceiveValue(result);
+                mUploadFileCallback = null;
+            } else if (mFilePathCallback != null) {
+                mFilePathCallback.onReceiveValue(new Uri[]{result});
+                mFilePathCallback = null;
+            } else {
+                return false;
+            }
 			return true;
 		}
 		return false;
